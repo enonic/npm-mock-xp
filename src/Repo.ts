@@ -1,8 +1,8 @@
-import type {Log} from './globals.d'
 import type {
 	BranchConfig,
+	Log,
 	RepositorySettings
-} from './repo/index.d';
+} from './types/index.d'
 import type {JavaBridge} from './JavaBridge';
 
 import {Branch} from './Branch';

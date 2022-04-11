@@ -1,5 +1,5 @@
-import type {PermissionsParams} from '../auth'
-import type {AggregationsResponse} from '../node/query/aggregation.d';
+import type {PermissionsParams} from './Auth'
+import type {AggregationsResponse} from './node/query/aggregation.d';
 
 
 export interface ElasticSearchIndexSettings {

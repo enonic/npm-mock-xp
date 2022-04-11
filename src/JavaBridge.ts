@@ -1,22 +1,15 @@
 import type {
 	App,
-	Log
-} from './globals.d'
-import type {
-	RepoConnection,
-	Source
-} from './node/repoConnection.d';
-import type {
 	BranchConfig,
 	CreateBranchParams,
 	CreateRepoParams,
+	Log,
+	RepoConnection,
 	RepoLib,
-	RepositoryConfig
-} from './repo/index.d';
-import type {
+	RepositoryConfig,
+	Source,
 	ValueLib
-} from './value/index.d';
-
+} from './types/index.d'
 
 import {toStr} from '@enonic/js-utils/dist/cjs';
 

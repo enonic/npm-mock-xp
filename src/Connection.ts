@@ -1,18 +1,16 @@
-import type {Log} from './globals.d'
-import type { Branch } from './Branch';
-import type { JavaBridge } from './JavaBridge';
-import type { RepoNodeWithData } from './node/node.d';
-import type { NodeCreateParams } from './node/create.d';
 import type {
 	GetActiveVersionParamObject,
-	GetActiveVersionResponse
-} from './node/getActiveVersion.d'
-import type { NodeModifyParams } from './node/modify.d';
-import type { NodeQueryParams } from './node/query';
-import type {
+	GetActiveVersionResponse,
+	Log,
+	NodeCreateParams,
+	NodeModifyParams,
+	NodeQueryParams,
 	NodeQueryResponse,
-	RepoConnection
-} from './node/repoConnection.d';
+	RepoConnection,
+	RepoNodeWithData
+} from './types/index.d'
+import type { Branch } from './Branch';
+import type { JavaBridge } from './JavaBridge';
 
 
 export class Connection implements RepoConnection {

@@ -2,7 +2,7 @@
 	"compilerOptions": {
 		"allowJs": false,
 		"baseUrl": ".",
-		"declaration": false,
+		"declaration": true,
 		"declarationMap": false,
 		"downlevelIteration": true,
 		"importHelpers": true,

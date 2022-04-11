@@ -1,13 +1,13 @@
-import type { Log } from './globals.d'
-import type { RepoNodeWithData } from './node/node.d';
-import type { NodeCreateParams } from './node/create.d';
 import type {
 	GetActiveVersionParamObject,
-	GetActiveVersionResponse
-} from './node/getActiveVersion.d'
-import type { NodeModifyParams } from './node/modify.d';
-import type { NodeQueryParams } from './node/query';
-import type { NodeQueryResponse } from './node/repoConnection.d';
+	GetActiveVersionResponse,
+	Log,
+	NodeCreateParams,
+	NodeModifyParams,
+	NodeQueryParams,
+	NodeQueryResponse,
+	RepoNodeWithData
+} from './types/index.d'
 import type { Repo } from './Repo';
 
 

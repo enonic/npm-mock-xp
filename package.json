@@ -28,19 +28,23 @@
     "commonjs"
   ],
   "license": "GPL-3.0",
+  "main": "dist/index.js",
   "name": "@enonic/mock-xp",
   "scripts": {
-    "clean": "rm -r build dist 2>/dev/null;true",
+    "clean": "rm -r dist 2>/dev/null;true",
+    "clean:test": "rm -r build 2>/dev/null;true",
     "build": "npx tsc",
     "build:swc": "yarn build:swc:src & yarn build:swc:test",
     "build:swc:src": "find src -name '*.ts' -not -name '*.d.ts' | xargs npx swc --config-file ./.swcrc.json -d build/swc/src --source-root src",
     "build:swc:test": "find test -name '*.ts' -not -name '*.d.ts' | xargs npx swc --config-file ./.swcrc.json -d build/swc/test --source-root test",
-    "mocha": "npx mocha --config .swc.mocharc.cjs",
-    "prebuild": "yarn clean",
-    "prebuild:swc": "yarn clean",
+    "copy": "mkdir dist && cp -r src/types dist/",
+    "mocha": "npx mocha",
+    "prebuild": "yarn copy",
+    "prebuild:swc": "yarn clean:test",
+    "precopy": "yarn clean",
     "pretest": "yarn build:swc",
     "prepack": "yarn test && yarn build",
-    "test": "yarn mocha"
+    "test": "npx mocha --config .swc.mocharc.cjs"
   },
   "version": "0.1.0"
 }
