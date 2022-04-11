@@ -1,0 +1,1 @@
+export {JavaBridge} from './JavaBridge'

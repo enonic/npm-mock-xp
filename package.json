@@ -1,0 +1,46 @@
+{
+  "author": "Christian Westgaard <cwe@enonic.com>",
+  "contributors": [],
+  "dependencies": {
+    "@enonic/js-utils": "^0.33.2"
+  },
+  "devDependencies": {
+    "@enonic/test-data": "^0.1.1",
+    "@types/mocha": "^9.1.0",
+    "@types/node": "^17.0.23",
+    "mocha": "^9.2.2",
+    "swc": "^1.0.11",
+    "tslib": "^2.3.1",
+    "typescript": "^4.6.3"
+  },
+  "description": "Enonic Mock XP JavaScript Library",
+  "files": [
+    "/dist",
+    "/src"
+  ],
+  "keywords": [
+    "mock",
+    "Enonic XP",
+    "enonic",
+    "typescript",
+    "ecmascript",
+    "javascript",
+    "commonjs"
+  ],
+  "license": "GPL-3.0",
+  "name": "@enonic/mock-xp",
+  "scripts": {
+    "clean": "rm -r build dist 2>/dev/null;true",
+    "build": "npx tsc",
+    "build:swc": "yarn build:swc:src & yarn build:swc:test",
+    "build:swc:src": "find src -name '*.ts' -not -name '*.d.ts' | xargs npx swc --config-file ./.swcrc.json -d build/swc/src --source-root src",
+    "build:swc:test": "find test -name '*.ts' -not -name '*.d.ts' | xargs npx swc --config-file ./.swcrc.json -d build/swc/test --source-root test",
+    "mocha": "npx mocha --config .swc.mocharc.cjs",
+    "prebuild": "yarn clean",
+    "prebuild:swc": "yarn clean",
+    "pretest": "yarn build:swc",
+    "prepack": "yarn test && yarn build",
+    "test": "yarn mocha"
+  },
+  "version": "0.1.0"
+}

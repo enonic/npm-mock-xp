@@ -1,0 +1,31 @@
+{
+	"jsc": {
+		"baseUrl": ".",
+		"externalHelpers": false,
+		"keepClassNames": false,
+		"loose": false,
+		"parser": {
+			"exportDefaultFrom": false,
+			"exportNamespaceFrom": false,
+			"decorators": false,
+			"decoratorsBeforeExport": false,
+			"dynamicImport": false,
+			"functionBind": false,
+			"importMeta": false,
+			"jsx": false,
+			"privateMethod": false,
+			"syntax": "typescript",
+			"topLevelAwait": false,
+			"tsx": false
+		},
+		"paths": {
+			"@enonic/js-utils/src": ["node_modules/@enonic/js-utils/cjs"]
+		},
+		"target": "es3",
+		"transform": null
+	},
+	"module": {
+		"type": "commonjs"
+	},
+	"sourceMaps": false
+}
