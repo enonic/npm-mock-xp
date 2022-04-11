@@ -1,8 +1,8 @@
 module.exports = {
-  color: true,
-  extension: [
-    'js'
-  ],
-  parallel: true,
+	color: true,
+	extension: [
+		'js'
+	],
+	parallel: true,
 	spec: 'build/swc/test/**'
 }

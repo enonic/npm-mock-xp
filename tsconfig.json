@@ -21,9 +21,7 @@
 		"noUnusedLocals": true,
 		"noUnusedParameters": true,
 		"outDir": "dist/",
-		"paths": {
-			"@enonic/js-utils/dist/cjs": ["node_modules/@enonic/js-utils/src"]
-		},
+		"paths": {},
 		"removeComments": true,
 		"resolveJsonModule": true,
 		"rootDir": "src",

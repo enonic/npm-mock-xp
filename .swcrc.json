@@ -18,9 +18,7 @@
 			"topLevelAwait": false,
 			"tsx": false
 		},
-		"paths": {
-			"@enonic/js-utils/src": ["node_modules/@enonic/js-utils/cjs"]
-		},
+		"paths": {},
 		"target": "es3",
 		"transform": null
 	},

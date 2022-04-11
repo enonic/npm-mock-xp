@@ -1,4 +1,4 @@
-import {isString} from '@enonic/js-utils/dist/cjs';
+import {isString} from '@enonic/js-utils/dist/cjs/value/isString';
 import {
 	deepStrictEqual,
 	notEqual,

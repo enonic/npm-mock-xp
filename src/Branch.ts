@@ -11,14 +11,13 @@ import type {
 import type { Repo } from './Repo';
 
 
-import {
-	enonify,
-	flatten,
-	forceArray,
-	isUuidV4String,
-	lpad,
-	sortKeys
-} from '@enonic/js-utils/dist/cjs';
+import {flatten} from '@enonic/js-utils/dist/cjs/array/flatten';
+import {forceArray} from '@enonic/js-utils/dist/cjs/array/forceArray';
+import {enonify} from '@enonic/js-utils/dist/cjs/storage/indexing/enonify';
+import {sortKeys} from '@enonic/js-utils/dist/cjs/object/sortKeys';
+import {lpad} from '@enonic/js-utils/dist/cjs/string/lpad';
+import {isUuidV4String} from '@enonic/js-utils/dist/cjs/value/isUuidV4String';
+
 import {NodeAlreadyExistAtPathException} from './node/NodeAlreadyExistAtPathException';
 import {NodeNotFoundException} from './node/NodeNotFoundException';
 
