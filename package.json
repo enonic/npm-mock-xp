@@ -16,7 +16,9 @@
   "description": "Enonic Mock XP JavaScript Library",
   "files": [
     "/dist",
-    "/src"
+    "/media",
+    "/src",
+    "README.md"
   ],
   "keywords": [
     "mock",
@@ -46,5 +48,5 @@
     "prepack": "yarn test && yarn build",
     "test": "npx mocha --config .swc.mocharc.cjs"
   },
-  "version": "0.1.1"
+  "version": "0.1.2"
 }
