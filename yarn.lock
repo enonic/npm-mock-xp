@@ -2,10 +2,10 @@
 # yarn lockfile v1
 
 
-"@enonic/js-utils@^0.33.2":
-  version "0.33.2"
-  resolved "https://registry.yarnpkg.com/@enonic/js-utils/-/js-utils-0.33.2.tgz#8fe8aee5af5c2def1565c80d1f5d1705c51f7570"
-  integrity sha512-VCvHgNR9u22zcYQTf58Kz/cuFE48n9GoQLhncoScBSRQCpLbTN6oqWEwXjdo3DYmIPs3nDNy8jKVg+Dv7BH/Cw==
+"@enonic/js-utils@^0.33.3":
+  version "0.33.3"
+  resolved "https://registry.yarnpkg.com/@enonic/js-utils/-/js-utils-0.33.3.tgz#65d3d51f5803034115615aa0d0ff325062312ff1"
+  integrity sha512-DxlFSZcFkJleZdNZaDp2X/lKUyre7MDAeWg8h+ElY5EGg5cai2ictyqPHOEFw2WpEzjrB0qHBdSwXGZnQvZkmA==
 
 "@enonic/test-data@^0.1.1":
   version "0.1.1"

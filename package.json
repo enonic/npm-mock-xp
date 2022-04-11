@@ -2,7 +2,7 @@
   "author": "Christian Westgaard <cwe@enonic.com>",
   "contributors": [],
   "dependencies": {
-    "@enonic/js-utils": "^0.33.2"
+    "@enonic/js-utils": "^0.33.3"
   },
   "devDependencies": {
     "@enonic/test-data": "^0.1.1",
@@ -46,5 +46,5 @@
     "prepack": "yarn test && yarn build",
     "test": "npx mocha --config .swc.mocharc.cjs"
   },
-  "version": "0.1.0"
+  "version": "0.1.1"
 }
