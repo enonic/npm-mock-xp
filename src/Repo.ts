@@ -79,4 +79,6 @@ export class Repo {
 		}
 		return branchObj;
 	}
+
+	//refresh() {}
 } // class Repo

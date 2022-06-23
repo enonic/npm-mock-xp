@@ -66,6 +66,12 @@ describe('mock', () => {
 				repoId: 'myRepoId'
 			});
 			describe('Connection', () => {
+				it('has property refresh', () => {
+					deepStrictEqual(
+						true,
+						hasMethod(connection, 'refresh')
+					);
+				}); // it
 				const createRes = connection.create({});
 				describe('query', () => {
 					const queryRes = connection.query({});
@@ -88,6 +94,11 @@ describe('mock', () => {
 						);
 					}); // it
 				}); // describe query
+				describe('refresh', () => {
+					it('can be called', () => {
+						connection.refresh();
+					}); // it
+				}); // describe refresh
 			}); // describe Connection
 		}); // describe connect
 	}); // describe JavaBridge

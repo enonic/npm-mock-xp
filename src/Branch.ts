@@ -6,6 +6,8 @@ import type {
 	NodeModifyParams,
 	NodeQueryParams,
 	NodeQueryResponse,
+	NodeRefreshParams,
+	NodeRefreshReturnType,
 	RepoNodeWithData
 } from './types/index.d'
 import type { Repo } from './Repo';
@@ -327,4 +329,13 @@ export class Branch {
 			total
 		};
 	} // query
+
+	refresh({
+		mode = 'all',
+		repo = this._repo.id(),
+		branch = this._id
+	} :NodeRefreshParams = {}) :NodeRefreshReturnType {
+		this.log.debug(`refresh({ mode:${mode} repo:${repo} branch:${branch} })`);
+		return;
+	}
 } // class Branch

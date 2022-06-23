@@ -15,7 +15,7 @@ import type { NodeQueryParams } from './query';
 import type { AggregationsResponse } from './query/aggregation.d';
 
 
-export interface Source {
+export type Source = {
 	repoId: string;
 	branch: string;
 	user?: {
@@ -25,21 +25,29 @@ export interface Source {
 	principals?: Array<PrincipalKey>;
 }
 
-export interface NodeQueryHit {
+export type NodeQueryHit = {
 	readonly id: string;
 	readonly score: number;
 }
 
-export interface NodeQueryResponse<
+export type NodeQueryResponse<
 	AggregationKeys extends undefined|string = undefined
-> {
+> = {
 	readonly total: number;
 	readonly count: number;
 	readonly hits: ReadonlyArray<NodeQueryHit>;
 	readonly aggregations: AggregationsResponse<AggregationKeys>;
 }
 
-export interface RepoConnection {
+export type NodeRefreshParams = {
+	mode ?:'all' | 'search' | 'storage' // Index definition settings. Default is 'all'.
+	repo ?:string // Repository id: 'com.enonic.cms.default' | 'system-repo'. Default is the current repository set in portal.
+	branch ?:string // Branch. Default is 'master'.
+}
+
+export type NodeRefreshReturnType = void;
+
+export type RepoConnection = {
 	/**
 	* Commits the active version of nodes.
 	*/
@@ -133,7 +141,7 @@ export interface RepoConnection {
 	/**
 	* Refresh the index for the current repoConnection
 	*/
-	//refresh(mode?: "ALL" | "SEARCH" | "STORAGE"): void;
+	refresh(params ?:NodeRefreshParams): NodeRefreshReturnType;
 
 	/**
 	* This function modifies a node.

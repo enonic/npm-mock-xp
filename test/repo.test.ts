@@ -40,6 +40,12 @@ describe('mock', () => {
 					hasMethod(javaBridge.repo, 'list')
 				);
 			}); // it
+			/*it('repo object has method refresh', () => {
+				deepStrictEqual(
+					true,
+					hasMethod(javaBridge.repo, 'refresh')
+				);
+			}); // it*/
 			describe('create', () => {
 				const createdRepo = javaBridge.repo.create({
 					id: 'myRepoId'
@@ -104,6 +110,11 @@ describe('mock', () => {
 					);
 				}); // it
 			}); // describe list
+			/*describe('refresh', () => {
+				it('can be called', () => {
+					javaBridge.repo.refresh();
+				}); // it
+			}); // describe refresh*/
 		}); // describe repo
 	}); // describe JavaBridge
 }); // describe mock

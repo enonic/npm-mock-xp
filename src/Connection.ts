@@ -6,6 +6,8 @@ import type {
 	NodeModifyParams,
 	NodeQueryParams,
 	NodeQueryResponse,
+	NodeRefreshParams,
+	NodeRefreshReturnType,
 	RepoConnection,
 	RepoNodeWithData
 } from './types/index.d'
@@ -90,5 +92,9 @@ export class Connection implements RepoConnection {
 			sort,
 			start
 		});
+	}
+
+	refresh(params :NodeRefreshParams) :NodeRefreshReturnType {
+		return this._branch.refresh(params);
 	}
 } // class Connection
