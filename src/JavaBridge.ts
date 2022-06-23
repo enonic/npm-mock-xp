@@ -91,20 +91,20 @@ export class JavaBridge {
 	private _repos :Repos = {};
 	readonly app :App;
 	readonly event :EventLib = {
-		listener({
+		listener: ({
 			type,
 			localOnly,
 			callback
-		}) {
-			console.debug('event.listener({ type:%s, localOnly:%s callback:%s})', type, localOnly, callback);
+		}) => {
+			this.log.debug('event.listener({ type:%s, localOnly:%s callback:%s})', type, localOnly, callback);
 			return null;
 		},
-		send({
+		send: ({
 			type,
 			distributed,
 			data
-		}) {
-			console.debug('event.send({ type:%s, distributed:%s data:%s})', type, distributed, data);
+		}) => {
+			this.log.debug('event.send({ type:%s, distributed:%s data:%s})', type, distributed, data);
 			return null;
 		}
 	};

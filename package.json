@@ -2,7 +2,7 @@
   "author": "Christian Westgaard <cwe@enonic.com>",
   "contributors": [],
   "dependencies": {
-    "@enonic/js-utils": "^0.38.7"
+    "@enonic/js-utils": "^0.38.8"
   },
   "devDependencies": {
     "@enonic/test-data": "^0.2.1",

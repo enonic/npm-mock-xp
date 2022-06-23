@@ -10,12 +10,6 @@ describe('mock', () => {
 				config: {},
 				name: 'com.enonic.app.test',
 				version: '0.0.1-SNAPSHOT'
-			},
-			log: {
-				debug: (...params) => { console.debug(...params) },
-				error: (...params) => { console.error(...params) },
-				info: (...params) => { console.info(...params) },
-				warning: (...params) => { console.warn(...params) }
 			}
 		});
 		it('instance has event object', () => {
@@ -42,7 +36,9 @@ describe('mock', () => {
 					javaBridge.event.listener({
 						type: 'node.*',
 						localOnly: true,
-						callback: () => {}
+						callback: () => {
+							return null;
+						}
 					});
 				}); // it
 			}); // describe listener method
