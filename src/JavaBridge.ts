@@ -1,4 +1,8 @@
 import type {
+	EventLib
+} from '@enonic/js-utils/src/types/index.d';
+
+import type {
 	App,
 	BranchConfig,
 	CreateBranchParams,
@@ -86,6 +90,24 @@ function colorize(colorKey :string, str :string) :string {
 export class JavaBridge {
 	private _repos :Repos = {};
 	readonly app :App;
+	readonly event :EventLib = {
+		listener({
+			type,
+			localOnly,
+			callback
+		}) {
+			console.debug('event.listener({ type:%s, localOnly:%s callback:%s})', type, localOnly, callback);
+			return null;
+		},
+		send({
+			type,
+			distributed,
+			data
+		}) {
+			console.debug('event.send({ type:%s, distributed:%s data:%s})', type, distributed, data);
+			return null;
+		}
+	};
 	readonly log :Log = {
 		debug: (format :string, ...substs :unknown[]) :void => {
 			if (substs.length) {

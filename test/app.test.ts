@@ -2,12 +2,6 @@ import {deepStrictEqual} from 'assert';
 import {JavaBridge} from '../src/JavaBridge';
 
 
-function hasMethod(obj :unknown, name :string) {
-	// TODO check if obj is Object?
-	return typeof obj[name] === 'function';
-}
-
-
 describe('mock', () => {
 	describe('JavaBridge', () => {
 		const javaBridge = new JavaBridge({
