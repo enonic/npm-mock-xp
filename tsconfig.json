@@ -30,6 +30,7 @@
 			"test"
 		],
 		"sourceMap": false,
+		"skipLibCheck": true,
 		"strict": true,
 		"strictFunctionTypes": true,
 		"strictNullChecks": true,
