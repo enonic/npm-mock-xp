@@ -6,7 +6,6 @@
 		"declarationMap": false,
 		"downlevelIteration": true,
 		"importHelpers": true,
-		"importsNotUsedAsValues": "error",
 		"inlineSourceMap": false,
 		"inlineSources": false,
 		"listEmittedFiles": false,
@@ -21,11 +20,7 @@
 		"noUnusedLocals": true,
 		"noUnusedParameters": true,
 		"outDir": "dist/",
-		"paths": {
-			"@enonic/js-utils": ["../enonic-js-utils/src"],
-			"@enonic/js-utils/*": ["../enonic-js-utils/*"],
-			//"@enonic/js-utils": ["node_modules/@enonic/js-utils/dist/cjs"]
-		},
+		"paths": {},
 		"removeComments": true,
 		"resolveJsonModule": true,
 		"rootDir": "src",
@@ -38,10 +33,11 @@
 		"strict": true,
 		"strictFunctionTypes": true,
 		"strictNullChecks": true,
-		"target": "ES3",
+		"target": "ES5",
 		"types": [
 			"node"
-		]
+		],
+		// "verbatimModuleSyntax": true
 	},
 	"exclude": [
 		"node_modules"

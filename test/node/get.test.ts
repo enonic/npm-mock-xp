@@ -1,4 +1,4 @@
-import {isString} from '@enonic/js-utils/dist/cjs/value/isString';
+import {isString} from '@enonic/js-utils/value/isString';
 import {
 	deepStrictEqual//,
 	//throws // For some reason this gets borked by swc

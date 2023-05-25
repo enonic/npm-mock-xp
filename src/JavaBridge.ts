@@ -1,6 +1,6 @@
 import type {
 	EventLib
-} from '@enonic/js-utils/src/types/index.d';
+} from '@enonic/js-utils/types';
 
 import type {
 	App,
@@ -15,7 +15,7 @@ import type {
 	ValueLib
 } from './types/index.d'
 
-import {toStr} from '@enonic/js-utils/dist/cjs/value/toStr';
+import {toStr} from '@enonic/js-utils/value/toStr';
 
 import {Connection} from './Connection';
 import {Repo} from './Repo';

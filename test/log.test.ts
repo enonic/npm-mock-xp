@@ -1,5 +1,7 @@
+import {OBJECTS} from '@enonic/test-data';
 import {deepStrictEqual} from 'assert';
 import {JavaBridge} from '../src/JavaBridge';
+import Log from '../src/Log';
 
 
 function hasMethod(obj :unknown, name :string) {
@@ -16,12 +18,9 @@ describe('mock', () => {
 				name: 'com.enonic.app.test',
 				version: '0.0.1-SNAPSHOT'
 			},
-			log: {
-				debug: (...params) => { console.debug(...params) },
-				error: (...params) => { console.error(...params) },
-				info: (...params) => { console.info(...params) },
-				warning: (...params) => { console.warn(...params) }
-			}
+			log: Log.createLogger({
+				loglevel: 'warn'
+			})
 		});
 		it('instance has log object', () => {
 			deepStrictEqual(
@@ -37,7 +36,7 @@ describe('mock', () => {
 						hasMethod(javaBridge.log, 'debug')
 					);
 				}); // it
-				javaBridge.log.debug('string:%s', 'string');
+				javaBridge.log.debug('objects:%s', OBJECTS);
 			}); // describe debug
 			describe('error', () => {
 				it('log object has error method', () => {
@@ -46,7 +45,7 @@ describe('mock', () => {
 						hasMethod(javaBridge.log, 'error')
 					);
 				}); // it
-				javaBridge.log.error('string:%s', 'string');
+				javaBridge.log.error('objects:%s', OBJECTS);
 			}); // describe error
 			describe('info', () => {
 				it('log object has info method', () => {
@@ -55,7 +54,7 @@ describe('mock', () => {
 						hasMethod(javaBridge.log, 'info')
 					);
 				}); // it
-				javaBridge.log.info('string:%s', 'string');
+				javaBridge.log.info('objects:%s', OBJECTS);
 			}); // describe info
 			describe('warning', () => {
 				it('log object has warning method', () => {
@@ -64,7 +63,7 @@ describe('mock', () => {
 						hasMethod(javaBridge.log, 'warning')
 					);
 				}); // it
-				javaBridge.log.warning('string:%s', 'string');
+				javaBridge.log.warning('objects:%s', OBJECTS);
 			}); // describe warning
 		}); // describe log
 	}); // describe JavaBridge
