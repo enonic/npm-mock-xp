@@ -53,14 +53,11 @@
   },
   "scripts": {
     "build": "npx tsc",
-    "build:swc": "yarn build:swc:src & yarn build:swc:test",
-    "build:swc:src": "find src -name '*.ts' -not -name '*.d.ts' | xargs npx swc --config-file ./.swcrc.json -d build/swc/src --source-root src",
-    "build:swc:test": "find test -name '*.ts' -not -name '*.d.ts' | xargs npx swc --config-file ./.swcrc.json -d build/swc/test --source-root test",
+    "check:types": "tsc --noEmit",
     "clean": "rm -r dist 2>/dev/null;true",
     "clean:test": "rm -r build 2>/dev/null;true",
     "copy": "mkdir dist && cp -r src/types dist/",
     "prebuild": "yarn copy",
-    "prebuild:swc": "yarn clean:test",
     "precopy": "yarn clean",
     "prepack": "yarn test && yarn build",
     "test": "jest --coverage --no-cache"

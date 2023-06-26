@@ -1,11 +1,13 @@
 export default {
 	collectCoverageFrom: [
-		'src/**/*.ts'
+		'src/**/*.ts',
+		'!src/**/*.d.ts',
 	],
 
 	coveragePathIgnorePatterns: [
-		'/node_modules/',
-		'/test/',
+		'<rootDir>/node_modules/',
+		// '<rootDir>/src/types/',
+		'<rootDir>/test/',
 	],
 
 	// In order for tests to work on all files, we have to use v8 coverage provider.
