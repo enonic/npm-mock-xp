@@ -18,6 +18,7 @@ import type {
 import {toStr} from '@enonic/js-utils/value/toStr';
 
 import {Connection} from './Connection';
+import {ContentConnection} from './ContentConnection';
 import {Repo} from './Repo';
 import {RepositoryNotFoundException} from './repo/RepositoryNotFoundException';
 
@@ -215,5 +216,25 @@ export class JavaBridge {
 			javaBridge: this
 		});
 		return connection;
+	}
+
+	contentConnect({
+		branch,
+		project,
+	}: {
+		branch: string
+		project: string
+	}) {
+		const repoId = `com.enonic.cms.${project}`;
+		const repo = this._repos[repoId];
+		if (!repo) {
+			throw new Error(`contentConnect: No repo with id:${repoId}!`);
+		}
+		const branchObj = repo.getBranch(branch);
+		const contentConnection = new ContentConnection({
+			branch: branchObj,
+			javaBridge: this
+		});
+		return contentConnection;
 	}
 } // class JavaBridge
