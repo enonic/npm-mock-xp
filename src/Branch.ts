@@ -25,11 +25,11 @@ import {NodeNotFoundException} from './node/NodeNotFoundException';
 
 
 interface Nodes {
-	[key :string] :RepoNodeWithData
+	[key: string]: RepoNodeWithData
 }
 
 interface PathIndex {
-	[key :string] :string
+	[key: string]: string
 }
 
 
@@ -56,7 +56,7 @@ const IGNORED_ON_CREATE = [
 ];
 
 
-function isPathString(key :string) :boolean {
+function isPathString(key: string): boolean {
 	return key.startsWith('/');
 }
 
@@ -66,9 +66,9 @@ export class Branch {
 		return new Date().toISOString();
 	}
 
-	private _highest_id :number = 1;
-	private _id :string;
-	private _nodes :Nodes = {
+	private _highest_id: number = 1;
+	private _id: string;
+	private _nodes: Nodes = {
 		'00000000-0000-0000-0000-000000000000': {
 			_childOrder: '_ts DESC',
 			_id: '00000000-0000-0000-0000-000000000000',
@@ -95,18 +95,18 @@ export class Branch {
 			_versionKey: '00000000-0000-4000-8000-000000000001'
 		}
 	};
-	private _pathIndex :PathIndex = {
+	private _pathIndex: PathIndex = {
 		'': '00000000-0000-0000-0000-000000000000'
 	};
-	private _repo :Repo;
-	readonly log :Log;
+	private _repo: Repo;
+	readonly log: Log;
 
 	constructor({
 		branchId,
 		repo
-	} :{
-		branchId :string
-		repo :Repo
+	}: {
+		branchId: string
+		repo: Repo
 	}) {
 		//console.debug('repo.constructor.name',repo.constructor.name);
 		this._id = branchId;
@@ -115,7 +115,7 @@ export class Branch {
 		//this.log.debug('in Branch constructor');
 	}
 
-	private generateId() :string {
+	private generateId(): string {
 		this._highest_id += 1;
 		return `00000000-0000-4000-8000-${lpad(this._highest_id,12,'0')}`;
 	}
@@ -130,9 +130,9 @@ export class Branch {
 		_parentPath = '/',
 		//_permissions,
 		...rest
-	} :NodeCreateParams) :RepoNodeWithData {
+	}: NodeCreateParams): RepoNodeWithData {
 		for (let i = 0; i < IGNORED_ON_CREATE.length; i++) {
-		    const k = IGNORED_ON_CREATE[i] as string;
+			const k = IGNORED_ON_CREATE[i] as keyof typeof rest;
 			if (rest.hasOwnProperty(k)) { delete rest[k]; }
 		}
 		const _id = this.generateId();
@@ -158,11 +158,11 @@ export class Branch {
 			throw new Error(`Node already exists with ${_id} repository: ${this._repo.id()} branch: ${this._id}`); // /lib/xp/node.connect().create() simply ignores _id
 			//throw new NodeAlreadyExistAtPathException(`Node already exists at ${_path} repository: ${this._repo.id} branch: ${this._id}`);
 		}
-		const _path :string = `${_parentPath}${_name}`; // TODO use path.join?
+		const _path: string = `${_parentPath}${_name}`; // TODO use path.join?
 		if (this._pathIndex.hasOwnProperty(_path)) {
 			throw new NodeAlreadyExistAtPathException(`Node already exists at ${_path} repository: ${this._repo.id()} branch: ${this._id}`);
 		}
-		const node :RepoNodeWithData = {
+		const node: RepoNodeWithData = {
 			_id,
 			_indexConfig,
 			_name,
@@ -172,15 +172,15 @@ export class Branch {
 			_ts,
 			_versionKey,
 			...(enonify(rest) as Object)
-		} as RepoNodeWithData;
+		} as unknown as RepoNodeWithData;
 		this._nodes[_id] = node;
 		this._pathIndex[_path] = _id;
 		//this.log.debug('this._pathIndex:%s', this._pathIndex);
 		return node;
 	}
 
-	private keyToId(key :string) :string | undefined {
-		let maybeId :string|undefined = key;
+	private keyToId(key: string): string | undefined {
+		let maybeId: string|undefined = key;
 		if (isPathString(key)) {
 			const path = key.endsWith('/') ? key.substring(0, key.length - 1) : key;
 			//this.log.debug('path:%s', path);
@@ -200,7 +200,7 @@ export class Branch {
 		return maybeId;
 	}
 
-	existsNode(keys: string | Array<string>) :Array<string> {
+	existsNode(keys: string | Array<string>): Array<string> {
 		//this.log.debug('existsNode() keys:%s', keys);
 		const existingKeys = forceArray(keys)
 			.map(k => {
@@ -214,11 +214,11 @@ export class Branch {
 		return existingKeys;
 	}
 
-	deleteNode(keys: string | Array<string>) :Array<string> {
+	deleteNode(keys: string | Array<string>): Array<string> {
 		const keysArray = forceArray(keys);
 		const deletedKeys = [];
 		for (let i = 0; i < keysArray.length; i++) {
-		    const key :string = keysArray[i] as string;
+		    const key: string = keysArray[i] as string;
 			let maybeNode;
 			try {
 				maybeNode = this.getNode(key) as RepoNodeWithData;
@@ -240,14 +240,14 @@ export class Branch {
 		return deletedKeys;
 	}
 
-	getNode(...keys :string[]) :RepoNodeWithData | RepoNodeWithData[] {
+	getNode(...keys: string[]): RepoNodeWithData | RepoNodeWithData[] {
 		//this.log.debug('getNode() keys:%s', keys);
 		if (!keys.length) {
 			return [];
 		}
-		const flattenedKeys :string[] = flatten(keys) as string[];
+		const flattenedKeys: string[] = flatten(keys) as string[];
 		const existingKeys = this.existsNode(flattenedKeys);
-		const nodes :RepoNodeWithData[] = existingKeys.map(key => {
+		const nodes: RepoNodeWithData[] = existingKeys.map(key => {
 			const id = this.keyToId(key);
 			if (!id) {
 				throw new Error(`Can't get id from key:${key}, even though exists???`); // This could happen if node deleted after exists called.
@@ -261,8 +261,8 @@ export class Branch {
 
 	getNodeActiveVersion({
 		key
-	} :GetActiveVersionParamObject) :GetActiveVersionResponse {
-		const node :RepoNodeWithData | undefined = this.getNode(key) as (RepoNodeWithData | undefined);
+	}: GetActiveVersionParamObject): GetActiveVersionResponse {
+		const node: RepoNodeWithData | undefined = this.getNode(key) as (RepoNodeWithData | undefined);
 		if (node) {
 			return {
 				versionId: node._versionKey,
@@ -278,15 +278,15 @@ export class Branch {
 	modifyNode({
 		key,
 		editor
-	} :NodeModifyParams) :RepoNodeWithData {
-		const node :RepoNodeWithData = this.getNode(key) as RepoNodeWithData;
+	}: NodeModifyParams): RepoNodeWithData {
+		const node: RepoNodeWithData = this.getNode(key) as RepoNodeWithData;
 		if (!node) {
 			throw new Error(`modify: Node with key:${key} not found!`);
 		}
 		const _id = node._id;
 		const _name = node._name;
 		const _path = node._path;
-		const modifiedNode :RepoNodeWithData = sortKeys({
+		const modifiedNode: RepoNodeWithData = sortKeys({
 			...editor(node),
 			_id, // Not allowed to change _id
 			_name, // Not allowed to rename
@@ -306,7 +306,7 @@ export class Branch {
 		query,
 		sort,
 		start
-	} :NodeQueryParams) :NodeQueryResponse {
+	}: NodeQueryParams): NodeQueryResponse {
 		/*this.log.debug('param:%s', {
 			aggregations,
 			count,
@@ -334,7 +334,7 @@ export class Branch {
 		mode = 'all',
 		repo = this._repo.id(),
 		branch = this._id
-	} :NodeRefreshParams = {}) :NodeRefreshReturnType {
+	}: NodeRefreshParams = {}): NodeRefreshReturnType {
 		this.log.debug(`refresh({ mode:${mode} repo:${repo} branch:${branch} })`);
 		return;
 	}

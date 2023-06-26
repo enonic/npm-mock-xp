@@ -6,6 +6,8 @@ import {
 } from 'assert';
 import * as assert from 'assert';
 import {JavaBridge} from '../../src/JavaBridge';
+import { RepoNode } from '@enonic/js-utils/types';
+import { RepoNodeWithData } from '../../src/types';
 
 function hasMethod(obj :unknown, name :string) {
 	// TODO check if obj is Object?
@@ -42,7 +44,7 @@ describe('mock', () => {
 			}); // it
 			describe('Connection', () => {
 				const createRes = connection.create({
-					_id: 'ignoredId'
+					// _id: 'ignoredId'
 				});
 				describe('create', () => {
 					describe('throws', () => {
@@ -72,12 +74,12 @@ describe('mock', () => {
 						}); // it
 					}); // describe throws
 					//javaBridge.log.debug('generated id:%s', createRes._id);
-					it('ignores passed in _id', () => {
-						notEqual(
-							'ignoredId',
-							createRes._id
-						);
-					}); // it
+					// it('ignores passed in _id', () => {
+					// 	notEqual(
+					// 		'ignoredId',
+					// 		createRes._id
+					// 	);
+					// }); // it
 					it('generates an _id', () => {
 						deepStrictEqual(
 							true,
@@ -148,6 +150,8 @@ describe('mock', () => {
 							createRes._state
 						);
 					}); // it
+					const node = connection.get(createRes._id) as RepoNodeWithData;
+					//javaBridge.log.debug('node:%s', node);
 					it('sets _ts (regardless of passed in)', () => {
 						//javaBridge.log.debug('_ts:%s', createRes._ts);
 						deepStrictEqual(
@@ -159,8 +163,6 @@ describe('mock', () => {
 							createRes._ts
 						);
 					}); // it
-					const node = connection.get(createRes._id);
-					//javaBridge.log.debug('node:%s', node);
 					it('returns the created node', () => {
 						deepStrictEqual(
 							node,

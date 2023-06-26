@@ -1,44 +1,47 @@
+import type { CreateNodeParams } from '@enonic-types/lib-node';
 import type {PermissionsParams} from '../auth';
 import type {IndexConfig} from './indexConfig.d';
 
 
-export interface NodeCreateParams {
-	/**
-	* Name of content.
-	*/
-	_name?: string;
+export type NodeCreateParams = CreateNodeParams;
 
-	_nodeType? :string;
+// export interface NodeCreateParams {
+// 	/**
+// 	* Name of content.
+// 	*/
+// 	_name?: string;
 
-	/**
-	* Path to place content under.
-	*/
-	_parentPath?: string;
+// 	_nodeType? :string;
 
-	/**
-	* How the document should be indexed. A default value "byType" will be set if no value specified.
-	*/
-	_indexConfig?: IndexConfig;
+// 	/**
+// 	* Path to place content under.
+// 	*/
+// 	_parentPath?: string;
 
-	/**
-	* The access control list for the node. By default the creator will have full access
-	*/
-	_permissions?: ReadonlyArray<PermissionsParams>;
+// 	/**
+// 	* How the document should be indexed. A default value "byType" will be set if no value specified.
+// 	*/
+// 	_indexConfig?: IndexConfig;
 
-	/**
-	* true if the permissions should be inherited from the node parent. Default is false.
-	*/
-	_inheritsPermissions?: boolean;
+// 	/**
+// 	* The access control list for the node. By default the creator will have full access
+// 	*/
+// 	_permissions?: ReadonlyArray<PermissionsParams>;
 
-	/**
-	* Value used to order document when ordering by parent and child-order is set to manual
-	*/
-	_manualOrderValue?: number;
+// 	/**
+// 	* true if the permissions should be inherited from the node parent. Default is false.
+// 	*/
+// 	_inheritsPermissions?: boolean;
 
-	/**
-	* Default ordering of children when doing getChildren if no order is given in query
-	*/
-	_childOrder?: string;
+// 	/**
+// 	* Value used to order document when ordering by parent and child-order is set to manual
+// 	*/
+// 	_manualOrderValue?: number;
 
-	[key :string] :unknown
-}
+// 	/**
+// 	* Default ordering of children when doing getChildren if no order is given in query
+// 	*/
+// 	_childOrder?: string;
+
+// 	[key :string] :unknown
+// }

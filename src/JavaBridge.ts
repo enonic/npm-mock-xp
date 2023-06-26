@@ -23,15 +23,15 @@ import {RepositoryNotFoundException} from './repo/RepositoryNotFoundException';
 
 
 export interface Repos {
-	[key :string] :Repo
+	[key: string]: Repo
 }
 
 type ColorCode = Number[];
 interface ColorCodes {
-	[key :string] :ColorCode
+	[key: string]: ColorCode
 }
 
-const colorCodes :ColorCodes = {
+const colorCodes: ColorCodes = {
 	reset: [0, 0],
 
 	bold: [1, 22],
@@ -80,7 +80,7 @@ const colorCodes :ColorCodes = {
 	bgBrightWhite: [107, 49]
 };
 
-function colorize(colorKey :string, str :string) :string {
+function colorize(colorKey: string, str: string): string {
 	const open = (colorCodes[colorKey] as ColorCode)[0];
 	const close = (colorCodes[colorKey] as ColorCode)[1];
 	return `\u001b[${open}m${str}\u001b[${close}m`;
@@ -88,9 +88,9 @@ function colorize(colorKey :string, str :string) :string {
 
 
 export class JavaBridge {
-	private _repos :Repos = {};
-	readonly app :App;
-	readonly event :EventLib = {
+	private _repos: Repos = {};
+	readonly app: App;
+	readonly event: EventLib = {
 		listener: ({
 			type,
 			localOnly,
@@ -108,29 +108,29 @@ export class JavaBridge {
 			return null;
 		}
 	};
-	readonly log :Log = {
-		debug: (format :string, ...substs :unknown[]) :void => {
+	readonly log: Log = {
+		debug: (format: string, ...substs: unknown[]): void => {
 			if (substs.length) {
 				console.debug(colorize('grey',`DEBUG ${format}`), ...substs.map(o => toStr(o)));
 			} else {
 				console.debug(colorize('grey',`DEBUG ${format}`));
 			}
 		},
-		error: (format :string, ...substs :unknown[]) :void => {
+		error: (format: string, ...substs: unknown[]): void => {
 			if (substs.length) {
 				console.error(colorize('brightRed',`ERROR ${format}`), ...substs.map(o => toStr(o)));
 			} else {
 				console.error(colorize('brightRed',`ERROR ${format}`));
 			}
 		},
-		info: (format :string, ...substs :unknown[]) :void => {
+		info: (format: string, ...substs: unknown[]): void => {
 			if (substs.length) {
 				console.info(colorize('white',`INFO  ${format}`), ...substs.map(o => toStr(o)));
 			} else {
 				console.info(colorize('white',`INFO  ${format}`));
 			}
 		},
-		warning: (format :string, ...substs :unknown[]) :void => {
+		warning: (format: string, ...substs: unknown[]): void => {
 			if (substs.length) {
 				console.warn(colorize('brightYellow',`WARN  ${format}`), ...substs.map(o => toStr(o)));
 			} else {
@@ -138,13 +138,13 @@ export class JavaBridge {
 			}
 		}
 	};
-	readonly repo :RepoLib = {
+	readonly repo: RepoLib = {
 		create: ({
 			id,
 			//rootChildOrder,
 			//rootPermissions,
 			settings
-		} :CreateRepoParams) :RepositoryConfig => {
+		}: CreateRepoParams): RepositoryConfig => {
 			const repo = new Repo({
 				id,
 				javaBridge: this,
@@ -157,25 +157,25 @@ export class JavaBridge {
 		createBranch: ({
 			branchId,
 			repoId
-		} :CreateBranchParams) :BranchConfig => {
+		}: CreateBranchParams): BranchConfig => {
 			const repo = this._repos[repoId];
 			if (!repo) {
 				throw new RepositoryNotFoundException(`Repository with id [${repoId}] not found`);
 			}
 			return repo.createBranch(branchId);
 		},
-		get: (repoId :string) :RepositoryConfig => {
+		get: (repoId: string): RepositoryConfig => {
 			const repo = this._repos[repoId];
 			if (!repo) {
 				throw new RepositoryNotFoundException(`Repository with id [${repoId}] not found`);
 			}
 			return repo.get();
 		},
-		list: () :RepositoryConfig[] => {
+		list: (): RepositoryConfig[] => {
 			return Object.keys(this._repos).map(repoId => this.repo.get(repoId));
 		}
 	}
-	readonly value :ValueLib = {
+	readonly value: ValueLib = {
 		geoPoint: (lat,lon) => `${lat},${lon}`,
 		geoPointString: (v) => v,
 		instant: (v) => v,
@@ -188,9 +188,9 @@ export class JavaBridge {
 	constructor({
 		app,
 		log
-	} :{
-		app :App
-		log? :Log
+	}: {
+		app: App
+		log?: Log
 	}) {
 		this.app = app;
 		if (log) {
@@ -204,7 +204,7 @@ export class JavaBridge {
 		branch//,
 		//user,
 		//principals
-	} :Source) :RepoConnection {
+	}: Source): RepoConnection {
 		const repo = this._repos[repoId];
 		if (!repo) {
 			throw new Error(`connect: No repo with id:${repoId}!`);
