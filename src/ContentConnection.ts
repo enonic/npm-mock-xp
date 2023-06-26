@@ -2,7 +2,8 @@ import type { NestedRecord } from '@enonic-types/core';
 import type {
 	Content,
 	CreateContentParams,
-	GetContentParams
+	GetContentParams,
+	ModifyContentParams
 } from '@enonic-types/lib-content';
 import type { Node } from '@enonic-types/lib-node';
 import type {
@@ -65,7 +66,7 @@ export class ContentConnection {
 		this._branch = branch;
 		this._javaBridge = javaBridge;
 		this.log = this._javaBridge.log;
-		this.log.debug('in ContentConnection constructor');
+		// this.log.debug('in ContentConnection constructor');
 		this._branch.createNode({
 			_childOrder: 'displayname ASC',
 			_indexConfig: {
@@ -385,7 +386,13 @@ export class ContentConnection {
 
 	contentToNode<
 		Data = Record<string, unknown>, Type extends string = string
-	>({content}: {content: CreateContentParams<Data, Type>}): RepoNodeWithData {
+	>({
+		content,
+		mode = 'create',
+	}: {
+		content: CreateContentParams<Data, Type> //| ModifyContentParams<Data, Type>
+		mode: 'create' | 'modify'
+	}): RepoNodeWithData {
 		const {
 			name,
 			parentPath,
@@ -396,20 +403,30 @@ export class ContentConnection {
 			language,
 			childOrder,
 			data,
+			// @ts-ignore
+			type,
 			x,
 			// idGenerator, // TODO undocumented?
 			// workflow // TODO undocumented?
 		} = content;
 		const node: Partial<RepoNodeWithData> = {
-			_parentPath: `/content${parentPath}`,
 			createdTime: new Date().toISOString(),
 			creator: 'user:system:su', // NOTE: Hardcode
 			data,
 			language,
 			owner: 'user:system:su', // NOTE: Hardcode
-			type: contentType,
+			type: contentType || type,
 			x
 		};
+		if (mode === 'create') {
+			node['_parentPath'] = `/content${parentPath}`;
+		} else if (mode === 'modify') {
+			if (node._path?.startsWith('/content')) {
+				node._path = `/content${node._path}`;
+			}
+			node['modifiedTime'] = new Date().toISOString();
+			node['modifier'] = 'user:system:su'; // NOTE: Hardcode
+		}
 		if (childOrder) {
 			node._childOrder = childOrder;
 		}
@@ -425,11 +442,14 @@ export class ContentConnection {
 	create<
 		Data = Record<string, unknown>, Type extends string = string
 	>(params: CreateContentParams<Data, Type>): Content<Data, Type> {
-		this.log.debug('ContentConnection create(%s)', params);
-		const createNodeParams = this.contentToNode({content: params});
-		this.log.debug('ContentConnection createNodeParams(%s)', createNodeParams);
+		// this.log.debug('ContentConnection create(%s)', params);
+		const createNodeParams = this.contentToNode({
+			content: params,
+			mode: 'create'
+		});
+		// this.log.debug('ContentConnection createNodeParams(%s)', createNodeParams);
 		const createdNode = this._branch.createNode(createNodeParams);
-		this.log.debug('ContentConnection createdNode(%s)', createdNode);
+		// this.log.debug('ContentConnection createdNode(%s)', createdNode);
 		// TODO: Modify node to apply displayName if missing
 		return this.nodeToContent({node: createdNode}) as Content<Data, Type>;
 	}
@@ -437,7 +457,7 @@ export class ContentConnection {
 	get<
 		Hit extends Content<unknown> = Content
 	>(params: GetContentParams): Hit | null {
-		this.log.debug('ContentConnection get(%s)', params);
+		// this.log.debug('ContentConnection get(%s)', params);
 		const {
 			key,
 			// versionId
@@ -447,6 +467,52 @@ export class ContentConnection {
 			return null;
 		}
 		return this.nodeToContent({node}) as Hit;
+	}
+
+	modify<
+		Data = Record<string, unknown>,
+		Type extends string = string
+	>(params: ModifyContentParams<Data, Type>): Content<Data, Type> | null {
+		// this.log.debug('ContentConnection modify(%s)', params);
+		const {
+			editor,
+			key,
+			// requireValid, // We're not running any validaton
+		} = params;
+		const content = this.get({key}) as Content<Data, Type> | null;
+		if (!content) {
+			throw new Error(`Content not found for key: ${key}`);
+		}
+		const contentToBeModified = editor(content) //as Content<Data, Type>;
+		// this.log.debug('ContentConnection contentToBeModified(%s)', contentToBeModified);
+
+		const nodeToBeModified = this.contentToNode<Data, Type>({
+			//@ts-ignore
+			content: contentToBeModified,
+			mode: 'modify'
+		});
+		// this.log.debug('ContentConnection nodeToBeModified(%s)', nodeToBeModified);
+
+		const rootProps = Object.keys(nodeToBeModified).filter((key) => !key.startsWith('_')
+			&& key !== 'createdTime'
+			&& key !== 'creator'
+		);
+		const modifiedNode = this._branch.modifyNode({
+			key,
+			editor: (existingNode) => {
+				for (let i = 0; i < rootProps.length; i++) {
+					const prop = rootProps[i] as keyof typeof nodeToBeModified;
+					existingNode[prop] = nodeToBeModified[prop];
+				}
+				return existingNode;
+			}
+		});
+		// this.log.debug('ContentConnection modifiedNode(%s)', modifiedNode);
+
+		const modifiedContent = this.nodeToContent({node: modifiedNode}) as Content<Data, Type>;
+		// this.log.debug('ContentConnection modifiedContent(%s)', modifiedContent);
+
+		return modifiedContent;
 	}
 
 	nodeToContent({node}: {node: RepoNodeWithData}): Content {
@@ -518,7 +584,7 @@ export class ContentConnection {
 			const fragmentOrPage = {} as Content['fragment'] | Content['page'];
 			for (let i = 0; i < components.length; i++) {
 				const component = components[i] as NodeComponent;
-				this.log.debug('ContentConnection nodeToContent component:%s', component);
+				// this.log.debug('ContentConnection nodeToContent component:%s', component);
 				const {
 					type,
 					path,
