@@ -4,6 +4,7 @@ import type {
 	Content,
 	CreateContentParams,
 	CreateMediaParams,
+	DeleteContentParams,
 	GetAttachmentStreamParams,
 	GetContentParams,
 	ModifyContentParams
@@ -256,6 +257,13 @@ export class ContentConnection {
 		// this.log.debug('ContentConnection createMedia createdContent:%s', createdContent);
 
 		return createdContent;
+	}
+
+	delete(params: DeleteContentParams): boolean {
+		this.log.debug('ContentConnection delete(%s)', params);
+		const {key} = params;
+		const [deletedId] = this._branch.deleteNode(key);
+		return !!deletedId;
 	}
 
 	get<
