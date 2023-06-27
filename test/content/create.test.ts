@@ -14,6 +14,10 @@ function hasMethod(obj: unknown, name: string) {
 }
 
 
+const log = Log.createLogger({
+	loglevel: 'silent'
+});
+
 const APP_NAME = 'com.enonic.app.test';
 const CONTENT_TYPE = `${APP_NAME}:myContentType`;
 
@@ -26,9 +30,7 @@ describe('mock', () => {
 				name: APP_NAME,
 				version: '0.0.1-SNAPSHOT'
 			},
-			log: Log.createLogger({
-				loglevel: 'debug'
-			}),
+			log
 		});
 		javaBridge.repo.create({
 			id: 'com.enonic.cms.default'

@@ -10,6 +10,11 @@ function hasMethod(obj :unknown, name :string) {
 }
 
 
+const log = Log.createLogger({
+	loglevel: 'silent'
+});
+
+
 describe('mock', () => {
 	describe('JavaBridge', () => {
 		const javaBridge = new JavaBridge({
@@ -18,9 +23,7 @@ describe('mock', () => {
 				name: 'com.enonic.app.test',
 				version: '0.0.1-SNAPSHOT'
 			},
-			log: Log.createLogger({
-				loglevel: 'warn'
-			})
+			log
 		});
 		it('instance has log object', () => {
 			deepStrictEqual(

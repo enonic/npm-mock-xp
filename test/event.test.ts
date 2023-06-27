@@ -1,6 +1,12 @@
 import {deepStrictEqual} from 'assert';
 import {JavaBridge} from '../src/JavaBridge';
+import Log from '../src/Log';
 import {hasMethod} from './hasMethod';
+
+
+const log = Log.createLogger({
+	loglevel: 'silent'
+});
 
 
 describe('mock', () => {
@@ -10,7 +16,8 @@ describe('mock', () => {
 				config: {},
 				name: 'com.enonic.app.test',
 				version: '0.0.1-SNAPSHOT'
-			}
+			},
+			log
 		});
 		it('instance has event object', () => {
 			deepStrictEqual(

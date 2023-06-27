@@ -2,6 +2,7 @@ import type { NestedRecord } from '@enonic-types/core';
 import type {
 	Content,
 	CreateContentParams,
+	CreateMediaParams,
 	GetContentParams,
 	ModifyContentParams
 } from '@enonic-types/lib-content';
@@ -18,6 +19,13 @@ import {
 	setIn,
 	// toStr // log mock does not support need toStr
 } from '@enonic/js-utils';
+import { sync as probeSync } from 'probe-image-size';
+import { vol } from 'memfs';
+import { sha512 } from 'node-forge';
+import {
+	INDEX_CONFIG_DEFAULT,
+	PERMISSIONS_DEFAULT,
+} from './node/constants';
 
 
 interface NodeComponentLayout {
@@ -50,6 +58,10 @@ interface NodeComponentPart {
 type NodeComponent = NodeComponentLayout | NodeComponentPage | NodeComponentPart;
 
 
+const CHILD_ORDER_DEFAULT = 'displayname ASC';
+const USER_DEFAULT = 'user:system:su';
+
+
 export class ContentConnection {
 	private _branch: Branch;
 	private _javaBridge: JavaBridge;
@@ -68,321 +80,17 @@ export class ContentConnection {
 		this.log = this._javaBridge.log;
 		// this.log.debug('in ContentConnection constructor');
 		this._branch.createNode({
-			_childOrder: 'displayname ASC',
-			_indexConfig: {
-				"analyzer": "document_index_default",
-				"default": {
-					"decideByType": true,
-					"enabled": true,
-					"nGram": false,
-					"fulltext": false,
-					"includeInAllText": false,
-					"path": false,
-					"indexValueProcessors": [
-					],
-					"languages": [
-					]
-				},
-				"configs": [
-					{
-					"path": "data.siteConfig.applicationkey",
-					"config": {
-						"decideByType": false,
-						"enabled": true,
-						"nGram": false,
-						"fulltext": false,
-						"includeInAllText": false,
-						"path": false,
-						"indexValueProcessors": [
-						],
-						"languages": [
-						]
-					}
-					},
-					{
-					"path": "x.*",
-					"config": {
-						"decideByType": true,
-						"enabled": true,
-						"nGram": false,
-						"fulltext": false,
-						"includeInAllText": false,
-						"path": false,
-						"indexValueProcessors": [
-						],
-						"languages": [
-						]
-					}
-					},
-					{
-					"path": "attachment.text",
-					"config": {
-						"decideByType": false,
-						"enabled": true,
-						"nGram": true,
-						"fulltext": true,
-						"includeInAllText": false,
-						"path": false,
-						"indexValueProcessors": [
-						],
-						"languages": [
-						]
-					}
-					},
-					{
-					"path": "type",
-					"config": {
-						"decideByType": false,
-						"enabled": true,
-						"nGram": false,
-						"fulltext": false,
-						"includeInAllText": false,
-						"path": false,
-						"indexValueProcessors": [
-						],
-						"languages": [
-						]
-					}
-					},
-					{
-					"path": "site",
-					"config": {
-						"decideByType": false,
-						"enabled": false,
-						"nGram": false,
-						"fulltext": false,
-						"includeInAllText": false,
-						"path": false,
-						"indexValueProcessors": [
-						],
-						"languages": [
-						]
-					}
-					},
-					{
-					"path": "owner",
-					"config": {
-						"decideByType": false,
-						"enabled": true,
-						"nGram": false,
-						"fulltext": false,
-						"includeInAllText": false,
-						"path": false,
-						"indexValueProcessors": [
-						],
-						"languages": [
-						]
-					}
-					},
-					{
-					"path": "modifier",
-					"config": {
-						"decideByType": false,
-						"enabled": true,
-						"nGram": false,
-						"fulltext": false,
-						"includeInAllText": false,
-						"path": false,
-						"indexValueProcessors": [
-						],
-						"languages": [
-						]
-					}
-					},
-					{
-					"path": "modifiedTime",
-					"config": {
-						"decideByType": false,
-						"enabled": true,
-						"nGram": false,
-						"fulltext": false,
-						"includeInAllText": false,
-						"path": false,
-						"indexValueProcessors": [
-						],
-						"languages": [
-						]
-					}
-					},
-					{
-					"path": "language",
-					"config": {
-						"decideByType": false,
-						"enabled": true,
-						"nGram": true,
-						"fulltext": false,
-						"includeInAllText": false,
-						"path": false,
-						"indexValueProcessors": [
-						],
-						"languages": [
-						]
-					}
-					},
-					{
-					"path": "data",
-					"config": {
-						"decideByType": true,
-						"enabled": true,
-						"nGram": false,
-						"fulltext": false,
-						"includeInAllText": false,
-						"path": false,
-						"indexValueProcessors": [
-						],
-						"languages": [
-						]
-					}
-					},
-					{
-					"path": "creator",
-					"config": {
-						"decideByType": false,
-						"enabled": true,
-						"nGram": false,
-						"fulltext": false,
-						"includeInAllText": false,
-						"path": false,
-						"indexValueProcessors": [
-						],
-						"languages": [
-						]
-					}
-					},
-					{
-					"path": "createdTime",
-					"config": {
-						"decideByType": false,
-						"enabled": true,
-						"nGram": false,
-						"fulltext": false,
-						"includeInAllText": false,
-						"path": false,
-						"indexValueProcessors": [
-						],
-						"languages": [
-						]
-					}
-					},
-					{
-					"path": "attachment",
-					"config": {
-						"decideByType": false,
-						"enabled": true,
-						"nGram": false,
-						"fulltext": false,
-						"includeInAllText": false,
-						"path": false,
-						"indexValueProcessors": [
-						],
-						"languages": [
-						]
-					}
-					}
-				]
-				},
-				_inheritsPermissions: false,
-				_name: 'content',
-				_parentPath: '/',
-				_permissions: [
-				{
-					"principal": "role:system.everyone",
-					"allow": [
-					"READ"
-					],
-					"deny": [
-					]
-				},
-				{
-					"principal": "role:system.admin",
-					"allow": [
-					"READ",
-					"CREATE",
-					"MODIFY",
-					"DELETE",
-					"PUBLISH",
-					"READ_PERMISSIONS",
-					"WRITE_PERMISSIONS"
-					],
-					"deny": [
-					]
-				},
-				{
-					"principal": "role:cms.admin",
-					"allow": [
-					"READ",
-					"CREATE",
-					"MODIFY",
-					"DELETE",
-					"PUBLISH",
-					"READ_PERMISSIONS",
-					"WRITE_PERMISSIONS"
-					],
-					"deny": [
-					]
-				},
-				{
-					"principal": "role:cms.project.sample-blog.owner",
-					"allow": [
-					"READ",
-					"CREATE",
-					"MODIFY",
-					"DELETE",
-					"PUBLISH",
-					"READ_PERMISSIONS",
-					"WRITE_PERMISSIONS"
-					],
-					"deny": [
-					]
-				},
-				{
-					"principal": "role:cms.project.sample-blog.editor",
-					"allow": [
-					"READ",
-					"CREATE",
-					"MODIFY",
-					"DELETE",
-					"PUBLISH",
-					"READ_PERMISSIONS",
-					"WRITE_PERMISSIONS"
-					],
-					"deny": [
-					]
-				},
-				{
-					"principal": "role:cms.project.sample-blog.author",
-					"allow": [
-					"READ",
-					"CREATE",
-					"MODIFY",
-					"DELETE"
-					],
-					"deny": [
-					]
-				},
-				{
-					"principal": "role:cms.project.sample-blog.contributor",
-					"allow": [
-					"READ"
-					],
-					"deny": [
-					]
-				},
-				{
-					"principal": "role:cms.project.sample-blog.viewer",
-					"allow": [
-					"READ"
-					],
-					"deny": [
-					]
-				}
-			],
+			_childOrder: CHILD_ORDER_DEFAULT,
+			_indexConfig: INDEX_CONFIG_DEFAULT,
+			_inheritsPermissions: false,
+			_name: 'content',
+			_parentPath: '/',
+			_permissions: PERMISSIONS_DEFAULT,
 			displayName: 'Content',
 			type: 'base:folder',
 			valid: false,
 		});
 	}
-
 
 	contentToNode<
 		Data = Record<string, unknown>, Type extends string = string
@@ -411,10 +119,10 @@ export class ContentConnection {
 		} = content;
 		const node: Partial<RepoNodeWithData> = {
 			createdTime: new Date().toISOString(),
-			creator: 'user:system:su', // NOTE: Hardcode
+			creator: USER_DEFAULT, // NOTE: Hardcode
 			data,
 			language,
-			owner: 'user:system:su', // NOTE: Hardcode
+			owner: USER_DEFAULT, // NOTE: Hardcode
 			type: contentType || type,
 			x
 		};
@@ -425,7 +133,7 @@ export class ContentConnection {
 				node._path = `/content${node._path}`;
 			}
 			node['modifiedTime'] = new Date().toISOString();
-			node['modifier'] = 'user:system:su'; // NOTE: Hardcode
+			node['modifier'] = USER_DEFAULT; // NOTE: Hardcode
 		}
 		if (childOrder) {
 			node._childOrder = childOrder;
@@ -452,6 +160,101 @@ export class ContentConnection {
 		// this.log.debug('ContentConnection createdNode(%s)', createdNode);
 		// TODO: Modify node to apply displayName if missing
 		return this.nodeToContent({node: createdNode}) as Content<Data, Type>;
+	}
+
+	createMedia<
+		Data = Record<string, unknown>,
+		Type extends string = string
+	>(params: CreateMediaParams): Content<Data, Type> {
+		// this.log.debug('ContentConnection createMedia(%s)', params); // params.data can be huge!
+		const {
+			data: fileBuffer,
+			focalX = 0.5,
+			focalY = 0.5,
+			// idGenerator, // TODO undocumented?
+			mimeType,
+			name,
+			parentPath,
+		} = params;
+		// this.log.debug('ContentConnection createMedia(%s)', {
+		// 	focalX, focalY, mimeType, name, parentPath
+		// });
+		const probeRes = probeSync((fileBuffer as unknown as Buffer));
+		// this.log.debug('ContentConnection createMedia probeRes:%s', probeRes);
+		const {
+			height = 0,
+			// mime,
+			width = 0,
+		} = probeRes || {};
+		// this.log.debug('ContentConnection createMedia width:%s height:%s', width, height);
+
+		const filePath = `/attachments${parentPath}/${name}`;
+		const data = fileBuffer.toString();
+		// this.log.debug('ContentConnection createMedia data:%s', data);
+		vol.fromJSON({
+			[filePath]: data
+		}, '/attachments');
+		const stats = vol.statSync(filePath);
+		// this.log.debug('ContentConnection createMedia stats:%s', stats);
+		const size = stats.size;
+
+		const nameParts = name.split('.');
+		nameParts.pop();
+		const displayName = nameParts.join('.');
+
+		const createdNode = this._branch.createNode({
+			_childOrder: CHILD_ORDER_DEFAULT,
+			_indexConfig: INDEX_CONFIG_DEFAULT,
+			_inheritsPermissions: true,
+			_name: name,
+			_parentPath: `/content${parentPath}`,
+			_permissions: PERMISSIONS_DEFAULT,
+			_nodeType: 'content',
+			attachment: {
+				binary: name,
+				label: 'source',
+				mimeType,
+				name: name,
+				size,
+				sha512: sha512.create().update(data).digest().toHex()
+			},
+			creator: USER_DEFAULT, // NOTE: Hardcode
+			createdTime: new Date().toISOString(),
+			data: {
+				artist: '',
+				caption: '',
+				copyright: '',
+				media: {
+					attachment: name,
+					focalPoint: {
+						x: focalX,
+						y: focalY
+					}
+				},
+				tags: ''
+			},
+			displayName,
+			type: 'media:image', // TODO: Detect type
+			owner: USER_DEFAULT, // NOTE: Hardcode
+			valid: true,
+			x: {
+				media: {
+					imageInfo: {
+						imageHeight: height,
+						imageWidth: width,
+						contentType: mimeType,
+						pixelSize: width * height,
+						byteSize: size
+					}
+				}
+			}
+		});
+		// this.log.debug('ContentConnection createMedia createdNode:%s', createdNode);
+
+		const createdContent = this.nodeToContent({node: createdNode}) as Content<Data, Type>;
+		// this.log.debug('ContentConnection createMedia createdContent:%s', createdContent);
+
+		return createdContent;
 	}
 
 	get<

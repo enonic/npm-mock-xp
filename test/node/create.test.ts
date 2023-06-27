@@ -6,6 +6,7 @@ import {
 } from 'assert';
 import * as assert from 'assert';
 import {JavaBridge} from '../../src/JavaBridge';
+import Log from '../../src/Log';
 import { RepoNode } from '@enonic/js-utils/types';
 import { RepoNodeWithData } from '../../src/types';
 
@@ -14,6 +15,10 @@ function hasMethod(obj :unknown, name :string) {
 	return typeof obj[name] === 'function';
 }
 
+const log = Log.createLogger({
+	loglevel: 'silent'
+});
+
 describe('mock', () => {
 	describe('JavaBridge', () => {
 		const javaBridge = new JavaBridge({
@@ -21,7 +26,8 @@ describe('mock', () => {
 				config: {},
 				name: 'com.enonic.app.test',
 				version: '0.0.1-SNAPSHOT'
-			}
+			},
+			log
 		});
 		/*const obj={key:'value'};
 		javaBridge.log.error('error:%s', obj);

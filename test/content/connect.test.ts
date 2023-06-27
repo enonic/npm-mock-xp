@@ -5,12 +5,18 @@ import {
 	test
 } from '@jest/globals';
 import {JavaBridge} from '../../src/JavaBridge';
+import Log from '../../src/Log';
 
 
 function hasMethod(obj: unknown, name: string) {
 	// TODO check if obj is Object?
 	return typeof obj[name] === 'function';
 }
+
+
+const log = Log.createLogger({
+	loglevel: 'silent'
+});
 
 
 describe('mock', () => {
@@ -23,7 +29,8 @@ describe('mock', () => {
 							config: {},
 							name: 'com.enonic.app.test',
 							version: '0.0.1-SNAPSHOT'
-						}
+						},
+						log
 					});
 					const fn = () => javaBridge.contentConnect({
 						branch: 'master',
