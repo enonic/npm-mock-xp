@@ -1,7 +1,6 @@
 import type {
 	EventLib
 } from '@enonic/js-utils/types';
-
 import type {
 	App,
 	BranchConfig,
@@ -15,8 +14,9 @@ import type {
 	ValueLib
 } from './types/index.d'
 
-import {toStr} from '@enonic/js-utils/value/toStr';
 
+import {toStr} from '@enonic/js-utils/value/toStr';
+import { vol } from 'memfs';
 import {Connection} from './Connection';
 import {ContentConnection} from './ContentConnection';
 import {Repo} from './Repo';
@@ -185,6 +185,7 @@ export class JavaBridge {
 		localTime: (v) => v,
 		reference: (v) => v
 	};
+	readonly vol = vol;
 
 	constructor({
 		app,
@@ -197,6 +198,7 @@ export class JavaBridge {
 		if (log) {
 			this.log = log;
 		}
+		this.vol.fromJSON({}, '/');
 		//this.log.debug('in JavaBridge constructor');
 	} // constructor
 

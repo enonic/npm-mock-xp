@@ -1,8 +1,10 @@
 import type { NestedRecord } from '@enonic-types/core';
 import type {
+	ByteSource,
 	Content,
 	CreateContentParams,
 	CreateMediaParams,
+	GetAttachmentStreamParams,
 	GetContentParams,
 	ModifyContentParams
 } from '@enonic-types/lib-content';
@@ -19,9 +21,8 @@ import {
 	setIn,
 	// toStr // log mock does not support need toStr
 } from '@enonic/js-utils';
-import { sync as probeSync } from 'probe-image-size';
-import { vol } from 'memfs';
 import { sha512 } from 'node-forge';
+import { sync as probeSync } from 'probe-image-size';
 import {
 	INDEX_CONFIG_DEFAULT,
 	PERMISSIONS_DEFAULT,
@@ -188,13 +189,13 @@ export class ContentConnection {
 		} = probeRes || {};
 		// this.log.debug('ContentConnection createMedia width:%s height:%s', width, height);
 
-		const filePath = `/attachments${parentPath}/${name}`;
 		const data = fileBuffer.toString();
 		// this.log.debug('ContentConnection createMedia data:%s', data);
-		vol.fromJSON({
-			[filePath]: data
-		}, '/attachments');
-		const stats = vol.statSync(filePath);
+
+		const sha512HexDigest = sha512.create().update(data).digest().toHex();
+		const filePath = `/${sha512HexDigest}`;
+		this._javaBridge.vol.writeFileSync(filePath, data)
+		const stats = this._javaBridge.vol.statSync(filePath);
 		// this.log.debug('ContentConnection createMedia stats:%s', stats);
 		const size = stats.size;
 
@@ -216,7 +217,7 @@ export class ContentConnection {
 				mimeType,
 				name: name,
 				size,
-				sha512: sha512.create().update(data).digest().toHex()
+				sha512: sha512HexDigest
 			},
 			creator: USER_DEFAULT, // NOTE: Hardcode
 			createdTime: new Date().toISOString(),
@@ -267,9 +268,43 @@ export class ContentConnection {
 		} = params;
 		const node = this._branch.getNode(key) as RepoNodeWithData;
 		if (!node) {
+			this.log.warning('ContentConnection get: No content for key:%s', key);
 			return null;
 		}
 		return this.nodeToContent({node}) as Hit;
+	}
+
+	getAttachmentStream(params: GetAttachmentStreamParams): ByteSource | null {
+		// this.log.debug('ContentConnection getAttachmentStream(%s)', params);
+		const {
+			key,
+			name: paramName
+		} = params;
+		const node = this._branch.getNode(key) as Node<{
+			attachment: {
+				name: string
+				sha512: string
+			}
+		}>;
+		if (!node) {
+			return null;
+		}
+		const {
+			attachment: {
+				name: attachmentName,
+				sha512
+			} = {}
+		} = node;
+		// this.log.debug('ContentConnection getAttachmentStream node:%s', node);
+		if (attachmentName !== paramName) {
+			this.log.warning('ContentConnection getAttachmentStream content has no attachment named:%s', paramName);
+			return null;
+		}
+		if(!sha512) {
+			this.log.warning('ContentConnection getAttachmentStream unable to find sha512 for attachment named:%s', paramName);
+			return null;
+		}
+		return this._javaBridge.vol.readFileSync(`/${sha512}`) as unknown as ByteSource;
 	}
 
 	modify<
