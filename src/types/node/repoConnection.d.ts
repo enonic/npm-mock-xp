@@ -1,3 +1,5 @@
+import type { MoveNodeParams } from '@enonic-types/lib-node';
+
 import type { PrincipalKey } from '../auth';
 
 import type {
@@ -149,10 +151,7 @@ export type RepoConnection = {
 	//modify<NodeData>(params: NodeModifyParams<NodeData>): NodeData & RepoNode;
 	modify(params: NodeModifyParams): RepoNodeWithData;
 
-	/**
-	* Rename a node or move it to a new path.
-	*/
-	//move(params: NodeMoveParams): boolean;
+	move(params: MoveNodeParams): boolean;
 
 	/**
 	* Pushes a node to a given branch.

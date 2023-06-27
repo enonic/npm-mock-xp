@@ -7,7 +7,8 @@ import type {
 	DeleteContentParams,
 	GetAttachmentStreamParams,
 	GetContentParams,
-	ModifyContentParams
+	ModifyContentParams,
+	MoveContentParams
 } from '@enonic-types/lib-content';
 import type { Node } from '@enonic-types/lib-node';
 import type {
@@ -20,7 +21,7 @@ import type { JavaBridge } from './JavaBridge';
 
 import {
 	setIn,
-	// toStr // log mock does not support need toStr
+	// toStr // log mock does not support need toStr, but throwing Errors does.
 } from '@enonic/js-utils';
 import { sha512 } from 'node-forge';
 import { sync as probeSync } from 'probe-image-size';
@@ -260,8 +261,8 @@ export class ContentConnection {
 	}
 
 	delete(params: DeleteContentParams): boolean {
-		this.log.debug('ContentConnection delete(%s)', params);
-		const {key} = params;
+		// this.log.debug('ContentConnection delete(%s)', params);
+		const { key } = params;
 		const [deletedId] = this._branch.deleteNode(key);
 		return !!deletedId;
 	}
@@ -359,6 +360,23 @@ export class ContentConnection {
 		// this.log.debug('ContentConnection modifiedContent(%s)', modifiedContent);
 
 		return modifiedContent;
+	}
+
+	move<Data = Record<string, unknown>, Type extends string = string>(params: MoveContentParams): Content<Data, Type> {
+		// this.log.debug('ContentConnection move(%s)', params);
+		let {
+			source,
+			target
+		} = params;
+		if (source.startsWith('/')) {
+			source = `/content${source}`
+		}
+		if (target.startsWith('/')) {
+			target = `/content${target}`
+		}
+		return this.nodeToContent({
+			node: this._branch.moveNode({ source, target }) // This can throw
+		}) as Content<Data, Type>;
 	}
 
 	nodeToContent({node}: {node: RepoNodeWithData}): Content {

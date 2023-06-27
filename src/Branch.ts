@@ -1,3 +1,4 @@
+import type { MoveNodeParams } from '@enonic-types/lib-node';
 import type {
 	GetActiveVersionParamObject,
 	GetActiveVersionResponse,
@@ -294,6 +295,41 @@ export class Branch {
 		} as RepoNodeWithData);
 		this._nodes[_id] = modifiedNode;
 		return this._nodes[_id] as RepoNodeWithData;
+	}
+
+	// Returns true if the node was successfully moved or renamed, false otherwise.
+	moveNode({
+		// Path or id of the node to be moved or renamed
+		source,
+		// New path or name for the node. If the target ends in slash '/',
+		// it specifies the parent path where to be moved. Otherwise it
+		// means the new desired path or name for the node.
+		target
+	}: MoveNodeParams): RepoNodeWithData {
+		const node: RepoNodeWithData = this.getNode(source) as RepoNodeWithData;
+		if (!node) {
+			this.log.error('move: Node with source:%s not found!', source);
+			throw new Error(`move: Node with source:${source} not found!`); // TODO throw same Error as XP?
+			// return false;
+		}
+		// TODO fail when new _parentPath doesn't exist? What does XP do?
+		// TODO fail when new _path already exists? contentAlreadyExists exception
+		if (target.endsWith('/')) {
+			node._path = `${target}${node._name}`;
+			return node;
+		}
+		if (target.startsWith('/')) {
+			const targetParts = target.split('/');
+			const newName = targetParts.pop() as string;
+			node._name = newName;
+			node._path = `${targetParts.join('/')}/${newName}`;
+			return node;
+		}
+		const pathParts = node._path.split('/');
+		pathParts.pop(); // remove _name from _path
+		node._name = target;
+		node._path = `${pathParts.join('/')}/${node._name}`;
+		return node;
 	}
 
 	//@ts-ignore

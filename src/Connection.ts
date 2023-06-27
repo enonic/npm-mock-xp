@@ -1,4 +1,8 @@
 import type {
+	MoveNodeParams,
+	// RepoConnection // TODO Doesn't match currently
+} from '@enonic-types/lib-node';
+import type {
 	GetActiveVersionParamObject,
 	GetActiveVersionResponse,
 	Log,
@@ -70,6 +74,20 @@ export class Connection implements RepoConnection {
 			key,
 			editor
 		});
+	}
+
+	move({
+		source,
+		target
+	}: MoveNodeParams): boolean {
+		let isMoved = false;
+		try {
+			this._branch.moveNode({ source, target });
+			isMoved = true;
+		} catch {
+			// no-op
+		}
+		return isMoved;
 	}
 
 	query({

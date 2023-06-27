@@ -1,18 +1,12 @@
 import {
 	describe,
 	expect,
-	jest,
-	test
+	// jest,
+	// test
 } from '@jest/globals';
 import {JavaBridge} from '../../src';
 import Log from '../../src/Log';
-
-
-function hasMethod(obj: unknown, name: string) {
-	// TODO check if obj is Object?
-	return typeof obj[name] === 'function';
-}
-
+import { hasMethod } from '../hasMethod';
 
 const log = Log.createLogger({
 	loglevel: 'silent'
