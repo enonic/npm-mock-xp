@@ -34,6 +34,9 @@ describe('mock', () => {
 				branch: 'master',
 				project: 'default'
 			});
+			it('returns an object which has a create method', () => {
+				expect(hasMethod(contentConnection, 'create')).toBe(true);
+			});
 			describe('contentConnection', () => {
 				describe('create', () => {
 					it('creates content', () => {

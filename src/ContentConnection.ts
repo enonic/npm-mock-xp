@@ -2,6 +2,7 @@ import type { NestedRecord } from '@enonic-types/core';
 import type {
 	ByteSource,
 	Content,
+	ContentExistsParams,
 	CreateContentParams,
 	CreateMediaParams,
 	DeleteContentParams,
@@ -265,6 +266,17 @@ export class ContentConnection {
 		const { key } = params;
 		const [deletedId] = this._branch.deleteNode(key);
 		return !!deletedId;
+	}
+
+	exists(params: ContentExistsParams): boolean {
+		// this.log.debug('ContentConnection exists(%s)', params);
+		let { key } = params;
+		if (key.startsWith('/')) {
+			key = `/content${key}`;
+		}
+		const [existingNodeId] = this._branch.existsNode(key);
+		// this.log.debug('ContentConnection exists(%s) existingNodeId:%s', params, existingNodeId);
+		return !!existingNodeId;
 	}
 
 	get<

@@ -36,7 +36,7 @@ describe('mock', () => {
 			});
 			it('returns an object which has a move method', () => {
 				expect(hasMethod(contentConnection, 'move')).toBe(true);
-			}); // it
+			});
 			describe('contentConnection', () => {
 				describe('move', () => {
 					const createdContent = contentConnection.create({
