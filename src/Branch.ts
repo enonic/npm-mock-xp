@@ -18,11 +18,10 @@ import {flatten} from '@enonic/js-utils/array/flatten';
 import {forceArray} from '@enonic/js-utils/array/forceArray';
 import {enonify} from '@enonic/js-utils/storage/indexing/enonify';
 import {sortKeys} from '@enonic/js-utils/object/sortKeys';
-import {lpad} from '@enonic/js-utils/string/lpad';
 import {isUuidV4String} from '@enonic/js-utils/value/isUuidV4String';
-
 import {NodeAlreadyExistAtPathException} from './node/NodeAlreadyExistAtPathException';
 import {NodeNotFoundException} from './node/NodeNotFoundException';
+import deref from './deref';
 
 
 interface Nodes {
@@ -49,11 +48,11 @@ const DEFAULT_INDEX_CONFIG = {
 };
 
 const IGNORED_ON_CREATE = [
-	'_id',
+	// '_id',
 	'_path',
 	'_state',
 	'_ts',
-	'_versionKey'
+	// '_versionKey'
 ];
 
 
@@ -67,7 +66,6 @@ export class Branch {
 		return new Date().toISOString();
 	}
 
-	private _highest_id: number = 1;
 	private _id: string;
 	private _nodes: Nodes = {
 		'00000000-0000-0000-0000-000000000000': {
@@ -116,13 +114,9 @@ export class Branch {
 		//this.log.debug('in Branch constructor');
 	}
 
-	private generateId(): string {
-		this._highest_id += 1;
-		return `00000000-0000-4000-8000-${lpad(this._highest_id,12,'0')}`;
-	}
-
-	createNode({
+	_createNodeInternal({
 		//_childOrder,
+		_id = this._repo.generateId(),
 		_indexConfig = DEFAULT_INDEX_CONFIG,
 		//_inheritsPermissions,
 		//_manualOrderValue,
@@ -130,21 +124,25 @@ export class Branch {
 		_nodeType = 'default',
 		_parentPath = '/',
 		//_permissions,
+		_ts = Branch.generateInstantString(),
+		_versionKey = this._repo.generateId(),
 		...rest
-	}: NodeCreateParams): RepoNodeWithData {
+	}: NodeCreateParams & {
+		_id?: string
+		_ts?: string
+		_versionKey?: string
+	}): RepoNodeWithData {
 		for (let i = 0; i < IGNORED_ON_CREATE.length; i++) {
 			const k = IGNORED_ON_CREATE[i] as keyof typeof rest;
 			if (rest.hasOwnProperty(k)) { delete rest[k]; }
 		}
-		const _id = this.generateId();
-		const _versionKey = this.generateId();
 		if (!_name) { _name = _id as string; }
 
 		if(!_parentPath.endsWith('/')) {
 			_parentPath += '/'
 		}
-		//this.log.debug('_parentPath:%s', _parentPath);
-		//this.log.debug('this._pathIndex:%s', this._pathIndex);
+		// this.log.debug('_parentPath:%s', _parentPath);
+		// this.log.debug('this._pathIndex:%s', this._pathIndex);
 
 		if (
 			_parentPath !== '/' && // The root node actually has no name nor path
@@ -152,8 +150,6 @@ export class Branch {
 		) {
 			throw new NodeNotFoundException(`Cannot create node with name ${_name}, parent '${_parentPath}' not found`);
 		}
-
-		const _ts = Branch.generateInstantString();
 
 		if (this._nodes.hasOwnProperty(_id)) { // This can only happen if
 			throw new Error(`Node already exists with ${_id} repository: ${this._repo.id()} branch: ${this._id}`); // /lib/xp/node.connect().create() simply ignores _id
@@ -177,7 +173,11 @@ export class Branch {
 		this._nodes[_id] = node;
 		this._pathIndex[_path] = _id;
 		//this.log.debug('this._pathIndex:%s', this._pathIndex);
-		return node;
+		return deref(node);
+	} // _createNodeInternal
+
+	createNode(params: NodeCreateParams): RepoNodeWithData {
+		return this._createNodeInternal(params); // already dereffed
 	}
 
 	private keyToId(key: string): string | undefined {
@@ -241,6 +241,10 @@ export class Branch {
 		return deletedKeys;
 	}
 
+	getBranchId() {
+		return this._id;
+	}
+
 	getNode(...keys: string[]): RepoNodeWithData | RepoNodeWithData[] {
 		//this.log.debug('getNode() keys:%s', keys);
 		if (!keys.length) {
@@ -253,7 +257,7 @@ export class Branch {
 			if (!id) {
 				throw new Error(`Can't get id from key:${key}, even though exists???`); // This could happen if node deleted after exists called.
 			}
-			return this._nodes[id] as RepoNodeWithData;
+			return deref(this._nodes[id] as RepoNodeWithData);
 		});//.filter(x => x as RepoNodeWithData);
 		return nodes.length > 1
 			? nodes //as RepoNodeWithData[]
@@ -276,6 +280,10 @@ export class Branch {
 		return null;
 	}
 
+	getRepo() {
+		return this._repo;
+	}
+
 	modifyNode({
 		key,
 		editor
@@ -294,7 +302,7 @@ export class Branch {
 			_path, // Not allowed to move
 		} as RepoNodeWithData);
 		this._nodes[_id] = modifiedNode;
-		return this._nodes[_id] as RepoNodeWithData;
+		return deref(this._nodes[_id] as RepoNodeWithData);
 	}
 
 	// Returns true if the node was successfully moved or renamed, false otherwise.
@@ -306,7 +314,7 @@ export class Branch {
 		// means the new desired path or name for the node.
 		target
 	}: MoveNodeParams): RepoNodeWithData {
-		const node: RepoNodeWithData = this.getNode(source) as RepoNodeWithData;
+		const node: RepoNodeWithData = this.getNode(source) as RepoNodeWithData; // This derefs
 		if (!node) {
 			this.log.error('move: Node with source:%s not found!', source);
 			throw new Error(`move: Node with source:${source} not found!`); // TODO throw same Error as XP?
@@ -316,20 +324,28 @@ export class Branch {
 		// TODO fail when new _path already exists? contentAlreadyExists exception
 		if (target.endsWith('/')) {
 			node._path = `${target}${node._name}`;
-			return node;
-		}
-		if (target.startsWith('/')) {
+		} else if (target.startsWith('/')) {
 			const targetParts = target.split('/');
 			const newName = targetParts.pop() as string;
 			node._name = newName;
 			node._path = `${targetParts.join('/')}/${newName}`;
-			return node;
+		} else {
+			const pathParts = node._path.split('/');
+			pathParts.pop(); // remove _name from _path
+			node._name = target;
+			node._path = `${pathParts.join('/')}/${node._name}`;
 		}
-		const pathParts = node._path.split('/');
-		pathParts.pop(); // remove _name from _path
-		node._name = target;
-		node._path = `${pathParts.join('/')}/${node._name}`;
-		return node;
+		this._nodes[node._id] = node;
+		return deref(this._nodes[node._id] as RepoNodeWithData);
+	}
+
+	_overwriteNode({
+		node
+	}: {
+		node: RepoNodeWithData
+	}): RepoNodeWithData {
+		this._nodes[node._id] = node;
+		return deref(this._nodes[node._id] as RepoNodeWithData);
 	}
 
 	//@ts-ignore

@@ -9,7 +9,9 @@ import type {
 	GetAttachmentStreamParams,
 	GetContentParams,
 	ModifyContentParams,
-	MoveContentParams
+	MoveContentParams,
+	PublishContentParams,
+	PublishContentResult
 } from '@enonic-types/lib-content';
 import type { Node } from '@enonic-types/lib-node';
 import type {
@@ -21,6 +23,7 @@ import type { JavaBridge } from './JavaBridge';
 
 
 import {
+	// deleteIn,
 	setIn,
 	// toStr // log mock does not support need toStr, but throwing Errors does.
 } from '@enonic/js-utils';
@@ -83,18 +86,20 @@ export class ContentConnection {
 		this._javaBridge = javaBridge;
 		this.log = this._javaBridge.log;
 		// this.log.debug('in ContentConnection constructor');
-		this._branch.createNode({
-			_childOrder: CHILD_ORDER_DEFAULT,
-			_indexConfig: INDEX_CONFIG_DEFAULT,
-			_inheritsPermissions: false,
-			_name: 'content',
-			_parentPath: '/',
-			_permissions: PERMISSIONS_DEFAULT,
-			displayName: 'Content',
-			type: 'base:folder',
-			valid: false,
-		});
-	}
+		if (!this._branch.existsNode('/content').length) {
+			this._branch.createNode({
+				_childOrder: CHILD_ORDER_DEFAULT,
+				_indexConfig: INDEX_CONFIG_DEFAULT,
+				_inheritsPermissions: false,
+				_name: 'content',
+				_parentPath: '/',
+				_permissions: PERMISSIONS_DEFAULT,
+				displayName: 'Content',
+				type: 'base:folder',
+				valid: false,
+			});
+		}
+	} // constructor
 
 	contentToNode<
 		Data = Record<string, unknown>, Type extends string = string
@@ -125,7 +130,6 @@ export class ContentConnection {
 			createdTime: new Date().toISOString(),
 			creator: USER_DEFAULT, // NOTE: Hardcode
 			data,
-			language,
 			owner: USER_DEFAULT, // NOTE: Hardcode
 			type: contentType || type,
 			x
@@ -145,11 +149,14 @@ export class ContentConnection {
 		if (displayName) {
 			node['displayName'] = displayName;
 		}
+		if (language) {
+			node['language'] = language;
+		}
 		if (name) {
 			node._name = name;
 		}
 		return node as RepoNodeWithData;
-	}
+	} // contentToNode
 
 	create<
 		Data = Record<string, unknown>, Type extends string = string
@@ -164,7 +171,7 @@ export class ContentConnection {
 		// this.log.debug('ContentConnection createdNode(%s)', createdNode);
 		// TODO: Modify node to apply displayName if missing
 		return this.nodeToContent({node: createdNode}) as Content<Data, Type>;
-	}
+	} // create
 
 	createMedia<
 		Data = Record<string, unknown>,
@@ -259,25 +266,25 @@ export class ContentConnection {
 		// this.log.debug('ContentConnection createMedia createdContent:%s', createdContent);
 
 		return createdContent;
-	}
+	} // createMedia
 
 	delete(params: DeleteContentParams): boolean {
 		// this.log.debug('ContentConnection delete(%s)', params);
 		const { key } = params;
 		const [deletedId] = this._branch.deleteNode(key);
 		return !!deletedId;
-	}
+	} // delete
 
 	exists(params: ContentExistsParams): boolean {
 		// this.log.debug('ContentConnection exists(%s)', params);
 		let { key } = params;
 		if (key.startsWith('/')) {
-			key = `/content${key}`;
+			key = `/content${ key }`;
 		}
 		const [existingNodeId] = this._branch.existsNode(key);
 		// this.log.debug('ContentConnection exists(%s) existingNodeId:%s', params, existingNodeId);
 		return !!existingNodeId;
-	}
+	} // exists
 
 	get<
 		Hit extends Content<unknown> = Content
@@ -288,7 +295,7 @@ export class ContentConnection {
 			// versionId
 		} = params;
 		if (key.startsWith('/')) {
-			key = `/content${key}`;
+			key = `/content${ key }`;
 		}
 		const node = this._branch.getNode(key) as RepoNodeWithData;
 		if (!node) {
@@ -296,7 +303,7 @@ export class ContentConnection {
 			return null;
 		}
 		return this.nodeToContent({node}) as Hit;
-	}
+	} // get
 
 	getAttachmentStream(params: GetAttachmentStreamParams): ByteSource | null {
 		// this.log.debug('ContentConnection getAttachmentStream(%s)', params);
@@ -329,7 +336,7 @@ export class ContentConnection {
 			return null;
 		}
 		return this._javaBridge.vol.readFileSync(`/${sha512}`) as unknown as ByteSource;
-	}
+	} // getAttachmentStream
 
 	modify<
 		Data = Record<string, unknown>,
@@ -376,7 +383,7 @@ export class ContentConnection {
 		// this.log.debug('ContentConnection modifiedContent(%s)', modifiedContent);
 
 		return modifiedContent;
-	}
+	} // modify
 
 	move<Data = Record<string, unknown>, Type extends string = string>(params: MoveContentParams): Content<Data, Type> {
 		// this.log.debug('ContentConnection move(%s)', params);
@@ -390,12 +397,20 @@ export class ContentConnection {
 		if (target.startsWith('/')) {
 			target = `/content${target}`
 		}
-		return this.nodeToContent({
-			node: this._branch.moveNode({ source, target }) // This can throw
-		}) as Content<Data, Type>;
-	}
+		const movedNode = this._branch.moveNode({ source, target }) // This can throw
+		const modifiedContent = this.modify({ // Adds/updates modifiedTime and modifier
+			key: movedNode._id,
+			editor: (n) => n
+		});
+		return modifiedContent as Content<Data, Type>;
+	} // move
 
-	nodeToContent({node}: {node: RepoNodeWithData}): Content {
+	nodeToContent({
+		node
+	}: {
+		node: RepoNodeWithData
+	}): Content {
+		// this.log.debug('nodeToContent(%s)', {node});
 		const {
 			_childOrder, // on Content as ChildOrder
 			_id,
@@ -451,6 +466,9 @@ export class ContentConnection {
 			valid,
 			x
 		};
+		// if (_path) {
+		// 	content._path = _path.replace(/^\/content/, '');
+		// }
 		if (language) {
 			content.language = language;
 		}
@@ -487,5 +505,84 @@ export class ContentConnection {
 			} // for components
 		}
 		return content;
+	} // nodeToContent
+
+	// This function publishes content to the master branch
+	publish(params: PublishContentParams): PublishContentResult {
+		// this.log.debug('ContentConnection publish(%s)', params);
+		const {
+			keys, // List of all content keys(path or id) that should be published
+			// sourceBranch, // Not in use from XP 7.12.0 The branch where the content to be published is stored.
+			// targetBranch, // Not in use since XP 7.12.0 The branch to which the content should be published. Technically, publishing is just a move from one branch to another, and publishing user content from master to draft is therefore also valid usage of this function, which may be practical if user input to a web-page is stored on master
+			// schedule, // Schedule the publish
+			// includeChildren, // TODO: Undocumented???
+			// excludeChildrenIds, // List of content keys whose descendants should be excluded from publishing
+			// includeDependencies, // Whether all related content should be included when publishing content
+			// message // TODO: Undocumented???
+		} = params;
+		const branchId = this._branch.getBranchId();
+		if (branchId !== 'draft') {
+			throw new Error(`ContentConnection publish only allowed from the draft branch, got:${branchId}`);
+		}
+		const masterBranch = this._branch.getRepo().getBranch('master');
+		const contentMasterConnection = new ContentConnection({
+			branch: masterBranch,
+			javaBridge: this._javaBridge
+		});
+		const res: PublishContentResult = {
+			deletedContents: [],
+			failedContents: [],
+			pushedContents: [],
+		};
+		contentKeysLoop: for (let i = 0; i < keys.length; i++) {
+			let key = keys[i] as string;
+			const existsOnDraft = this.exists({ key });
+			const existsOnMaster = contentMasterConnection.exists({ key });
+			if (existsOnDraft) {
+				const nodeOnDraft = this._branch.getNode(key) as RepoNodeWithData;
+				// this.log.debug('ContentConnection nodeOnDraft(%s)', nodeOnDraft);
+				if (existsOnMaster) {
+					const overriddenNode = masterBranch._overwriteNode({ node: nodeOnDraft });
+					if (overriddenNode) {
+						this.log.debug("ContentConnection publish: Modified content with key %s on the master branch!", key);
+						res.pushedContents.push(key);
+					} else {
+						this.log.error("ContentConnection publish: Failed to modify content with key %s on the master branch!", key);
+						res.failedContents.push(key);
+					}
+					continue contentKeysLoop;
+				}
+				if (key.startsWith('/')) {
+					key = `/content${ key }`;
+				}
+				const pathParts = nodeOnDraft._path.split('/');
+				pathParts.pop();
+				nodeOnDraft['_parentPath'] = pathParts.join('/');
+				// deleteIn(nodeOnDraft as unknown as NestedRecord, '_path'); // Causes problems
+				const createdNode = masterBranch._createNodeInternal(nodeOnDraft);
+				if (createdNode) {
+					this.log.debug("ContentConnection publish: Created content with key %s on the master branch!", key);
+					res.pushedContents.push(key);
+				} else {
+					this.log.error("ContentConnection publish: Failed to create content with key %s on the master branch!", key);
+					res.failedContents.push(key);
+				}
+				continue contentKeysLoop;
+			}
+			if (existsOnMaster) {
+				if (contentMasterConnection.delete({ key })) {
+					this.log.debug("ContentConnection publish: Deleted content with key %s from the master branch!", key);
+					res.deletedContents.push(key);
+					continue contentKeysLoop;
+				} else {
+					this.log.error("ContentConnection publish: Failed to delete content with key %s from the master branch!", key);
+					res.failedContents.push(key);
+					continue contentKeysLoop;
+				}
+			}
+			this.log.error("ContentConnection publish: Content with key %s doesn't exist on the draft nor the master branch!", key);
+			res.failedContents.push(key);
+		} // for
+		return res;
 	}
 }

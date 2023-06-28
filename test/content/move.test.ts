@@ -9,7 +9,7 @@ import Log from '../../src/Log';
 import { hasMethod } from '../hasMethod';
 
 const log = Log.createLogger({
-	loglevel: 'debug'
+	loglevel: 'silent'
 });
 
 const APP_NAME = 'com.enonic.app.test';

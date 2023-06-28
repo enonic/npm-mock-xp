@@ -5,34 +5,36 @@ import type {
 } from './types/index.d'
 import type {JavaBridge} from './JavaBridge';
 
+
+import {lpad} from '@enonic/js-utils/string/lpad';
 import {Branch} from './Branch';
 import {BranchAlreadyExistException} from './repo/BranchAlreadyExistException';
 
 
 interface Branches {
-	[key :string] :Branch
+	[key: string]: Branch
 }
 
 
 export class Repo {
-	//#id :string; // Private identifiers are only available when targeting ECMAScript 2015 and higher.
-	private _id :string;
-
-	private _branches :Branches;
-	private _javaBridge :JavaBridge;
+	//#id: string; // Private identifiers are only available when targeting ECMAScript 2015 and higher.
+	private _branches: Branches;
+	private _highest_id: number = 1;
+	private _id: string;
+	private _javaBridge: JavaBridge;
 	//rootChildOrder
 	//rootPermissions
-	private _settings :RepositorySettings;
-	readonly log :Log;
+	private _settings: RepositorySettings;
+	readonly log: Log;
 
 	constructor({
 		id,
 		javaBridge,
 		settings = {}
-	} :{
-		id :string
-		javaBridge :JavaBridge
-		settings? :RepositorySettings
+	}: {
+		id: string
+		javaBridge: JavaBridge
+		settings?: RepositorySettings
 	}) {
 		//console.debug('javaBridge.constructor.name',javaBridge.constructor.name);
 		this._id = id;
@@ -48,7 +50,7 @@ export class Repo {
 		};
 	}
 
-	public createBranch(branchId :string) :BranchConfig {
+	public createBranch(branchId: string): BranchConfig {
 		if (this._branches[branchId]) {
 			throw new BranchAlreadyExistException(`Branch [{${branchId}}] already exists`);
 		}
@@ -59,9 +61,14 @@ export class Repo {
 		return { id: branchId };
 	}
 
-	//public get id() :string { // jsc.target should be es5 or upper to use getter / setter
-	public id() :string {
+	//public get id(): string { // jsc.target should be es5 or upper to use getter / setter
+	public id(): string {
 		return this._id;
+	}
+
+	generateId(): string {
+		this._highest_id += 1;
+		return `00000000-0000-4000-8000-${lpad(this._highest_id,12,'0')}`;
 	}
 
 	get() {
@@ -72,7 +79,7 @@ export class Repo {
 		};
 	}
 
-	getBranch(branchId :string) :Branch {
+	getBranch(branchId: string): Branch {
 		const branchObj = this._branches[branchId];
 		if (!branchObj) {
 			throw new Error(`getBranch: No branch with branchId:${branchId}`);

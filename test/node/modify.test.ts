@@ -1,15 +1,20 @@
 import {isString} from '@enonic/js-utils/value/isString';
 import {
-	deepStrictEqual//,
-	//throws // For some reason this gets borked by swc
-} from 'assert';
+	describe,
+	expect,
+	// jest,
+	// test
+} from '@jest/globals';
 import * as assert from 'assert';
 import {JavaBridge} from '../../src/JavaBridge';
+import Log from '../../src/Log';
+import { hasMethod } from '../hasMethod';
 
-function hasMethod(obj :unknown, name :string) {
-	// TODO check if obj is Object?
-	return typeof obj[name] === 'function';
-}
+
+const log = Log.createLogger({
+	loglevel: 'silent'
+});
+
 
 describe('mock', () => {
 	describe('JavaBridge', () => {
@@ -18,7 +23,8 @@ describe('mock', () => {
 				config: {},
 				name: 'com.enonic.app.test',
 				version: '0.0.1-SNAPSHOT'
-			}
+			},
+			log
 		});
 		javaBridge.repo.create({
 			id: 'myRepoId'
@@ -29,42 +35,35 @@ describe('mock', () => {
 				repoId: 'myRepoId'
 			});
 			it('returns an object which has a modify method', () => {
-				deepStrictEqual(
-					true,
-					hasMethod(connection, 'modify')
-				);
+				expect(hasMethod(connection, 'modify')).toBe(true);
 			}); // it
 			describe('Connection', () => {
 				const createRes = connection.create({});
+				// log.debug('createRes:%s', createRes);
 				describe('modify', () => {
+					const modifiedNode = connection.modify({
+						key: createRes._id,
+						editor: (node) => {
+							node.propertyName = 'propertyValue';
+							return node;
+						}
+					});
 					it('returns the modified node', () => {
-						deepStrictEqual(
-							{
-								...createRes,
-								propertyName: 'propertyValue'
-							},
-							connection.modify({
-								key: createRes._id,
-								editor: (node) => {
-									node.propertyName = 'propertyValue';
-									return node;
-								}
-							})
-						);
+						expect(modifiedNode).toStrictEqual({
+							...createRes,
+							propertyName: 'propertyValue'
+						})
 					}); // it
 					it('does NOT modify _id, _name or _path', () => {
-						deepStrictEqual(
-							createRes,
-							connection.modify({
-								key: createRes._id,
-								editor: (node) => {
-									node._id = 'newId',
-									node._name = 'newName';
-									node._path = 'newPath';
-									return node;
-								}
-							})
-						);
+						expect(connection.modify({
+							key: modifiedNode._id,
+							editor: (node) => {
+								node._id = 'newId',
+								node._name = 'newName';
+								node._path = 'newPath';
+								return node;
+							}
+						})).toStrictEqual(modifiedNode);
 					}); // it
 				}); // describe modify
 			}); // describe Connection

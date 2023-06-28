@@ -6,16 +6,15 @@ import {
 } from '@jest/globals';
 import {JavaBridge} from '../../src';
 import Log from '../../src/Log';
-
-
-function hasMethod(obj: unknown, name: string) {
-	// TODO check if obj is Object?
-	return typeof obj[name] === 'function';
-}
+import { hasMethod } from '../hasMethod';
 
 
 const APP_NAME = 'com.enonic.app.test';
 const CONTENT_TYPE = `${APP_NAME}:myContentType`;
+
+const log = Log.createLogger({
+	loglevel: 'silent'
+})
 
 
 describe('mock', () => {
@@ -26,9 +25,7 @@ describe('mock', () => {
 				name: APP_NAME,
 				version: '0.0.1-SNAPSHOT'
 			},
-			log: Log.createLogger({
-				loglevel: 'debug'
-			}),
+			log,
 		});
 		javaBridge.repo.create({
 			id: 'com.enonic.cms.default'
@@ -37,6 +34,9 @@ describe('mock', () => {
 			const contentConnection = javaBridge.contentConnect({
 				branch: 'master',
 				project: 'default'
+			});
+			it('returns an object which has a modify method', () => {
+				expect(hasMethod(contentConnection, 'modify')).toBe(true);
 			});
 			describe('contentConnection', () => {
 				const createdContent = contentConnection.create({
