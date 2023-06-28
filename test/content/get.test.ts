@@ -6,12 +6,11 @@ import {
 } from '@jest/globals';
 import {JavaBridge} from '../../src/JavaBridge';
 import Log from '../../src/Log';
+import { hasMethod } from '../hasMethod';
 
 
-function hasMethod(obj: unknown, name: string) {
-	// TODO check if obj is Object?
-	return typeof obj[name] === 'function';
-}
+const APP_NAME = 'com.enonic.app.test';
+const CONTENT_TYPE = `${APP_NAME}:myContentType`;
 
 
 const log = Log.createLogger({
@@ -37,10 +36,26 @@ describe('mock', () => {
 				branch: 'master',
 				project: 'default'
 			});
+			it('returns an object which has a get method', () => {
+				expect(hasMethod(contentConnection, 'get')).toBe(true);
+			});
 			describe('contentConnection', () => {
+				const createdContent = contentConnection.create({
+					childOrder: 'displayname ASC',
+					contentType: CONTENT_TYPE,
+					data: {},
+					name: 'name',
+					parentPath: '/',
+				});
 				describe('get', () => {
 					it("return null when content don't exist", () => {
 						expect(contentConnection.get({key: 'myKey'})).toEqual(null);
+					});
+					it("return the content when key is an id", () => {
+						expect(contentConnection.get({key: createdContent._id})).toStrictEqual(createdContent);
+					});
+					it("return the content when key is a path", () => {
+						expect(contentConnection.get({key: createdContent._path})).toStrictEqual(createdContent);
 					});
 				});
 			});

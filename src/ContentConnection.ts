@@ -283,10 +283,13 @@ export class ContentConnection {
 		Hit extends Content<unknown> = Content
 	>(params: GetContentParams): Hit | null {
 		// this.log.debug('ContentConnection get(%s)', params);
-		const {
+		let {
 			key,
 			// versionId
 		} = params;
+		if (key.startsWith('/')) {
+			key = `/content${key}`;
+		}
 		const node = this._branch.getNode(key) as RepoNodeWithData;
 		if (!node) {
 			this.log.warning('ContentConnection get: No content for key:%s', key);
