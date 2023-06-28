@@ -337,13 +337,13 @@ export class ContentConnection {
 	>(params: ModifyContentParams<Data, Type>): Content<Data, Type> | null {
 		// this.log.debug('ContentConnection modify(%s)', params);
 		const {
+			key: contentIdOrPath,
 			editor,
-			key,
 			// requireValid, // We're not running any validaton
 		} = params;
-		const content = this.get({key}) as Content<Data, Type> | null;
+		const content = this.get({key: contentIdOrPath}) as Content<Data, Type> | null;
 		if (!content) {
-			throw new Error(`Content not found for key: ${key}`);
+			throw new Error(`Content not found for key: ${contentIdOrPath}`);
 		}
 		const contentToBeModified = editor(content) //as Content<Data, Type>;
 		// this.log.debug('ContentConnection contentToBeModified(%s)', contentToBeModified);
@@ -359,8 +359,9 @@ export class ContentConnection {
 			&& key !== 'createdTime'
 			&& key !== 'creator'
 		);
+		const nodeKey = contentIdOrPath.startsWith('/') ? `/content${contentIdOrPath}`: contentIdOrPath;
 		const modifiedNode = this._branch.modifyNode({
-			key,
+			key: nodeKey,
 			editor: (existingNode) => {
 				for (let i = 0; i < rootProps.length; i++) {
 					const prop = rootProps[i] as keyof typeof nodeToBeModified;
