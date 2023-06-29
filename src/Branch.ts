@@ -159,6 +159,7 @@ export class Branch {
 		if (this._pathIndex.hasOwnProperty(_path)) {
 			throw new NodeAlreadyExistAtPathException(`Node already exists at ${_path} repository: ${this._repo.id()} branch: ${this._id}`);
 		}
+
 		const node: RepoNodeWithData = {
 			_id,
 			_indexConfig,
@@ -184,12 +185,11 @@ export class Branch {
 		let maybeId: string|undefined = key;
 		if (isPathString(key)) {
 			const path = key.endsWith('/') ? key.substring(0, key.length - 1) : key;
-			//this.log.debug('path:%s', path);
+			// this.log.debug('path:%s', path);
 			maybeId = this._pathIndex[path];
-			//this.log.debug('maybeId:%s', maybeId);
+			// this.log.debug('maybeId:%s', maybeId);
 			if (!maybeId) {
-				//throw new Error(`Could not find id from path:${path}!`);
-				this.log.debug(`Could not find id from path:${path}!`);
+				// this.log.debug(`Could not find id from path:${path}!`);
 				return undefined;
 			}
 		}
@@ -313,29 +313,57 @@ export class Branch {
 		// it specifies the parent path where to be moved. Otherwise it
 		// means the new desired path or name for the node.
 		target
-	}: MoveNodeParams): RepoNodeWithData {
+	}: MoveNodeParams): RepoNodeWithData | null {
 		const node: RepoNodeWithData = this.getNode(source) as RepoNodeWithData; // This derefs
 		if (!node) {
 			this.log.error('move: Node with source:%s not found!', source);
 			throw new Error(`move: Node with source:${source} not found!`); // TODO throw same Error as XP?
 			// return false;
 		}
-		// TODO fail when new _parentPath doesn't exist? What does XP do?
-		// TODO fail when new _path already exists? contentAlreadyExists exception
-		if (target.endsWith('/')) {
+		const previousPath = node._path;
+		if (target.endsWith('/')) { // Just move
 			node._path = `${target}${node._name}`;
-		} else if (target.startsWith('/')) {
+		} else if (target.startsWith('/')) { // Rename and move
 			const targetParts = target.split('/');
 			const newName = targetParts.pop() as string;
 			node._name = newName;
 			node._path = `${targetParts.join('/')}/${newName}`;
-		} else {
+		} else { // Just rename
 			const pathParts = node._path.split('/');
 			pathParts.pop(); // remove _name from _path
 			node._name = target;
 			node._path = `${pathParts.join('/')}/${node._name}`;
 		}
+		// this.log.debug('move: previousPath:%s newPath:%s', previousPath, node._path);
+
+		if (node._path === previousPath) {
+			this.log.warning('move: Node with source:%s already at target:%s', source, target);
+			return null;
+		}
+
+		const newPathParts = node._path.split('/');
+		newPathParts.pop(); // remove _name from _path
+		let newParentPath = newPathParts.join('/');
+		if(!newParentPath.endsWith('/')) {
+			newParentPath += '/'
+		}
+		// this.log.debug('move: newParentPath:%s', newParentPath);
+		// this.log.debug('move: this.existsNode(%s):%s', newParentPath, this.existsNode(newParentPath));
+		if (
+			newParentPath !== '/' && // The root node actually has no name nor path
+			this.existsNode(newParentPath)[0] !== newParentPath
+		) {
+			throw new NodeNotFoundException(`Cannot move node with source ${source} to target ${target}: Parent '${newParentPath}' not found!`);
+		}
+
+		if (this._pathIndex.hasOwnProperty(node._path)) {
+			throw new NodeAlreadyExistAtPathException(`Cannot move node with source ${source} to target ${target}: Node already exists at ${node._path} repository: ${this._repo.id()} branch: ${this._id}!`);
+		}
+
+		delete this._pathIndex[previousPath];
+		this._pathIndex[node._path] = node._id;
 		this._nodes[node._id] = node;
+
 		return deref(this._nodes[node._id] as RepoNodeWithData);
 	}
 

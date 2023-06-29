@@ -65,7 +65,7 @@ interface NodeComponentPart {
 type NodeComponent = NodeComponentLayout | NodeComponentPage | NodeComponentPart;
 
 
-const CHILD_ORDER_DEFAULT = 'displayname ASC';
+const CHILD_ORDER_DEFAULT = 'displayname ASC'; // NOTE: With small n is actually what Content Studio does.
 const USER_DEFAULT = 'user:system:su';
 
 
@@ -398,11 +398,14 @@ export class ContentConnection {
 			target = `/content${target}`
 		}
 		const movedNode = this._branch.moveNode({ source, target }) // This can throw
-		const modifiedContent = this.modify({ // Adds/updates modifiedTime and modifier
-			key: movedNode._id,
-			editor: (n) => n
-		});
-		return modifiedContent as Content<Data, Type>;
+		if (movedNode) {
+			const modifiedContent = this.modify({ // Adds/updates modifiedTime and modifier
+				key: movedNode._id,
+				editor: (n) => n
+			});
+			return modifiedContent as Content<Data, Type>;
+		}
+		throw new Error(`Unable to move content from ${source} to ${target}!`);
 	} // move
 
 	nodeToContent({
@@ -509,6 +512,7 @@ export class ContentConnection {
 
 	// This function publishes content to the master branch
 	publish(params: PublishContentParams): PublishContentResult {
+		// TODO: Publish should fail if parent is not published.
 		// this.log.debug('ContentConnection publish(%s)', params);
 		const {
 			keys, // List of all content keys(path or id) that should be published

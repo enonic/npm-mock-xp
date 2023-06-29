@@ -82,10 +82,9 @@ export class Connection implements RepoConnection {
 	}: MoveNodeParams): boolean {
 		let isMoved = false;
 		try {
-			this._branch.moveNode({ source, target });
-			isMoved = true;
-		} catch {
-			// no-op
+			isMoved = !!this._branch.moveNode({ source, target });
+		} catch (e) {
+			this.log.error(`Error in moveNode message:${(e as Error).message}`, e);
 		}
 		return isMoved;
 	}

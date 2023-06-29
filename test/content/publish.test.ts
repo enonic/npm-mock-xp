@@ -157,7 +157,13 @@ describe('mock', () => {
 
 						const contentOnDraftBeforeRename = contentDraftConnection.get({ key: content._id });
 						// log.debug('contentOnDraftBeforeRename:%s', contentOnDraftBeforeRename);
-
+						contentDraftConnection.create({
+							childOrder: 'displayname ASC',
+							contentType: 'base:folder',
+							data: {},
+							name: 'newFolder',
+							parentPath: '/'
+						});
 						const renamedContent = contentDraftConnection.move({
 							source: content._id,
 							target: '/newFolder/newName'

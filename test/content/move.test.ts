@@ -8,6 +8,7 @@ import {JavaBridge} from '../../src';
 import Log from '../../src/Log';
 import { hasMethod } from '../hasMethod';
 
+
 const log = Log.createLogger({
 	loglevel: 'silent'
 });
@@ -46,7 +47,15 @@ describe('mock', () => {
 						name: 'name',
 						parentPath: '/',
 					});
+
 					it('moves content when source is a path, and target ends with /', () => {
+						contentConnection.create({
+							childOrder: 'displayname ASC',
+							contentType: 'base:folder',
+							data: {},
+							name: 'newPath',
+							parentPath: '/'
+						});
 						const target = '/newPath/';
 						const movedContent = contentConnection.move({
 							source: createdContent._path,
@@ -56,7 +65,15 @@ describe('mock', () => {
 						expect(movedContent._name).toBe(createdContent._name); // unchanged
 						expect(movedContent._path).toBe(`${target}${createdContent._name}`); // new folder
 					});
+
 					it("moves and renames when source is an id, and target starts with / but doesn't end with /", () => {
+						contentConnection.create({
+							childOrder: 'displayname ASC',
+							contentType: 'base:folder',
+							data: {},
+							name: 'anotherNewPath',
+							parentPath: '/'
+						});
 						const target = '/anotherNewPath/andNewNameToo';
 						const movedContent = contentConnection.move({
 							source: createdContent._id,
@@ -66,6 +83,7 @@ describe('mock', () => {
 						expect(movedContent._name).toBe('andNewNameToo'); // new name
 						expect(movedContent._path).toBe('/anotherNewPath/andNewNameToo'); // new folder and name
 					});
+
 					it("just renames when source is an id, and target doesn't start with /", () => {
 						const target = 'newName';
 						const movedContent = contentConnection.move({
@@ -76,7 +94,8 @@ describe('mock', () => {
 						expect(movedContent._name).toBe(target);
 						expect(movedContent._path).toBe('/anotherNewPath/newName'); // just new name
 					});
-				});
+
+				}); // describe move
 			});
 		});
 	});
