@@ -1,6 +1,10 @@
 import {deepStrictEqual} from 'assert';
 import {JavaBridge} from '../src/JavaBridge';
+import Log from '../src/Log';
 
+const log = Log.createLogger({
+	loglevel: 'silent'
+});
 
 describe('mock', () => {
 	describe('JavaBridge', () => {
@@ -10,12 +14,7 @@ describe('mock', () => {
 				name: 'com.enonic.app.test',
 				version: '0.0.1-SNAPSHOT'
 			},
-			log: {
-				debug: (...params) => { console.debug(...params) },
-				error: (...params) => { console.error(...params) },
-				info: (...params) => { console.info(...params) },
-				warning: (...params) => { console.warn(...params) }
-			}
+			log
 		});
 		it('instance has app object', () => {
 			deepStrictEqual(

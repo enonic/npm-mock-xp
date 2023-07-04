@@ -1,11 +1,19 @@
-import type { MoveNodeParams } from '@enonic-types/lib-node';
+import type {
+	BooleanDslExpression,
+	InDslExpression,
+	TermDslExpression
+} from '@enonic-types/core';
+import type {
+	MoveNodeParams,
+	QueryNodeParams
+} from '@enonic-types/lib-node';
 import type {
 	GetActiveVersionParamObject,
 	GetActiveVersionResponse,
 	Log,
 	NodeCreateParams,
 	NodeModifyParams,
-	NodeQueryParams,
+	// NodeQueryParams,
 	NodeQueryResponse,
 	NodeRefreshParams,
 	NodeRefreshReturnType,
@@ -13,12 +21,16 @@ import type {
 } from './types/index.d'
 import type { Repo } from './Repo';
 
-
+import {
+	isQueryDsl,
+	toStr
+} from '@enonic/js-utils';
 import {flatten} from '@enonic/js-utils/array/flatten';
 import {forceArray} from '@enonic/js-utils/array/forceArray';
 import {enonify} from '@enonic/js-utils/storage/indexing/enonify';
 import {sortKeys} from '@enonic/js-utils/object/sortKeys';
 import {isUuidV4String} from '@enonic/js-utils/value/isUuidV4String';
+import { isString } from '@enonic/js-utils/value/isString';
 import {NodeAlreadyExistAtPathException} from './node/NodeAlreadyExistAtPathException';
 import {NodeNotFoundException} from './node/NodeNotFoundException';
 import deref from './deref';
@@ -32,6 +44,11 @@ interface PathIndex {
 	[key: string]: string
 }
 
+interface SearchIndex {
+	[_indexConfig: string]: {
+		[valueString: string]: string[]
+	}
+}
 
 const DEFAULT_INDEX_CONFIG = {
 	default: {
@@ -53,6 +70,20 @@ const IGNORED_ON_CREATE = [
 	'_state',
 	'_ts',
 	// '_versionKey'
+];
+
+
+const SEARCH_INDEX_BLACKLIST = [
+	'_childOrder',
+	'_id',
+	'_indexConfig',
+	'_inheritsPermissions',
+	'_name',
+	'_path',
+	'_permissions',
+	'_state',
+	'_ts',
+	'_versionKey'
 ];
 
 
@@ -97,6 +128,11 @@ export class Branch {
 	private _pathIndex: PathIndex = {
 		'/': '00000000-0000-0000-0000-000000000000'
 	};
+	private _searchIndex: SearchIndex = {
+		_nodeType: {
+			default: ['00000000-0000-0000-0000-000000000000']
+		}
+	};
 	private _repo: Repo;
 	readonly log: Log;
 
@@ -119,14 +155,13 @@ export class Branch {
 		_id = this._repo.generateId(),
 		_indexConfig = DEFAULT_INDEX_CONFIG,
 		//_inheritsPermissions,
-		//_manualOrderValue,
+		//_manualOrderValue, // TODO content layer?
 		_name,
-		_nodeType = 'default',
 		_parentPath = '/',
 		//_permissions,
 		_ts = Branch.generateInstantString(),
 		_versionKey = this._repo.generateId(),
-		...rest
+		...rest // contains _nodeType
 	}: NodeCreateParams & {
 		_id?: string
 		_ts?: string
@@ -135,6 +170,9 @@ export class Branch {
 		for (let i = 0; i < IGNORED_ON_CREATE.length; i++) {
 			const k = IGNORED_ON_CREATE[i] as keyof typeof rest;
 			if (rest.hasOwnProperty(k)) { delete rest[k]; }
+		}
+		if (!rest._nodeType) {
+			rest._nodeType = 'default';
 		}
 		if (!_name) { _name = _id as string; }
 
@@ -164,7 +202,6 @@ export class Branch {
 			_id,
 			_indexConfig,
 			_name,
-			_nodeType,
 			_path,
 			_state: 'DEFAULT',
 			_ts,
@@ -173,6 +210,36 @@ export class Branch {
 		} as unknown as RepoNodeWithData;
 		this._nodes[_id] = node;
 		this._pathIndex[_path] = _id;
+
+		const restKeys = Object.keys(rest).filter(k => !SEARCH_INDEX_BLACKLIST.includes(k));
+		// this.log.debug('_createNodeInternal restKeys:%s', restKeys);
+
+		RestKeys: for (let i = 0; i < restKeys.length; i++) {
+			const rootProp = restKeys[i] as string;
+			const rootPropValue = rest[rootProp];
+			if (!(
+				isString(rootPropValue)
+				|| (Array.isArray(rootPropValue) && rootPropValue.every(k => isString(k)))
+			)) {
+				this.log.warning('mock-xp is not able to handle non-string properties yet, skipping rootProp:%s with value:%s', rootProp, toStr(rootPropValue));
+				continue RestKeys;
+			}
+			const valueArr = forceArray(rootPropValue) as string[];
+			for (let j = 0; j < valueArr.length; j++) {
+				const valueArrItem = valueArr[j] as string;
+				if (!this._searchIndex[rootProp]) {
+					this._searchIndex[rootProp] = {};
+				}
+				// @ts-ignore Object is possibly 'undefined'.ts(2532)
+				if (this._searchIndex[rootProp][valueArrItem]) {
+					// @ts-ignore Object is possibly 'undefined'.ts(2532)
+					this._searchIndex[rootProp][valueArrItem].push(_id);
+				} else {
+					// @ts-ignore Object is possibly 'undefined'.ts(2532)
+					this._searchIndex[rootProp][valueArrItem] = [_id];
+				}
+			}
+		}
 		//this.log.debug('this._pathIndex:%s', this._pathIndex);
 		return deref(node);
 	} // _createNodeInternal
@@ -217,11 +284,11 @@ export class Branch {
 		return existingKeys;
 	}
 
-	deleteNode(keys: string | Array<string>): Array<string> {
+	deleteNode(keys: string | string[]): string[] {
 		const keysArray = forceArray(keys);
 		const deletedKeys = [];
-		for (let i = 0; i < keysArray.length; i++) {
-		    const key: string = keysArray[i] as string;
+		NodeKeys: for (let i = 0; i < keysArray.length; i++) {
+			const key: string = keysArray[i] as string;
 			let maybeNode;
 			try {
 				maybeNode = this.getNode(key) as RepoNodeWithData;
@@ -230,16 +297,41 @@ export class Branch {
 			}
 			if (!maybeNode) {
 				this.log.warning(`Node with key:'${key}' doesn't exist. Skipping delete.`);
-				continue;
+				continue NodeKeys;
 			}
 			try {
 				delete this._pathIndex[maybeNode._path];
+
+				const rootProps = Object.keys(maybeNode).filter(k => !SEARCH_INDEX_BLACKLIST.includes(k));
+				// this.log.debug('rootProps:%s', rootProps);
+
+				RootProps: for (let j = 0; j < rootProps.length; j++) {
+					const rootPropKey = rootProps[j] as string;
+					// this.log.debug('rootPropKey:%s', rootPropKey);
+
+					const rootPropValue = maybeNode[rootPropKey];
+					// this.log.debug('rootPropValue:%s', rootPropValue);
+
+					if (!isString(rootPropValue)) {
+						this.log.warning('mock-xp is not able to handle non-string properties yet, skipping rootProp:%s with value:%s', rootPropKey, toStr(rootPropValue));
+						continue RootProps;
+					}
+					// @ts-ignore Object is possibly 'undefined'.ts(2532)
+					if (this._searchIndex[rootPropKey][rootPropValue]) {
+						// @ts-ignore Object is possibly 'undefined'.ts(2532)
+						this._searchIndex[rootPropKey][rootPropValue].splice(
+							// @ts-ignore Object is possibly 'undefined'.ts(2532)
+							this._searchIndex[rootPropKey][rootPropValue].indexOf(maybeNode._id), 1
+						);
+					}
+				} // for RootProps
+
 				delete this._nodes[maybeNode._id];
 				deletedKeys.push(key);
 			} catch (e) {
 				this.log.error(`Something went wrong when trying to delete node with key:'${key}'`);
 			}
-		} // for
+		} // for NodeKeys
 		return deletedKeys;
 	}
 
@@ -382,15 +474,15 @@ export class Branch {
 
 	//@ts-ignore
 	query({
-		aggregations,
-		count,
-		explain,
-		filters,
-		highlight,
-		query,
-		sort,
-		start
-	}: NodeQueryParams): NodeQueryResponse {
+		// aggregations,
+		count = 10,
+		// explain,
+		// filters,
+		// highlight,
+		query = '', // QueryNodeParams.query is optional
+		// sort,
+		start = 0
+	}: QueryNodeParams): NodeQueryResponse {
 		/*this.log.debug('param:%s', {
 			aggregations,
 			count,
@@ -401,17 +493,171 @@ export class Branch {
 			sort,
 			start
 		});*/
-		const ids = Object.keys(this._nodes);
-		const total = ids.length;
-		return {
-			aggregations: {},
-			count: total,
-			hits: ids.map(id => ({
-				id,
-				score: 1
-			})),
-			total
-		};
+		if (query === '') {
+			const ids = Object.keys(this._nodes);
+			const total = ids.length;
+			if (count === -1) {
+				count = total;
+			}
+			return {
+				aggregations: {},
+				count: Math.min(count, total),
+				hits: ids.map(id => ({
+					id,
+					score: 1
+				})).slice(start, start + count),
+				total
+			};
+		}
+
+		if (isString(query)) {
+			throw new Error(`query: unhandeled query string: ${query}!`);
+		}
+
+		if (isQueryDsl(query)) {
+			this.log.info('query: Search Index: %s', this._searchIndex);
+			const mustIds: string[] = [];
+			const mustNotIds: string[] = [];
+			const {
+				// @ts-expect-error Property 'boolean' does not exist on type 'QueryDsl'.ts(2339)
+				boolean,
+				// term
+			} = query;
+			if (boolean) {
+				const {
+					must,
+					mustNot,
+					// should, filter
+				} = boolean as BooleanDslExpression;
+				if (must) {
+					forceArray(must).forEach(mustDsl => {
+						const {
+							// @ts-expect-error Property 'in' does not exist on type '{ boolean: BooleanDslExpression; } | { ngram: NgramDslExpression; } | { stemmed: StemmedDslExpression; } | { fulltext: FulltextDslExpression; } | { matchAll: MatchAllDslExpression; } | { pathMatch: PathMatchDslExpression; } | { range: RangeDslExpression; } | { like: LikeDslExpression; } | { in: InDslExpression; } | { term: TermDslExpression; } | { exists: ExistsDslExpression; }'.ts(2339)
+							in: inDslExpression,
+							// @ts-expect-error Property 'term' does not exist on type '{ boolean: BooleanDslExpression; } | { ngram: NgramDslExpression; } | { stemmed: StemmedDslExpression; } | { fulltext: FulltextDslExpression; } | { matchAll: MatchAllDslExpression; } | { pathMatch: PathMatchDslExpression; } | { range: RangeDslExpression; } | { like: LikeDslExpression; } | { in: InDslExpression; } | { term: TermDslExpression; } | { exists: ExistsDslExpression; }'.ts(2339)
+							term
+						} = mustDsl;
+						if (inDslExpression) {
+							const {
+								field,
+								values
+							} = inDslExpression as InDslExpression;
+							if (
+								!SEARCH_INDEX_BLACKLIST.includes(field)
+								&& this._searchIndex[field]
+								&& values.every(isString)
+							) {
+								values.forEach(value => {
+									// @ts-ignore Object is possibly 'undefined'.ts(2532)
+									if (this._searchIndex[field][value as string]) {
+										// @ts-ignore Object is possibly 'undefined'.ts(2532)
+										this._searchIndex[field][value as string].forEach(id => {
+											if (!mustIds.includes(id)) {
+												mustIds.push(id);
+											}
+										});
+									}
+								});
+							}
+						} else if (term) {
+							const {
+								field,
+								value
+							} = term as TermDslExpression;
+							if (
+								!SEARCH_INDEX_BLACKLIST.includes(field)
+								&& this._searchIndex[field]
+								&& isString(value)
+								// @ts-ignore Object is possibly 'undefined'.ts(2532)
+								&& this._searchIndex[field][value as string]
+							) {
+								// @ts-ignore Object is possibly 'undefined'.ts(2532)
+								this._searchIndex[field][value as string].forEach(id => {
+									if (!mustIds.includes(id)) {
+										mustIds.push(id);
+									}
+								});
+							}
+						}
+					});
+				} // must
+				if (mustNot) {
+					forceArray(mustNot).forEach(mustNotDsl => {
+						const {
+							// @ts-expect-error Property 'in' does not exist on type '{ boolean: BooleanDslExpression; } | { ngram: NgramDslExpression; } | { stemmed: StemmedDslExpression; } | { fulltext: FulltextDslExpression; } | { matchAll: MatchAllDslExpression; } | { pathMatch: PathMatchDslExpression; } | { range: RangeDslExpression; } | { like: LikeDslExpression; } | { in: InDslExpression; } | { term: TermDslExpression; } | { exists: ExistsDslExpression; }'.ts(2339)
+							in: inDslExpression,
+							// @ts-expect-error Property 'term' does not exist on type '{ boolean: BooleanDslExpression; } | { ngram: NgramDslExpression; } | { stemmed: StemmedDslExpression; } | { fulltext: FulltextDslExpression; } | { matchAll: MatchAllDslExpression; } | { pathMatch: PathMatchDslExpression; } | { range: RangeDslExpression; } | { like: LikeDslExpression; } | { in: InDslExpression; } | { term: TermDslExpression; } | { exists: ExistsDslExpression; }'.ts(2339)
+							term,
+						} = mustNotDsl;
+						if (inDslExpression) {
+							const {
+								field,
+								values
+							} = inDslExpression as InDslExpression;
+							if (
+								!SEARCH_INDEX_BLACKLIST.includes(field)
+								&& this._searchIndex[field]
+								&& values.every(isString)
+							) {
+								values.forEach(value => {
+									// @ts-ignore Object is possibly 'undefined'.ts(2532)
+									if (this._searchIndex[field][value as string]) {
+										// @ts-ignore Object is possibly 'undefined'.ts(2532)
+										this._searchIndex[field][value as string].forEach(id => {
+											if (!mustNotIds.includes(id)) {
+												mustNotIds.push(id);
+											}
+										});
+									}
+								});
+							}
+						} else if (term) {
+							const {
+								field,
+								value
+							} = term as TermDslExpression;
+							if (
+								!SEARCH_INDEX_BLACKLIST.includes(field)
+								&& this._searchIndex[field]
+								&& isString(value)
+								// @ts-ignore Object is possibly 'undefined'.ts(2532)
+								&& this._searchIndex[field][value as string]
+							) {
+								// @ts-ignore Object is possibly 'undefined'.ts(2532)
+								this._searchIndex[field][value as string].forEach(id => {
+									if (!mustNotIds.includes(id)) {
+										mustNotIds.push(id);
+									}
+								});
+							}
+						}
+					});
+				} // must
+			} // boolean
+
+			const hitIds: string[] = [];
+			for (let i = 0; i < mustIds.length; i++) {
+				const matchingId = mustIds[i] as string;
+				if (!mustNotIds.includes(matchingId)) {
+					hitIds.push(matchingId);
+				}
+			}
+
+			if (count === -1) {
+				count = hitIds.length;
+			}
+			return {
+				aggregations: {},
+				count: Math.min(count, hitIds.length),
+				hits: hitIds.map(id => ({
+					id,
+					score: 1
+				})).slice(start, start + count),
+				total: hitIds.length
+			}
+		} // isQueryDsl
+
+		throw new Error(`query: unhandeled query dsl: ${query}!`);
 	} // query
 
 	refresh({

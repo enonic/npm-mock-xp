@@ -6,12 +6,7 @@ import {
 } from '@jest/globals';
 import {JavaBridge} from '../../src/JavaBridge';
 import Log from '../../src/Log';
-
-
-function hasMethod(obj: unknown, name: string) {
-	// TODO check if obj is Object?
-	return typeof obj[name] === 'function';
-}
+import {hasMethod} from '../hasMethod';
 
 
 const log = Log.createLogger({
@@ -46,7 +41,8 @@ describe('mock', () => {
 						config: {},
 						name: 'com.enonic.app.test',
 						version: '0.0.1-SNAPSHOT'
-					}
+					},
+					log
 				});
 				javaBridge.repo.create({
 					id: 'com.enonic.cms.default'

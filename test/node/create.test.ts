@@ -9,15 +9,13 @@ import {JavaBridge} from '../../src/JavaBridge';
 import Log from '../../src/Log';
 import { RepoNode } from '@enonic/js-utils/types';
 import { RepoNodeWithData } from '../../src/types';
+import { hasMethod } from '../hasMethod';
 
-function hasMethod(obj :unknown, name :string) {
-	// TODO check if obj is Object?
-	return typeof obj[name] === 'function';
-}
 
 const log = Log.createLogger({
 	loglevel: 'silent'
 });
+
 
 describe('mock', () => {
 	describe('JavaBridge', () => {

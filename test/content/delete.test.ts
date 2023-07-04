@@ -15,6 +15,8 @@ function hasMethod(obj: unknown, name: string) {
 
 
 const log = Log.createLogger({
+	// loglevel: 'info'
+	// loglevel: 'error'
 	loglevel: 'silent'
 });
 
