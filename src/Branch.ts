@@ -13,7 +13,6 @@ import type {
 	Log,
 	NodeCreateParams,
 	NodeModifyParams,
-	// NodeQueryParams,
 	NodeQueryResponse,
 	NodeRefreshParams,
 	NodeRefreshReturnType,
