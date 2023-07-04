@@ -19,7 +19,7 @@ interface Branches {
 export class Repo {
 	//#id: string; // Private identifiers are only available when targeting ECMAScript 2015 and higher.
 	private _branches: Branches;
-	private _highest_id: number = 1;
+	private _highest_id: number = 1; // root node uses 0 and it's versionKey uses 1
 	private _id: string;
 	private _javaBridge: JavaBridge;
 	//rootChildOrder

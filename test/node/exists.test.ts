@@ -44,6 +44,14 @@ describe('mock', () => {
 				const createRes = connection.create({});
 				//javaBridge.log.info('createRes:%s', createRes);
 				describe('exists()', () => {
+					it('finds the root node by id and path', () => {
+						expect(connection.exists('00000000-0000-0000-0000-000000000000')).toStrictEqual([
+							'00000000-0000-0000-0000-000000000000'
+						]);
+						expect(connection.exists('/')).toStrictEqual([
+							'/'
+						]);
+					}); // it
 					it('returns an empty array for non existant nodes', () => {
 						deepStrictEqual(
 							[],

@@ -68,5 +68,5 @@
     "prepack": "yarn test && yarn build",
     "test": "jest --coverage --no-cache"
   },
-  "version": "0.6.1"
+  "version": "0.7.0"
 }

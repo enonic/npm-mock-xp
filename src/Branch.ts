@@ -75,7 +75,7 @@ export class Branch {
 			_inheritsPermissions: false,
 			_name: '',
 			_nodeType: 'default',
-			_path: '',
+			_path: '/',
 			_permissions: [{
 				principal: 'role:system.admin',
 				allow: [
@@ -88,14 +88,14 @@ export class Branch {
 					'WRITE_PERMISSIONS'
 				],
 				deny: []
-    		}],
+			}],
 			_state: 'DEFAULT',
 			_ts: Branch.generateInstantString(),
 			_versionKey: '00000000-0000-4000-8000-000000000001'
 		}
 	};
 	private _pathIndex: PathIndex = {
-		'': '00000000-0000-0000-0000-000000000000'
+		'/': '00000000-0000-0000-0000-000000000000'
 	};
 	private _repo: Repo;
 	readonly log: Log;
@@ -182,9 +182,11 @@ export class Branch {
 	}
 
 	private keyToId(key: string): string | undefined {
+		// this.log.debug('keyToId(%s)', key);
 		let maybeId: string|undefined = key;
 		if (isPathString(key)) {
-			const path = key.endsWith('/') ? key.substring(0, key.length - 1) : key;
+			// this.log.debug('isPathString(%s) === true', key);
+			const path = (key.length > 1 && key.endsWith('/')) ? key.substring(0, key.length - 1) : key;
 			// this.log.debug('path:%s', path);
 			maybeId = this._pathIndex[path];
 			// this.log.debug('maybeId:%s', maybeId);
@@ -193,16 +195,16 @@ export class Branch {
 				return undefined;
 			}
 		}
-		if (!isUuidV4String(maybeId)) {
-			this.log.debug(`key not an id! key:${key}`);
-			//throw new TypeError(`key not an id nor path! key:${key}`);
-			return undefined;
+		if (isUuidV4String(maybeId) || maybeId === '00000000-0000-0000-0000-000000000000') {
+			return maybeId;
 		}
-		return maybeId;
+		this.log.debug(`key not an id! key:${key}`);
+		//throw new TypeError(`key not an id nor path! key:${key}`);
+		return undefined;
 	}
 
 	existsNode(keys: string | Array<string>): Array<string> {
-		//this.log.debug('existsNode() keys:%s', keys);
+		// this.log.debug('existsNode() keys:%s', keys);
 		const existingKeys = forceArray(keys)
 			.map(k => {
 				const id = this.keyToId(k);
@@ -251,7 +253,9 @@ export class Branch {
 			return [];
 		}
 		const flattenedKeys: string[] = flatten(keys) as string[];
+		// this.log.debug('getNode() flattenedKeys:%s', flattenedKeys);
 		const existingKeys = this.existsNode(flattenedKeys);
+		// this.log.debug('getNode() existingKeys:%s', existingKeys);
 		const nodes: RepoNodeWithData[] = existingKeys.map(key => {
 			const id = this.keyToId(key);
 			if (!id) {
