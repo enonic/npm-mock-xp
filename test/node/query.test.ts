@@ -5,6 +5,7 @@ import { hasMethod } from '../hasMethod';
 
 const log = Log.createLogger({
 	// loglevel: 'info'
+	// loglevel: 'error'
 	loglevel: 'silent'
 });
 
@@ -156,6 +157,35 @@ describe('mock', () => {
 						})
 					}); // it handles boolean.must.term.field _nodeType
 
+					it('handles boolean.must[term.field _nodeType, term.field url]', () => {
+						const queryRes = connection.query({
+							query: {
+								boolean: {
+									must: [{
+										term: {
+											field: '_nodeType',
+											value: 'com.enonic.app.explorer:document'
+										}
+									},{
+										term: {
+											field: 'url',
+											value: 'https://www.enonic.com/platform/overview'
+										}
+									}]
+								}
+							}
+						});
+						expect(queryRes).toStrictEqual({
+							aggregations: {},
+							count: 1,
+							hits: [{
+								id: createRes2._id,
+								score: 1,
+							}],
+							total: 1
+						})
+					});
+
 					it('handles boolean.mustNot.term.field url', () => {
 						const queryRes = connection.query({
 							query: {
@@ -196,17 +226,23 @@ describe('mock', () => {
 											value: 'com.enonic.app.explorer:document'
 										}
 									},
-									mustNot: {
+									mustNot: [{
+										term: {
+											field: '_nodeType',
+											value: 'default'
+										}
+									},{
 										in: {
 											field: 'url',
 											values: [
 												'https://www.enonic.com',
 											]
 										}
-									}
+									}]
 								}
 							}
 						});
+						// log.error('queryRes:%s', queryRes);
 						expect(queryRes).toStrictEqual({
 							aggregations: {},
 							count: 1,

@@ -30,6 +30,9 @@ import {enonify} from '@enonic/js-utils/storage/indexing/enonify';
 import {sortKeys} from '@enonic/js-utils/object/sortKeys';
 import {isUuidV4String} from '@enonic/js-utils/value/isUuidV4String';
 import { isString } from '@enonic/js-utils/value/isString';
+// @ts-ignore TS7016: Could not find a declaration file for module 'uniqs'
+import uniqs from 'uniqs';
+import intersect from 'intersect';
 import {NodeAlreadyExistAtPathException} from './node/NodeAlreadyExistAtPathException';
 import {NodeNotFoundException} from './node/NodeNotFoundException';
 import deref from './deref';
@@ -515,8 +518,8 @@ export class Branch {
 
 		if (isQueryDsl(query)) {
 			this.log.info('query: Search Index: %s', this._searchIndex);
-			const mustIds: string[] = [];
-			const mustNotIds: string[] = [];
+			const mustSets: string[][] = [];
+			const mustNotSets: string[][] = [];
 			const {
 				// @ts-expect-error Property 'boolean' does not exist on type 'QueryDsl'.ts(2339)
 				boolean,
@@ -530,6 +533,7 @@ export class Branch {
 				} = boolean as BooleanDslExpression;
 				if (must) {
 					forceArray(must).forEach(mustDsl => {
+						const mustIds: string[] = [];
 						const {
 							// @ts-expect-error Property 'in' does not exist on type '{ boolean: BooleanDslExpression; } | { ngram: NgramDslExpression; } | { stemmed: StemmedDslExpression; } | { fulltext: FulltextDslExpression; } | { matchAll: MatchAllDslExpression; } | { pathMatch: PathMatchDslExpression; } | { range: RangeDslExpression; } | { like: LikeDslExpression; } | { in: InDslExpression; } | { term: TermDslExpression; } | { exists: ExistsDslExpression; }'.ts(2339)
 							in: inDslExpression,
@@ -578,10 +582,12 @@ export class Branch {
 								});
 							}
 						}
-					});
+						mustSets.push(mustIds);
+					}); // forEach
 				} // must
 				if (mustNot) {
 					forceArray(mustNot).forEach(mustNotDsl => {
+						const mustNotIds: string[] = [];
 						const {
 							// @ts-expect-error Property 'in' does not exist on type '{ boolean: BooleanDslExpression; } | { ngram: NgramDslExpression; } | { stemmed: StemmedDslExpression; } | { fulltext: FulltextDslExpression; } | { matchAll: MatchAllDslExpression; } | { pathMatch: PathMatchDslExpression; } | { range: RangeDslExpression; } | { like: LikeDslExpression; } | { in: InDslExpression; } | { term: TermDslExpression; } | { exists: ExistsDslExpression; }'.ts(2339)
 							in: inDslExpression,
@@ -630,9 +636,20 @@ export class Branch {
 								});
 							}
 						}
-					});
-				} // must
+						mustNotSets.push(mustNotIds);
+					}); // forEach
+				} // mustNot
 			} // boolean
+
+			// this.log.debug('mustSets:%s', mustSets);
+			const mustIds = intersect(mustSets) as string[]; // All expressions must evaluate to true to include a node in the result.
+			// this.log.debug('mustIds:%s', mustIds);
+
+			// this.log.debug('mustNotSets:%s', mustNotSets);
+			const mustNotIds = uniqs(...mustNotSets) as string[]; // All expressions in the mustNot must evaluate to false for nodes to match.
+			// this.log.debug('mustNotIds:%s', mustNotIds);
+
+			//TODO: Should: One or more expressions must evaluate to true to include a node in the result.
 
 			const hitIds: string[] = [];
 			for (let i = 0; i < mustIds.length; i++) {

@@ -5,6 +5,7 @@
 		"declaration": true,
 		"declarationMap": false,
 		"downlevelIteration": true,
+		"esModuleInterop": true, // Needed by intersect
 		"importHelpers": true,
 		"inlineSourceMap": false,
 		"inlineSources": false,
