@@ -39,10 +39,12 @@ describe('mock', () => {
 			describe('Connection', () => {
 				const createRes1 = connection.create({
 					_nodeType: 'com.enonic.app.explorer:document',
+					boolean: true,
 					url: 'https://www.enonic.com'
 				});
 				const createRes2 = connection.create({
 					_nodeType: 'com.enonic.app.explorer:document',
+					boolean: false,
 					url: 'https://www.enonic.com/platform/overview'
 				});
 				describe('query', () => {
@@ -252,7 +254,91 @@ describe('mock', () => {
 							}],
 							total: 1
 						})
-					});
+					}); // it
+
+					it('can handle in and term with boolean value(s)', () => {
+						const mustIn = connection.query({
+							query: {
+								boolean: {
+									must: {
+										in: {
+											field: 'boolean',
+											values: [
+												true
+											]
+										}
+									},
+								}
+							}
+						});
+
+						const mustTerm = connection.query({
+							query: {
+								boolean: {
+									must: {
+										term: {
+											field: 'boolean',
+											value: true
+										}
+									}
+								}
+							}
+						});
+
+						const mustNotIn = connection.query({
+							query: {
+								boolean: {
+									must: {
+										term: {
+											field: '_nodeType',
+											value: 'com.enonic.app.explorer:document'
+										}
+									},
+									mustNot: {
+										in: {
+											field: 'boolean',
+											values: [
+												false,
+											]
+										}
+									}
+								}
+							}
+						});
+
+						const mustNotTerm = connection.query({
+							query: {
+								boolean: {
+									must: {
+										term: {
+											field: '_nodeType',
+											value: 'com.enonic.app.explorer:document'
+										}
+									},
+									mustNot: {
+										term: {
+											field: 'boolean',
+											value: false
+										}
+									}
+								}
+							}
+						});
+						// log.error('queryRes:%s', queryRes);
+						const expected = {
+							aggregations: {},
+							count: 1,
+							hits: [{
+								id: createRes1._id,
+								score: 1,
+							}],
+							total: 1
+						}
+						expect(mustIn).toStrictEqual(expected);
+						expect(mustTerm).toStrictEqual(expected);
+						expect(mustNotIn).toStrictEqual(expected);
+						expect(mustNotTerm).toStrictEqual(expected);
+					}); // it
 
 				}); // describe query
 			});
