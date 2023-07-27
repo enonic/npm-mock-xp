@@ -5,6 +5,11 @@ import {
 	//throws // For some reason this gets borked by swc
 } from 'assert';
 import * as assert from 'assert';
+import {
+	describe,
+	expect,
+	test as it
+} from '@jest/globals';
 import {JavaBridge} from '../../src/JavaBridge';
 import Log from '../../src/Log';
 import { RepoNode } from '@enonic/js-utils/types';
@@ -13,6 +18,7 @@ import { hasMethod } from '../hasMethod';
 
 
 const log = Log.createLogger({
+	// loglevel: 'debug'
 	loglevel: 'silent'
 });
 
@@ -172,7 +178,7 @@ describe('mock', () => {
 							node,
 							createRes
 						);
-					}); // it*/
+					}); // it
 					it("doesn't enonify _indexConfig", () => {
 						const createRes2 = connection.create({
 							_indexConfig: {
@@ -211,6 +217,17 @@ describe('mock', () => {
 							createRes2
 						);
 					}); // it
+
+					it('can store boolean values', () => {
+						const createRes = connection.create({
+							false: false,
+							true: true
+						});
+						// javaBridge.log.debug('createRes:%s', createRes);
+						expect(createRes.false).toBe(false);
+						expect(createRes.true).toBe(true);
+					}); // it
+
 				}); // describe create
 			}); // describe Connection
 		}); // describe connect

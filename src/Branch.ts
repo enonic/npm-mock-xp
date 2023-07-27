@@ -21,6 +21,7 @@ import type {
 import type { Repo } from './Repo';
 
 import {
+	isBoolean,
 	isQueryDsl,
 	toStr
 } from '@enonic/js-utils';
@@ -28,6 +29,7 @@ import {flatten} from '@enonic/js-utils/array/flatten';
 import {forceArray} from '@enonic/js-utils/array/forceArray';
 import {enonify} from '@enonic/js-utils/storage/indexing/enonify';
 import {sortKeys} from '@enonic/js-utils/object/sortKeys';
+// import { isBoolean } from '@enonic/js-utils/value/isBoolean'; // Not exported in package.json yet
 import {isUuidV4String} from '@enonic/js-utils/value/isUuidV4String';
 import { isString } from '@enonic/js-utils/value/isString';
 // @ts-ignore TS7016: Could not find a declaration file for module 'uniqs'
@@ -91,6 +93,11 @@ const SEARCH_INDEX_BLACKLIST = [
 
 function isPathString(key: string): boolean {
 	return key.startsWith('/');
+}
+
+
+function supportedValueType(v: unknown) {
+	return isBoolean(v) || isString(v);
 }
 
 
@@ -220,15 +227,18 @@ export class Branch {
 			const rootProp = restKeys[i] as string;
 			const rootPropValue = rest[rootProp];
 			if (!(
-				isString(rootPropValue)
-				|| (Array.isArray(rootPropValue) && rootPropValue.every(k => isString(k)))
+				supportedValueType(rootPropValue)
+				|| (
+					Array.isArray(rootPropValue)
+					&& rootPropValue.every(k => supportedValueType(k))
+				)
 			)) {
-				this.log.warning('mock-xp is not able to handle non-string properties yet, skipping rootProp:%s with value:%s', rootProp, toStr(rootPropValue));
+				this.log.warning('mock-xp is only able to (index for quering) boolean and string properties, skipping rootProp:%s with value:%s', rootProp, toStr(rootPropValue));
 				continue RestKeys;
 			}
-			const valueArr = forceArray(rootPropValue) as string[];
+			const valueArr = forceArray(rootPropValue) as (boolean|string)[];
 			for (let j = 0; j < valueArr.length; j++) {
-				const valueArrItem = valueArr[j] as string;
+				const valueArrItem = valueArr[j] as boolean|string;
 				if (!this._searchIndex[rootProp]) {
 					this._searchIndex[rootProp] = {};
 				}
@@ -242,7 +252,8 @@ export class Branch {
 				}
 			}
 		}
-		//this.log.debug('this._pathIndex:%s', this._pathIndex);
+		// this.log.error('this._searchIndex:%s', this._searchIndex);
+		// this.log.debug('this._pathIndex:%s', this._pathIndex);
 		return deref(node);
 	} // _createNodeInternal
 
@@ -548,7 +559,7 @@ export class Branch {
 							if (
 								!SEARCH_INDEX_BLACKLIST.includes(field)
 								&& this._searchIndex[field]
-								&& values.every(isString)
+								&& values.every(v => supportedValueType(v))
 							) {
 								values.forEach(value => {
 									// @ts-ignore Object is possibly 'undefined'.ts(2532)
@@ -570,7 +581,7 @@ export class Branch {
 							if (
 								!SEARCH_INDEX_BLACKLIST.includes(field)
 								&& this._searchIndex[field]
-								&& isString(value)
+								&& supportedValueType(value)
 								// @ts-ignore Object is possibly 'undefined'.ts(2532)
 								&& this._searchIndex[field][value as string]
 							) {
@@ -602,7 +613,7 @@ export class Branch {
 							if (
 								!SEARCH_INDEX_BLACKLIST.includes(field)
 								&& this._searchIndex[field]
-								&& values.every(isString)
+								&& values.every(v => supportedValueType(v))
 							) {
 								values.forEach(value => {
 									// @ts-ignore Object is possibly 'undefined'.ts(2532)
@@ -624,7 +635,7 @@ export class Branch {
 							if (
 								!SEARCH_INDEX_BLACKLIST.includes(field)
 								&& this._searchIndex[field]
-								&& isString(value)
+								&& supportedValueType(value)
 								// @ts-ignore Object is possibly 'undefined'.ts(2532)
 								&& this._searchIndex[field][value as string]
 							) {
