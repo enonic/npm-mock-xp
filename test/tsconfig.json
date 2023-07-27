@@ -1,4 +1,4 @@
-{
+{ // https://www.typescriptlang.org/tsconfig
 	"compilerOptions": {
 		"allowJs": true,
 		"baseUrl": "..",
@@ -10,7 +10,7 @@
 		"moduleResolution": "node",
 		"paths": {},
 		"resolveJsonModule": true,
-		"rootDir": "../src",
+		"rootDir": "..",
 		"rootDirs": [
 			"../src",
 			"../node_modules",

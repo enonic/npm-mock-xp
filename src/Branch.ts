@@ -96,6 +96,11 @@ function isPathString(key: string): boolean {
 }
 
 
+function supportedValueType(v: unknown) {
+	return isBoolean(v) || isString(v);
+}
+
+
 export class Branch {
 	static generateInstantString() {
 		return new Date().toISOString();
@@ -222,11 +227,10 @@ export class Branch {
 			const rootProp = restKeys[i] as string;
 			const rootPropValue = rest[rootProp];
 			if (!(
-				isBoolean(rootPropValue)
-				|| isString(rootPropValue)
+				supportedValueType(rootPropValue)
 				|| (
 					Array.isArray(rootPropValue)
-					&& rootPropValue.every(k => isBoolean(k) || isString(k))
+					&& rootPropValue.every(k => supportedValueType(k))
 				)
 			)) {
 				this.log.warning('mock-xp is only able to (index for quering) boolean and string properties, skipping rootProp:%s with value:%s', rootProp, toStr(rootPropValue));
@@ -555,7 +559,7 @@ export class Branch {
 							if (
 								!SEARCH_INDEX_BLACKLIST.includes(field)
 								&& this._searchIndex[field]
-								&& values.every(v => isBoolean(v) || isString(v))
+								&& values.every(v => supportedValueType(v))
 							) {
 								values.forEach(value => {
 									// @ts-ignore Object is possibly 'undefined'.ts(2532)
@@ -577,10 +581,7 @@ export class Branch {
 							if (
 								!SEARCH_INDEX_BLACKLIST.includes(field)
 								&& this._searchIndex[field]
-								&& (
-									isBoolean(value)
-									|| isString(value)
-								)
+								&& supportedValueType(value)
 								// @ts-ignore Object is possibly 'undefined'.ts(2532)
 								&& this._searchIndex[field][value as string]
 							) {
@@ -612,7 +613,7 @@ export class Branch {
 							if (
 								!SEARCH_INDEX_BLACKLIST.includes(field)
 								&& this._searchIndex[field]
-								&& values.every(v => isBoolean(v) || isString(v))
+								&& values.every(v => supportedValueType(v))
 							) {
 								values.forEach(value => {
 									// @ts-ignore Object is possibly 'undefined'.ts(2532)
@@ -634,10 +635,7 @@ export class Branch {
 							if (
 								!SEARCH_INDEX_BLACKLIST.includes(field)
 								&& this._searchIndex[field]
-								&& (
-									isBoolean(value)
-									|| isString(value)
-								)
+								&& supportedValueType(value)
 								// @ts-ignore Object is possibly 'undefined'.ts(2532)
 								&& this._searchIndex[field][value as string]
 							) {

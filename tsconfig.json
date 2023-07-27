@@ -1,4 +1,4 @@
-{
+{ // https://www.typescriptlang.org/tsconfig
 	"compilerOptions": {
 		"allowJs": false,
 		"baseUrl": ".",
