@@ -104,7 +104,8 @@ describe('mock', () => {
 							total: 3
 						})
 					});
-					it('handles boolean.must.term.in _nodeType', () => {
+
+					it('handles boolean.must.in _nodeType', () => {
 						const queryRes = connection.query({
 							query: {
 								boolean: {
@@ -131,7 +132,8 @@ describe('mock', () => {
 							}],
 							total: 2
 						})
-					}); // it handles boolean.must.term.field _nodeType
+					}); // it handles boolean.must.in.field _nodeType
+
 					it('handles boolean.must.term.field _nodeType', () => {
 						const queryRes = connection.query({
 							query: {
