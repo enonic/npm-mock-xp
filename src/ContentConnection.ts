@@ -86,7 +86,7 @@ export class ContentConnection {
 		this._javaBridge = javaBridge;
 		this.log = this._javaBridge.log;
 		// this.log.debug('in ContentConnection constructor');
-		if (!this._branch.existsNode('/content').length) {
+		if (!this._branch.existsNode('/content')) {
 			this._branch.createNode({
 				_childOrder: CHILD_ORDER_DEFAULT,
 				_indexConfig: INDEX_CONFIG_DEFAULT,
@@ -281,9 +281,9 @@ export class ContentConnection {
 		if (key.startsWith('/')) {
 			key = `/content${ key }`;
 		}
-		const [existingNodeId] = this._branch.existsNode(key);
-		// this.log.debug('ContentConnection exists(%s) existingNodeId:%s', params, existingNodeId);
-		return !!existingNodeId;
+		const exists = this._branch.existsNode(key);
+		// this.log.debug('ContentConnection exists(%s) -> %s', params, exists);
+		return exists;
 	} // exists
 
 	get<

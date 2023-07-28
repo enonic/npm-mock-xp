@@ -1,4 +1,7 @@
-import type { MoveNodeParams } from '@enonic-types/lib-node';
+import type {
+	MoveNodeParams,
+	// RepoConnection as RepoConnectionOrig // TODO Doesn't match currently?
+} from '@enonic-types/lib-node';
 
 import type { PrincipalKey } from '../auth';
 
@@ -75,10 +78,8 @@ export type RepoConnection = {
 	*/
 	//diff(params: DiffParams): DiffResponse;
 
-	/**
-	* Checking if a node or nodes exist for the current context.
-	*/
-	exists(keys: string | Array<string>): Array<string>;
+	exists(key: string): boolean;
+	// exists(key: Parameters<RepoConnectionOrig['exists']>[0]): ReturnType<RepoConnectionOrig['exists']>;
 
 	/**
 	* Fetch the versions of a node.
