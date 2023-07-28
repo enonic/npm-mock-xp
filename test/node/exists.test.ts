@@ -45,33 +45,19 @@ describe('mock', () => {
 				//javaBridge.log.info('createRes:%s', createRes);
 				describe('exists()', () => {
 					it('finds the root node by id and path', () => {
-						expect(connection.exists('00000000-0000-0000-0000-000000000000')).toStrictEqual([
-							'00000000-0000-0000-0000-000000000000'
-						]);
-						expect(connection.exists('/')).toStrictEqual([
-							'/'
-						]);
+						expect(connection.exists('00000000-0000-0000-0000-000000000000')).toBe(true);
+						expect(connection.exists('/')).toBe(true);
 					}); // it
-					it('returns an empty array for non existant nodes', () => {
+					it('returns false for non existant nodes', () => {
 						deepStrictEqual(
-							[],
+							false,
 							connection.exists('')
 						); // deepStrictEqual
 					}); // it
-					it('returns an array for existant nodes', () => {
+					it('returns true for existant nodes', () => {
 						deepStrictEqual(
-							[createRes._id],
+							true,
 							connection.exists(createRes._id)
-						); // deepStrictEqual
-					}); // it
-					it('filters away non existant nodes', () => {
-						deepStrictEqual(
-							[createRes._id],
-							connection.exists([
-								'',
-								createRes._id,
-								'whatever'
-							])
 						); // deepStrictEqual
 					}); // it
 				}); // describe exists()

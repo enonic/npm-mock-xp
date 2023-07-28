@@ -42,8 +42,8 @@ export class Connection implements RepoConnection {
 		return this._branch.createNode(param);
 	}
 
-	exists(keys: string | Array<string>): Array<string> {
-		return this._branch.existsNode(keys);
+	exists(key: string): boolean {
+		return this._branch.existsNode(key);
 	}
 
 	delete(keys: string | Array<string>): Array<string> {

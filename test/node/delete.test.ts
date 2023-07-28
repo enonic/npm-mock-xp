@@ -95,25 +95,25 @@ describe('mock', () => {
 
 						connection.delete('/myParentPath/myName');
 						deepStrictEqual(
-							[],
+							false,
 							connection.exists(createRes3._id)
 						);
 						deepStrictEqual(
-							[],
+							false,
 							connection.exists('/myParentPath/myName')
 						);
 						deepStrictEqual( // Parent exists after node deleted
-							['/myParentPath'],
+							true,
 							connection.exists('/myParentPath')
 						);
 
 						connection.delete('/myParentPath');
 						deepStrictEqual(
-							[],
+							false,
 							connection.exists(createFolderRes._id)
 						);
 						deepStrictEqual(
-							[],
+							false,
 							connection.exists('/myParentPath')
 						);
 					}); // it

@@ -5,7 +5,7 @@ import type {
 } from '@enonic-types/core';
 import type {
 	MoveNodeParams,
-	QueryNodeParams
+	QueryNodeParams,
 } from '@enonic-types/lib-node';
 import type {
 	GetActiveVersionParamObject,
@@ -193,7 +193,7 @@ export class Branch {
 
 		if (
 			_parentPath !== '/' && // The root node actually has no name nor path
-			this.existsNode(_parentPath)[0] !== _parentPath
+			!this.existsNode(_parentPath)
 		) {
 			throw new NodeNotFoundException(`Cannot create node with name ${_name}, parent '${_parentPath}' not found`);
 		}
@@ -283,18 +283,14 @@ export class Branch {
 		return undefined;
 	}
 
-	existsNode(keys: string | Array<string>): Array<string> {
+	existsNode(key: string): boolean {
 		// this.log.debug('existsNode() keys:%s', keys);
-		const existingKeys = forceArray(keys)
-			.map(k => {
-				const id = this.keyToId(k);
-				if (!id) {
-					return '';
-				}
-				return this._nodes.hasOwnProperty(id) ? k : '';
-			}).filter(x => x);
-		//this.log.debug("existsNode() keys:%s existingKeys:'%s'", keys, existingKeys);
-		return existingKeys;
+		const id = this.keyToId(key);
+		if (!id) {
+			return false;
+		}
+		// this.log.debug("existsNode() key:%s existingKeys:'%s'", key, Object.keys(this._nodes));
+		return this._nodes.hasOwnProperty(id);
 	}
 
 	deleteNode(keys: string | string[]): string[] {
@@ -359,7 +355,9 @@ export class Branch {
 		}
 		const flattenedKeys: string[] = flatten(keys) as string[];
 		// this.log.debug('getNode() flattenedKeys:%s', flattenedKeys);
-		const existingKeys = this.existsNode(flattenedKeys);
+		const existingKeys = flattenedKeys
+			.map(k => this.existsNode(k) ? k : undefined)
+			.filter(k => k) as string[];
 		// this.log.debug('getNode() existingKeys:%s', existingKeys);
 		const nodes: RepoNodeWithData[] = existingKeys.map(key => {
 			const id = this.keyToId(key);
@@ -460,7 +458,7 @@ export class Branch {
 		// this.log.debug('move: this.existsNode(%s):%s', newParentPath, this.existsNode(newParentPath));
 		if (
 			newParentPath !== '/' && // The root node actually has no name nor path
-			this.existsNode(newParentPath)[0] !== newParentPath
+			!this.existsNode(newParentPath)
 		) {
 			throw new NodeNotFoundException(`Cannot move node with source ${source} to target ${target}: Parent '${newParentPath}' not found!`);
 		}
