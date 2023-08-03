@@ -38,6 +38,9 @@
     "typescript": "^5"
   },
   "description": "Enonic Mock XP JavaScript Library",
+  "engines": {
+    "node": ">=18.17.0"
+  },
   "files": [
     "/dist",
     "/media",
