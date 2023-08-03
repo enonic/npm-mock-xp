@@ -183,8 +183,7 @@ export class Branch {
 		_ts?: string
 		_versionKey?: string
 	}): RepoNodeWithData {
-		for (let i = 0; i < IGNORED_ON_CREATE.length; i++) {
-			const k = IGNORED_ON_CREATE[i] as keyof typeof rest;
+		for (const k of IGNORED_ON_CREATE) {
 			if (rest.hasOwnProperty(k)) { delete rest[k]; }
 		}
 		if (!rest._nodeType) {
@@ -230,8 +229,7 @@ export class Branch {
 		const restKeys = Object.keys(rest).filter(k => !SEARCH_INDEX_BLACKLIST.includes(k));
 		// this.log.debug('_createNodeInternal restKeys:%s', restKeys);
 
-		RestKeys: for (let i = 0; i < restKeys.length; i++) {
-			const rootProp = restKeys[i] as string;
+		RestKeys: for (const rootProp of restKeys) {
 			const rootPropValue = rest[rootProp];
 			if (!(
 				supportedValueType(rootPropValue)
@@ -244,8 +242,7 @@ export class Branch {
 				continue RestKeys;
 			}
 			const valueArr = forceArray(rootPropValue) as (boolean|string)[];
-			for (let j = 0; j < valueArr.length; j++) {
-				const valueArrItem = valueArr[j] as boolean|string;
+			for (const valueArrItem of valueArr) {
 				if (!this._searchIndex[rootProp]) {
 					this._searchIndex[rootProp] = {};
 				}
@@ -257,8 +254,8 @@ export class Branch {
 					// @ts-ignore Object is possibly 'undefined'.ts(2532)
 					this._searchIndex[rootProp][valueArrItem] = [_id];
 				}
-			}
-		}
+			} // for valueArr
+		} // for RestKeys
 		// this.log.error('this._searchIndex:%s', this._searchIndex);
 		// this.log.debug('this._pathIndex:%s', this._pathIndex);
 		return deref(node);
@@ -303,8 +300,7 @@ export class Branch {
 	deleteNode(keys: string | string[]): string[] {
 		const keysArray = forceArray(keys);
 		const deletedKeys = [];
-		NodeKeys: for (let i = 0; i < keysArray.length; i++) {
-			const key: string = keysArray[i] as string;
+		NodeKeys: for (const key of keysArray) {
 			let maybeNode;
 			try {
 				maybeNode = this.getNode(key) as RepoNodeWithData;
@@ -321,8 +317,7 @@ export class Branch {
 				const rootProps = Object.keys(maybeNode).filter(k => !SEARCH_INDEX_BLACKLIST.includes(k));
 				// this.log.debug('rootProps:%s', rootProps);
 
-				RootProps: for (let j = 0; j < rootProps.length; j++) {
-					const rootPropKey = rootProps[j] as string;
+				RootProps: for (const rootPropKey of rootProps) {
 					// this.log.debug('rootPropKey:%s', rootPropKey);
 
 					const rootPropValue = maybeNode[rootPropKey];
@@ -500,8 +495,7 @@ export class Branch {
 			!SEARCH_INDEX_BLACKLIST.includes(field)
 			&& this._searchIndex[field]
 		) {
-			for (let valuesIndex = 0; valuesIndex < values.length; valuesIndex++) {
-				const value = values[valuesIndex];
+			for (const value of values) {
 				if (!supportedValueType(value)) {
 					this.log.error('query: Unsupported value type:%s', toStr(value));
 				} else {
@@ -515,12 +509,11 @@ export class Branch {
 					) {
 						// @ts-ignore Object is possibly 'undefined'.ts(2532)
 						const ids = this._searchIndex[field][value as string] as string[];
-						for (let ids_index = 0; ids_index < ids.length; ids_index++) {
-							const id = ids[ids_index] as string;
+						for (const id of ids) {
 							if (!hasValueIds.includes(id)) {
 								hasValueIds.push(id);
 							}
-						}
+						} // for ids
 					}
 				}
 			} // for values
@@ -565,19 +558,16 @@ export class Branch {
 		) {
 			const filtersArray = forceArray(filters);
 
-			for (let filtersIndex = 0; filtersIndex < filtersArray.length; filtersIndex++) {
-				const filter = filtersArray[filtersIndex];
+			for (const filter of filtersArray) {
 				if (isBooleanFilter(filter)) {
-					const must = (filter as BooleanFilter).boolean.must ? forceArray((filter as BooleanFilter).boolean.must): [];
-					const mustNot = (filter as BooleanFilter).boolean.mustNot ? forceArray((filter as BooleanFilter).boolean.mustNot): [];
-					for (let mustIndex = 0; mustIndex < must.length; mustIndex++) {
-						const mustFilter = must[mustIndex];
+					const must = forceArray((filter as BooleanFilter).boolean.must ?? []);
+					const mustNot = forceArray((filter as BooleanFilter).boolean.mustNot ?? []);
+					for (const mustFilter of must) {
 						if (isHasValueFilter(mustFilter)) {
 							filtersMustSets.push(this._handleHasValueFilter(mustFilter as HasValueFilter));
 						}
 					} // for must
-					for (let mustNotIndex = 0; mustNotIndex < mustNot.length; mustNotIndex++) {
-						const mustNotFilter = mustNot[mustNotIndex];
+					for (const mustNotFilter of mustNot) {
 						if (isHasValueFilter(mustNotFilter)) {
 							filtersMustNotSets.push(this._handleHasValueFilter(mustNotFilter as HasValueFilter));
 						}
@@ -597,8 +587,7 @@ export class Branch {
 			// are id's that match at least one, but not all criteria
 			// and should thus be excluded from the results
 			const allMustIds = uniqs(...filtersMustSets) as string[];
-			for (let allMustIdsIndex = 0; allMustIdsIndex < allMustIds.length; allMustIdsIndex++) {
-				const anMustId = allMustIds[allMustIdsIndex];
+			for (const anMustId of allMustIds) {
 				if (
 					!filtersMustIds.includes(anMustId as string)
 					&& !filtersMustNotIds.includes(anMustId as string)
@@ -617,8 +606,7 @@ export class Branch {
 
 			const hitIds: string[] = [];
 			// this.log.debug('filtersMustNotIds:%s', filtersMustNotIds);
-			for (let i = 0; i < mustIds.length; i++) {
-				const matchingId = mustIds[i] as string;
+			for (const matchingId of mustIds) {
 				// this.log.debug('matchingId:%s', matchingId);
 				if (!filtersMustNotIds.includes(matchingId)) {
 					hitIds.push(matchingId);
@@ -785,15 +773,14 @@ export class Branch {
 			// This is valid when the mustIds array is empty.
 			const partialMustIds: string[] = [];
 			const allMustIds = uniqs(...filterAndQueryMustSets) as string[];
-			for (let allMustIdsIndex = 0; allMustIdsIndex < allMustIds.length; allMustIdsIndex++) {
-				const anMustId = allMustIds[allMustIdsIndex];
+			for (const anMustId of allMustIds) {
 				if (
 					!mustIds.includes(anMustId as string)
 					&& !partialMustIds.includes(anMustId as string)
 				) {
 					partialMustIds.push(anMustId as string);
 				}
-			}
+			} // for
 			// this.log.debug('partialMustIds:%s', partialMustIds);
 
 			// this.log.debug('filtersMustNotSets:%s', filtersMustNotSets);
@@ -810,13 +797,12 @@ export class Branch {
 			// this.log.debug('someorAllIds:%s', someorAllIds);
 
 			const hitIds: string[] = [];
-			for (let i = 0; i < someorAllIds.length; i++) {
-				const matchingId = someorAllIds[i] as string;
+			for (const matchingId of someorAllIds) {
 				// this.log.debug('matchingId:%s', matchingId);
 				if (!mustNotIds.includes(matchingId)) {
 					hitIds.push(matchingId);
 				}
-			}
+			} // for
 			// this.log.debug('hitIds:%s', hitIds);
 
 			if (count === -1) {
