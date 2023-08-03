@@ -4,6 +4,8 @@ import type {
 	TermDslExpression
 } from '@enonic-types/core';
 import type {
+	BooleanFilter,
+	HasValueFilter,
 	MoveNodeParams,
 	QueryNodeParams,
 } from '@enonic-types/lib-node';
@@ -22,6 +24,9 @@ import type { Repo } from './Repo';
 
 import {
 	isBoolean,
+	isBooleanFilter,
+	isFilter,
+	isHasValueFilter,
 	isQueryDsl,
 	toStr
 } from '@enonic/js-utils';
@@ -32,6 +37,8 @@ import {sortKeys} from '@enonic/js-utils/object/sortKeys';
 // import { isBoolean } from '@enonic/js-utils/value/isBoolean'; // Not exported in package.json yet
 import {isUuidV4String} from '@enonic/js-utils/value/isUuidV4String';
 import { isString } from '@enonic/js-utils/value/isString';
+// import { isFilter } from '@enonic/js-utils/storage/query/filter/isBooleanFilter'; // Not exported in package.json yet
+// import { isHasValueFilter } from '@enonic/js-utils/storage/query/filter/isHasValueFilter'; // Not exported in package.json yet
 // @ts-ignore TS7016: Could not find a declaration file for module 'uniqs'
 import uniqs from 'uniqs';
 import intersect from 'intersect';
@@ -483,12 +490,53 @@ export class Branch {
 		return deref(this._nodes[node._id] as RepoNodeWithData);
 	}
 
-	//@ts-ignore
+	_handleHasValueFilter(hasValueFilter: HasValueFilter) {
+		const hasValueIds: string[] = [];
+		const {
+			field,
+			values
+		} = hasValueFilter.hasValue;
+		if (
+			!SEARCH_INDEX_BLACKLIST.includes(field)
+			&& this._searchIndex[field]
+		) {
+			for (let valuesIndex = 0; valuesIndex < values.length; valuesIndex++) {
+				const value = values[valuesIndex];
+				if (!supportedValueType(value)) {
+					this.log.error('query: Unsupported value type:%s', toStr(value));
+				} else {
+					if (
+						// @ts-ignore Object is possibly 'undefined'.ts(2532)
+						this._searchIndex[field][value as string]
+						// @ts-ignore Object is possibly 'undefined'.ts(2532)
+						// && Array.isArray(this._searchIndex[field][value as string]) // Trust internal structure
+						// @ts-ignore Object is possibly 'undefined'.ts(2532)
+						&& this._searchIndex[field][value as string].length
+					) {
+						// @ts-ignore Object is possibly 'undefined'.ts(2532)
+						const ids = this._searchIndex[field][value as string] as string[];
+						for (let ids_index = 0; ids_index < ids.length; ids_index++) {
+							const id = ids[ids_index] as string;
+							if (!hasValueIds.includes(id)) {
+								hasValueIds.push(id);
+							}
+						}
+					}
+				}
+			} // for values
+		}
+		// this.log.debug('hasValueIds:%s', hasValueIds);
+		return hasValueIds;
+	}
+
+	// Stages:
+	// Process filters, generate filtersMustIds, filtersMustNotIds, filtersShouldIds
+	// @ts-ignore
 	query({
 		// aggregations,
 		count = 10,
 		// explain,
-		// filters,
+		filters,
 		// highlight,
 		query = '', // QueryNodeParams.query is optional
 		// sort,
@@ -504,16 +552,88 @@ export class Branch {
 			sort,
 			start
 		});*/
+
+		const filtersMustSets: string[][] = [];
+		const filtersMustNotSets: string[][] = [];
+		// const filtersShouldSets: string[][] = [];
+		let filtersMustIds: string[] = [];
+		let filtersMustNotIds: string[] = [];
+		// let filtersShouldIds: string[] = [];
+		if (
+			(Array.isArray(filters) && isFilter(filters))
+			|| isFilter(filters)
+		) {
+			const filtersArray = forceArray(filters);
+
+			for (let filtersIndex = 0; filtersIndex < filtersArray.length; filtersIndex++) {
+				const filter = filtersArray[filtersIndex];
+				if (isBooleanFilter(filter)) {
+					const must = (filter as BooleanFilter).boolean.must ? forceArray((filter as BooleanFilter).boolean.must): [];
+					const mustNot = (filter as BooleanFilter).boolean.mustNot ? forceArray((filter as BooleanFilter).boolean.mustNot): [];
+					for (let mustIndex = 0; mustIndex < must.length; mustIndex++) {
+						const mustFilter = must[mustIndex];
+						if (isHasValueFilter(mustFilter)) {
+							filtersMustSets.push(this._handleHasValueFilter(mustFilter as HasValueFilter));
+						}
+					} // for must
+					for (let mustNotIndex = 0; mustNotIndex < mustNot.length; mustNotIndex++) {
+						const mustNotFilter = mustNot[mustNotIndex];
+						if (isHasValueFilter(mustNotFilter)) {
+							filtersMustNotSets.push(this._handleHasValueFilter(mustNotFilter as HasValueFilter));
+						}
+					} // for mustNot
+				} else if (isHasValueFilter(filter)) {
+					filtersMustSets.push(this._handleHasValueFilter(filter));
+				}
+			} // for filters
+
+			// All expressions must evaluate to true to include a node in the result.
+			filtersMustIds = intersect(filtersMustSets) as string[];
+			// this.log.debug('filtersMustIds:%s', filtersMustIds);
+
+			filtersMustNotIds = uniqs(...filtersMustNotSets) as string[]; // All expressions in the mustNot must evaluate to false for nodes to match.
+
+			// Any leftover ids in the filtersMustSets (not in filtersMustIds)
+			// are id's that match at least one, but not all criteria
+			// and should thus be excluded from the results
+			const allMustIds = uniqs(...filtersMustSets) as string[];
+			for (let allMustIdsIndex = 0; allMustIdsIndex < allMustIds.length; allMustIdsIndex++) {
+				const anMustId = allMustIds[allMustIdsIndex];
+				if (
+					!filtersMustIds.includes(anMustId as string)
+					&& !filtersMustNotIds.includes(anMustId as string)
+				) {
+					filtersMustNotIds.push(anMustId as string);
+				}
+			}
+		} // filters
+
+		const allIds = Object.keys(this._nodes);
+		// this.log.debug('allIds:%s', allIds);
+
 		if (query === '') {
-			const ids = Object.keys(this._nodes);
-			const total = ids.length;
+			const mustIds = filtersMustIds.length ? intersect([allIds, filtersMustIds]) : allIds;
+			// this.log.debug('mustIds:%s', mustIds);
+
+			const hitIds: string[] = [];
+			// this.log.debug('filtersMustNotIds:%s', filtersMustNotIds);
+			for (let i = 0; i < mustIds.length; i++) {
+				const matchingId = mustIds[i] as string;
+				// this.log.debug('matchingId:%s', matchingId);
+				if (!filtersMustNotIds.includes(matchingId)) {
+					hitIds.push(matchingId);
+				}
+			}
+			// this.log.debug('hitIds:%s', hitIds);
+
+			const total = hitIds.length;
 			if (count === -1) {
 				count = total;
 			}
 			return {
 				aggregations: {},
 				count: Math.min(count, total),
-				hits: ids.map(id => ({
+				hits: hitIds.map(id => ({
 					id,
 					score: 1
 				})).slice(start, start + count),
@@ -529,6 +649,7 @@ export class Branch {
 			this.log.info('query: Search Index: %s', this._searchIndex);
 			const mustSets: string[][] = [];
 			const mustNotSets: string[][] = [];
+
 			const {
 				// @ts-expect-error Property 'boolean' does not exist on type 'QueryDsl'.ts(2339)
 				boolean,
@@ -650,23 +771,53 @@ export class Branch {
 				} // mustNot
 			} // boolean
 
+			// this.log.debug('filtersMustSets:%s', filtersMustSets);
 			// this.log.debug('mustSets:%s', mustSets);
-			const mustIds = intersect(mustSets) as string[]; // All expressions must evaluate to true to include a node in the result.
+			const filterAndQueryMustSets = filtersMustSets.concat(mustSets);
+			// this.log.debug('filterAndQueryMustSets:%s', filterAndQueryMustSets);
+
+			const mustIds = intersect(filterAndQueryMustSets) as string[]; // All expressions must evaluate to true to include a node in the result.
 			// this.log.debug('mustIds:%s', mustIds);
 
+			// Any leftover ids in the mustSets (not in mustIds)
+			// are id's that match at least one, but not all criteria
+			// and should thus be excluded from the results
+			// This is valid when the mustIds array is empty.
+			const partialMustIds: string[] = [];
+			const allMustIds = uniqs(...filterAndQueryMustSets) as string[];
+			for (let allMustIdsIndex = 0; allMustIdsIndex < allMustIds.length; allMustIdsIndex++) {
+				const anMustId = allMustIds[allMustIdsIndex];
+				if (
+					!mustIds.includes(anMustId as string)
+					&& !partialMustIds.includes(anMustId as string)
+				) {
+					partialMustIds.push(anMustId as string);
+				}
+			}
+			// this.log.debug('partialMustIds:%s', partialMustIds);
+
+			// this.log.debug('filtersMustNotSets:%s', filtersMustNotSets);
 			// this.log.debug('mustNotSets:%s', mustNotSets);
-			const mustNotIds = uniqs(...mustNotSets) as string[]; // All expressions in the mustNot must evaluate to false for nodes to match.
-			// this.log.debug('mustNotIds:%s', mustNotIds);
+			const filterAndQueryMustNotSets = filtersMustNotSets.concat(mustNotSets, partialMustIds);
+			// this.log.debug('filterAndQueryMustNotSets:%s', filterAndQueryMustNotSets);
+
+			const mustNotIds = uniqs(...filterAndQueryMustNotSets) as string[]; // All expressions in the mustNot must evaluate to false for nodes to match.
+			// this.log.debug('mustNotIds1:%s', mustNotIds);
 
 			//TODO: Should: One or more expressions must evaluate to true to include a node in the result.
 
+			const someorAllIds = (filtersMustSets.length || mustSets.length) ? intersect([allIds, mustIds]) : allIds;
+			// this.log.debug('someorAllIds:%s', someorAllIds);
+
 			const hitIds: string[] = [];
-			for (let i = 0; i < mustIds.length; i++) {
-				const matchingId = mustIds[i] as string;
+			for (let i = 0; i < someorAllIds.length; i++) {
+				const matchingId = someorAllIds[i] as string;
+				// this.log.debug('matchingId:%s', matchingId);
 				if (!mustNotIds.includes(matchingId)) {
 					hitIds.push(matchingId);
 				}
 			}
+			// this.log.debug('hitIds:%s', hitIds);
 
 			if (count === -1) {
 				count = hitIds.length;
