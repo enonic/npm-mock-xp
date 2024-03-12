@@ -10,6 +10,6 @@ export interface NodeModifyParams/*<NodeData>*/ {
 	/**
 	* Editor callback function
 	*/
-	//editor: (node: NodeData & RepoNode) => NodeData & RepoNode;
+	// editor: (node: NodeData & RepoNode) => NodeData & RepoNode;
 	editor: (node: RepoNodeWithData) => RepoNodeWithData;
 }

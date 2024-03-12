@@ -145,14 +145,14 @@ export class JavaBridge {
 	readonly repo: RepoLib = {
 		create: ({
 			id,
-			//rootChildOrder,
-			//rootPermissions,
+			// rootChildOrder,
+			// rootPermissions,
 			settings
 		}: CreateRepoParams): RepositoryConfig => {
 			const repo = new Repo({
 				id,
 				javaBridge: this,
-				//rootPermissions,
+				// rootPermissions,
 				settings
 			});
 			this._repos[id] = repo;
@@ -214,12 +214,12 @@ export class JavaBridge {
 			this.log = log;
 		}
 		this.vol.fromJSON({}, '/');
-		//this.log.debug('in JavaBridge constructor');
+		// this.log.debug('in JavaBridge constructor');
 	} // constructor
 
 	connect({
 		repoId,
-		branch//,
+		branch// ,
 		// user,
 		// principals
 	}: Source): RepoConnection {

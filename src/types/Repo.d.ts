@@ -96,7 +96,7 @@ export interface RepositorySettings {
 
 export interface CreateRepoParams {
 	id :string
-	//rootChildOrder? :string
+	// rootChildOrder? :string
 	rootPermissions? :Array<PermissionsParams>
 	settings? :RepositorySettings
 }
@@ -138,8 +138,8 @@ export interface RepoLib {
 	createBranch(params: CreateBranchParams): BranchConfig;
 	get(repoId :string) :RepositoryConfig
 	list() :RepositoryConfig[]
-	/*query<AggregationKeys extends string = never>(
-		params: NodeQueryParams<AggregationKeys>
-	): NodeQueryResponse<AggregationKeys>;*/
-	//query<AggregationKeys extends string = never>() :NodeQueryResponse<AggregationKeys>;
+	// query<AggregationKeys extends string = never>(
+	// 	params: NodeQueryParams<AggregationKeys>
+	// ): NodeQueryResponse<AggregationKeys>;
+	// query<AggregationKeys extends string = never>() :NodeQueryResponse<AggregationKeys>;
 }

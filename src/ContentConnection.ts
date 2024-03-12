@@ -81,7 +81,7 @@ export class ContentConnection {
 		branch: Branch,
 		javaBridge: JavaBridge
 	}) {
-		//console.debug('javaBridge.constructor.name', javaBridge.constructor.name);
+		// console.debug('javaBridge.constructor.name', javaBridge.constructor.name);
 		this._branch = branch;
 		this._javaBridge = javaBridge;
 		this.log = this._javaBridge.log;
@@ -111,7 +111,7 @@ export class ContentConnection {
 		content,
 		mode = 'create',
 	}: {
-		content: CreateContentParams<Data, Type> //| ModifyContentParams<Data, Type>
+		content: CreateContentParams<Data, Type> // | ModifyContentParams<Data, Type>
 		mode: 'create' | 'modify'
 	}): RepoNodeWithData {
 		const {
@@ -376,11 +376,11 @@ export class ContentConnection {
 		if (!content) {
 			throw new Error(`Content not found for key: ${contentIdOrPath}`);
 		}
-		const contentToBeModified = editor(content) //as Content<Data, Type>;
+		const contentToBeModified = editor(content) // as Content<Data, Type>;
 		// this.log.debug('ContentConnection contentToBeModified(%s)', contentToBeModified);
 
 		const nodeToBeModified = this.contentToNode<Data, Type>({
-			//@ts-ignore
+			// @ts-ignore
 			content: contentToBeModified,
 			mode: 'modify'
 		});

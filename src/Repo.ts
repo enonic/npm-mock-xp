@@ -17,13 +17,13 @@ interface Branches {
 
 
 export class Repo {
-	//#id: string; // Private identifiers are only available when targeting ECMAScript 2015 and higher.
+	// #id: string; // Private identifiers are only available when targeting ECMAScript 2015 and higher.
 	private _branches: Branches;
 	private _highest_id: number = 1; // root node uses 0 and it's versionKey uses 1
 	private _id: string;
 	private _javaBridge: JavaBridge;
-	//rootChildOrder
-	//rootPermissions
+	// rootChildOrder
+	// rootPermissions
 	private _settings: RepositorySettings;
 	readonly log: Log;
 
@@ -36,11 +36,11 @@ export class Repo {
 		javaBridge: JavaBridge
 		settings?: RepositorySettings
 	}) {
-		//console.debug('javaBridge.constructor.name',javaBridge.constructor.name);
+		// console.debug('javaBridge.constructor.name',javaBridge.constructor.name);
 		this._id = id;
 		this._javaBridge = javaBridge;
 		this.log = this._javaBridge.log;
-		//this.log.debug('in Repo constructor');
+		// this.log.debug('in Repo constructor');
 		this._settings = settings;
 		this._branches = {
 			'master': new Branch({
@@ -65,7 +65,7 @@ export class Repo {
 
 	// TODO deleteBranch()
 
-	//public get id(): string { // jsc.target should be es5 or upper to use getter / setter
+	// public get id(): string { // jsc.target should be es5 or upper to use getter / setter
 	public id(): string {
 		return this._id;
 	}

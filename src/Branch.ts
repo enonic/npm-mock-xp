@@ -159,22 +159,22 @@ export class Branch {
 		branchId: string
 		repo: Repo
 	}) {
-		//console.debug('repo.constructor.name',repo.constructor.name);
+		// console.debug('repo.constructor.name',repo.constructor.name);
 		this._id = branchId;
 		this._repo = repo;
 		this.log = this._repo.log;
-		//this.log.debug('in Branch constructor');
+		// this.log.debug('in Branch constructor');
 	}
 
 	_createNodeInternal({
-		//_childOrder,
+		// _childOrder,
 		_id = this._repo.generateId(),
 		_indexConfig = DEFAULT_INDEX_CONFIG,
-		//_inheritsPermissions,
-		//_manualOrderValue, // TODO content layer?
+		// _inheritsPermissions,
+		// _manualOrderValue, // TODO content layer?
 		_name,
 		_parentPath = '/',
-		//_permissions,
+		// _permissions,
 		_ts = Branch.generateInstantString(),
 		_versionKey = this._repo.generateId(),
 		...rest // contains _nodeType
@@ -206,7 +206,7 @@ export class Branch {
 
 		if (this._nodes.hasOwnProperty(_id)) { // This can only happen if
 			throw new Error(`Node already exists with ${_id} repository: ${this._repo.id()} branch: ${this._id}`); // /lib/xp/node.connect().create() simply ignores _id
-			//throw new NodeAlreadyExistAtPathException(`Node already exists at ${_path} repository: ${this._repo.id} branch: ${this._id}`);
+			// throw new NodeAlreadyExistAtPathException(`Node already exists at ${_path} repository: ${this._repo.id} branch: ${this._id}`);
 		}
 		const _path: string = `${_parentPath}${_name}`; // TODO use path.join?
 		if (this._pathIndex.hasOwnProperty(_path)) {
@@ -283,7 +283,7 @@ export class Branch {
 			return maybeId;
 		}
 		this.log.debug(`key not an id! key:${key}`);
-		//throw new TypeError(`key not an id nor path! key:${key}`);
+		// throw new TypeError(`key not an id nor path! key:${key}`);
 		return undefined;
 	}
 
@@ -351,7 +351,7 @@ export class Branch {
 	}
 
 	getNode(...keys: string[]): RepoNodeWithData | RepoNodeWithData[] {
-		//this.log.debug('getNode() keys:%s', keys);
+		// this.log.debug('getNode() keys:%s', keys);
 		if (!keys.length) {
 			return [];
 		}
@@ -367,9 +367,9 @@ export class Branch {
 				throw new Error(`Can't get id from key:${key}, even though exists???`); // This could happen if node deleted after exists called.
 			}
 			return deref(this._nodes[id] as RepoNodeWithData);
-		});//.filter(x => x as RepoNodeWithData);
+		});// .filter(x => x as RepoNodeWithData);
 		return nodes.length > 1
-			? nodes //as RepoNodeWithData[]
+			? nodes // as RepoNodeWithData[]
 			: nodes[0] as RepoNodeWithData;
 	}
 
@@ -791,7 +791,7 @@ export class Branch {
 			const mustNotIds = uniqs(...filterAndQueryMustNotSets) as string[]; // All expressions in the mustNot must evaluate to false for nodes to match.
 			// this.log.debug('mustNotIds1:%s', mustNotIds);
 
-			//TODO: Should: One or more expressions must evaluate to true to include a node in the result.
+			// TODO: Should: One or more expressions must evaluate to true to include a node in the result.
 
 			const someorAllIds = (filtersMustSets.length || mustSets.length) ? intersect([allIds, mustIds]) : allIds;
 			// this.log.debug('someorAllIds:%s', someorAllIds);
