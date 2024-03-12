@@ -61,6 +61,10 @@ export class Repo {
 		return { id: branchId };
 	}
 
+	// TODO delete()
+
+	// TODO deleteBranch()
+
 	//public get id(): string { // jsc.target should be es5 or upper to use getter / setter
 	public id(): string {
 		return this._id;
@@ -87,5 +91,6 @@ export class Repo {
 		return branchObj;
 	}
 
-	//refresh() {}
+	// TODO refresh() {}
+
 } // class Repo

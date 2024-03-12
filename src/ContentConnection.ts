@@ -101,6 +101,10 @@ export class ContentConnection {
 		}
 	} // constructor
 
+	// TODO addAttachment()
+
+	// TODO archive()
+
 	contentToNode<
 		Data = Record<string, unknown>, Type extends string = string
 	>({
@@ -268,12 +272,16 @@ export class ContentConnection {
 		return createdContent;
 	} // createMedia
 
+	// TODO modifyMedia()
+
 	delete(params: DeleteContentParams): boolean {
 		// this.log.debug('ContentConnection delete(%s)', params);
 		const { key } = params;
 		const [deletedId] = this._branch.deleteNode(key);
 		return !!deletedId;
 	} // delete
+
+	// TODO duplicate()
 
 	exists(params: ContentExistsParams): boolean {
 		// this.log.debug('ContentConnection exists(%s)', params);
@@ -304,6 +312,8 @@ export class ContentConnection {
 		}
 		return this.nodeToContent({node}) as Hit;
 	} // get
+
+	// TODO getAttachments()
 
 	getAttachmentStream(params: GetAttachmentStreamParams): ByteSource | null {
 		// this.log.debug('ContentConnection getAttachmentStream(%s)', params);
@@ -337,6 +347,20 @@ export class ContentConnection {
 		}
 		return this._javaBridge.vol.readFileSync(`/${sha512}`) as unknown as ByteSource;
 	} // getAttachmentStream
+
+	// TODO getChildren()
+
+	// TODO getOutboundDependencies()
+
+	// TODO getPermissions()
+
+	// TODO getSite()
+
+	// TODO getSiteConfig()
+
+	// TODO getType()
+
+	// TODO getTypes()
 
 	modify<
 		Data = Record<string, unknown>,
@@ -589,4 +613,17 @@ export class ContentConnection {
 		} // for
 		return res;
 	}
+
+	// TODO query()
+
+	// TODO removeAttachment()
+
+	// TODO resetInheritance()
+
+	// TODO restore()
+
+	// TODO setPermissions()
+
+	// TODO unpublish()
+
 }

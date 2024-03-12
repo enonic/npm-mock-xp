@@ -91,6 +91,7 @@ function colorize(colorKey: string, str: string): string {
 export class JavaBridge {
 	private _repos: Repos = {};
 	readonly app: App;
+
 	readonly event: EventLib = {
 		listener: ({
 			type,
@@ -109,6 +110,7 @@ export class JavaBridge {
 			return null;
 		}
 	};
+
 	readonly log: Log = {
 		debug: (format: string, ...substs: unknown[]): void => {
 			if (substs.length) {
@@ -139,6 +141,7 @@ export class JavaBridge {
 			}
 		}
 	};
+
 	readonly repo: RepoLib = {
 		create: ({
 			id,
@@ -155,6 +158,7 @@ export class JavaBridge {
 			this._repos[id] = repo;
 			return repo.get();
 		},
+
 		createBranch: ({
 			branchId,
 			repoId
@@ -165,6 +169,11 @@ export class JavaBridge {
 			}
 			return repo.createBranch(branchId);
 		},
+
+		// TODO delete()
+
+		// TODO deleteBranch()
+
 		get: (repoId: string): RepositoryConfig => {
 			const repo = this._repos[repoId];
 			if (!repo) {
@@ -172,10 +181,15 @@ export class JavaBridge {
 			}
 			return repo.get();
 		},
+
 		list: (): RepositoryConfig[] => {
 			return Object.keys(this._repos).map(repoId => this.repo.get(repoId));
 		}
+
+		// TODO refresh()
+
 	}
+
 	readonly value: ValueLib = {
 		geoPoint: (lat,lon) => `${lat},${lon}`,
 		geoPointString: (v) => v,
@@ -185,6 +199,7 @@ export class JavaBridge {
 		localTime: (v) => v,
 		reference: (v) => v
 	};
+
 	readonly vol = vol;
 
 	constructor({
@@ -205,8 +220,8 @@ export class JavaBridge {
 	connect({
 		repoId,
 		branch//,
-		//user,
-		//principals
+		// user,
+		// principals
 	}: Source): RepoConnection {
 		const repo = this._repos[repoId];
 		if (!repo) {

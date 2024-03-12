@@ -31,24 +31,34 @@ export class Connection implements RepoConnection {
 		branch: Branch,
 		javaBridge: JavaBridge
 	}) {
-		//console.debug('javaBridge.constructor.name', javaBridge.constructor.name);
+		// console.debug('javaBridge.constructor.name', javaBridge.constructor.name);
 		this._branch = branch;
 		this._javaBridge = javaBridge;
 		this.log = this._javaBridge.log;
-		//this.log.debug('in Connection constructor');
+		// this.log.debug('in Connection constructor');
 	}
+
+	// TODO: commit()
 
 	create(param: NodeCreateParams): RepoNodeWithData {
 		return this._branch.createNode(param);
 	}
 
+	delete(keys: string | Array<string>): Array<string> {
+		return this._branch.deleteNode(keys);
+	}
+
+	// TODO diff()
+
+	// TODO duplicate()
+
 	exists(key: string): boolean {
 		return this._branch.existsNode(key);
 	}
 
-	delete(keys: string | Array<string>): Array<string> {
-		return this._branch.deleteNode(keys);
-	}
+	// TODO findChildren()
+
+	// TODO findVersion()
 
 	/*get(key: string): RepoNodeWithData {
 		return this._branch.getNode(key);
@@ -65,6 +75,10 @@ export class Connection implements RepoConnection {
 	}: GetActiveVersionParamObject): GetActiveVersionResponse {
 		return this._branch.getNodeActiveVersion({key});
 	}
+
+	// TODO getBinary()
+
+	// TODO getCommit()
 
 	modify({
 		key,
@@ -88,6 +102,8 @@ export class Connection implements RepoConnection {
 		}
 		return isMoved;
 	}
+
+	// TODO push()
 
 	query({
 		aggregations,
@@ -114,4 +130,11 @@ export class Connection implements RepoConnection {
 	refresh(params: NodeRefreshParams): NodeRefreshReturnType {
 		return this._branch.refresh(params);
 	}
+
+	// TODO setActiveVersion()
+
+	// TODO setChildOrder()
+
+	// TODO setRootPermission()
+
 } // class Connection
