@@ -90,9 +90,7 @@ export interface DateHistogramAggregation {
 	};
 }
 
-/**
-* @since 7.7.0
-*/
+// @since 7.7.0
 export interface MinAggregation {
 	min: {
 		field: string;
@@ -102,9 +100,7 @@ export interface MinAggregation {
 	};
 }
 
-/**
-* @since 7.7.0
-*/
+// @since 7.7.0
 export interface MaxAggregation {
 	max: {
 		field: string;
@@ -114,9 +110,7 @@ export interface MaxAggregation {
 	};
 }
 
-/**
-* @since 7.7.0
-*/
+// @since 7.7.0
 export interface ValueCountAggregation {
 	count: {
 		field: string;
@@ -176,7 +170,7 @@ export type AggregationsResponse<
 	? {}
 	: AggregationKeys extends string
 		? Record<AggregationKeys, AggregationsResponseEntry>
-		/*? {
-			[AggregationKey in AggregationKeys]: AggregationsResponseEntry
-		}*/
+		// ? {
+		// 	[AggregationKey in AggregationKeys]: AggregationsResponseEntry
+		// }
 		: never;

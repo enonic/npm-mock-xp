@@ -60,12 +60,12 @@ export class Connection implements RepoConnection {
 
 	// TODO findVersion()
 
-	/*get(key: string): RepoNodeWithData {
-		return this._branch.getNode(key);
-	}
-	get(keys: string[]): RepoNodeWithData | RepoNodeWithData[] {
-		return this._branch.getNode(keys);
-	}*/
+	// get(key: string): RepoNodeWithData {
+	// 	return this._branch.getNode(key);
+	// }
+	// get(keys: string[]): RepoNodeWithData | RepoNodeWithData[] {
+	// 	return this._branch.getNode(keys);
+	// }
 	get(...keys: string[]): RepoNodeWithData | RepoNodeWithData[] {
 		return this._branch.getNode(...keys);
 	}

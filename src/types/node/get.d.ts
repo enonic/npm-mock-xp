@@ -1,11 +1,7 @@
 export interface NodeGetParams {
-	/**
-	* Path or ID of the node.
-	*/
+	// Path or ID of the node.
 	key: string;
 
-	/**
-	* Version to get
-	*/
+	// Version to get
 	versionId: string;
 }

@@ -535,16 +535,16 @@ export class Branch {
 		// sort,
 		start = 0
 	}: QueryNodeParams): NodeQueryResponse {
-		/*this.log.debug('param:%s', {
-			aggregations,
-			count,
-			explain,
-			filters,
-			highlight,
-			query,
-			sort,
-			start
-		});*/
+		// this.log.debug('param:%s', {
+		// 	// aggregations,
+		// 	count,
+		// 	// explain,
+		// 	filters,
+		// 	// highlight,
+		// 	query,
+		// 	// sort,
+		// 	start
+		// });
 
 		const filtersMustSets: string[][] = [];
 		const filtersMustNotSets: string[][] = [];

@@ -9,9 +9,7 @@ import type {
 
 
 interface NodeLibrary {
-	/**
-	* Creates a connection to a repository with a given branch and authentication info.
-	*/
+	// Creates a connection to a repository with a given branch and authentication info.
 	connect(params: Source): RepoConnection;
 
 	multiRepoConnect(params: MultiRepoConnectParams): MultiRepoConnection;
