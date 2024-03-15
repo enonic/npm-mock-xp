@@ -1,34 +1,112 @@
-import type {User} from '@enonic-types/lib-context';
+import type {Node} from '@enonic-types/lib-node';
+import type {PrincipalKey, User} from '@enonic-types/lib-context';
 import type {
 	MockContext,
 	MockContextParams
-} from './types/index.d';
+} from './types';
+import type {JavaBridge} from './JavaBridge';
+import { SYSTEM_REPO } from './constants';
 
+
+declare module globalThis {
+	var _javaBridge: JavaBridge|undefined;
+}
 
 const contextSymbol = Symbol('__context');
 
-interface That {
+declare interface That {
 	[contextSymbol]: string;
 }
 
 
 function _contextParamsToContext(contextParams: MockContextParams): MockContext {
+	if (!globalThis._javaBridge) {
+		throw new Error('In order to use the lib-context mock, an instance of JavaBridge must be created and assigned to globalThis._javaBridge');
+	}
 	const context: MockContext = {
 		attributes: contextParams.attributes || {},
 		branch: contextParams.branch || 'master',
 		repository: contextParams.repository || 'com.enonic.cms.default',
 	};
+
 	if (contextParams.currentContentkey) {
 		context.currentContentkey = contextParams.currentContentkey;
 	}
-	if (contextParams.user) {
+
+	if (contextParams.principals) {
 		context.authInfo = {
-			user: contextParams.user.login ? {
-				login: contextParams.user.login,
-				idProvider: contextParams.user.idProvider || undefined,
-			} as User : null,
-			principals: contextParams.principals || null,
-		};
+			principals: contextParams.principals
+		}
+	}
+
+	if (contextParams.user) {
+		if (contextParams.user.login) {
+			const systemRepoConnection = globalThis._javaBridge.connect({
+				branch: 'master',
+				repoId: SYSTEM_REPO
+			});
+			const idProvider = contextParams.user.idProvider || 'system';
+
+			// const systemRepoQueryRes = systemRepoConnection.query({});
+			// const allSystemRepoNodes = systemRepoQueryRes.hits.map(({id}) => systemRepoConnection.get(id))
+			// console.debug('allSystemRepoNodes', allSystemRepoNodes);
+
+			const userNode = systemRepoConnection.get(`/identity/${idProvider}/users/${contextParams.user.login}`) as Node<{
+				authenticationHash?: string
+				disabled?: boolean
+				displayName: string
+				email?: string
+				idProvider: string
+				login: string
+				modifiedTime?: string
+				profile?: Record<string, unknown>
+			}>;
+			// console.debug('userNode', userNode);
+			if (userNode) {
+				const {
+					_ts,
+					disabled,
+					displayName,
+					email,
+					login,
+				} = userNode;
+
+				const principalKey: PrincipalKey = `user:${idProvider}:${login}`;
+
+				const user: User = {
+					type: 'user',
+					key: principalKey,
+					displayName,
+					login,
+					modifiedTime: _ts,
+					idProvider
+				};
+				if (disabled) {
+					user.disabled = true;
+				}
+				if (email) {
+					user.email = email;
+				}
+				if (!context.authInfo) {
+					context.authInfo = {}
+				}
+				if (!context.authInfo.principals) {
+					context.authInfo.principals = [];
+				}
+
+				// TODO Lookup members of all roles, instead of this hack:
+				if (idProvider === 'system' && login === 'su') {
+					context.authInfo.principals.push('role:system.admin');
+				}
+
+				context.authInfo.principals.push('role:system.authenticated');
+				context.authInfo.principals.push('role:system.everyone');
+				if (!context.authInfo.principals.includes(principalKey)) {
+					context.authInfo.principals.push(principalKey);
+				}
+				context.authInfo.user = user;
+			}
+		}
 	}
 	return context;
 }

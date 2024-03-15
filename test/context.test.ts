@@ -1,4 +1,3 @@
-import type {User} from '@enonic-types/lib-context';
 import type {
 	MockContext,
 	MockContextParams,
@@ -40,7 +39,9 @@ describe('context', () => {
 				attributes: {},
 				branch: 'draft',
 				currentContentkey: '123',
-				principals: ['role:system:admin'],
+				principals: [
+					'role:myRole',
+				],
 				repository: 'com.enonic.cms.default',
 				user: {
 					login: 'su',
@@ -51,11 +52,21 @@ describe('context', () => {
 			const innerExpected: MockContext = {
 				attributes: {},
 				authInfo: {
-					principals: ['role:system:admin'],
+					principals: [
+						'role:myRole',
+						'role:system.admin',
+						'role:system.authenticated',
+						'role:system.everyone',
+						'user:system:su'
+					],
 					user: {
+						displayName: 'Super User',
 						idProvider: 'system',
+						key: 'user:system:su',
 						login: 'su',
-					} as User
+						modifiedTime: expect.any(String) as unknown as string,
+						type: 'user'
+					}
 				},
 				branch: 'draft',
 				currentContentkey: '123',
