@@ -238,7 +238,9 @@ export class Branch {
 					&& rootPropValue.every(k => supportedValueType(k))
 				)
 			)) {
-				this.log.warning('mock-xp is only able to (index for quering) boolean and string properties, skipping rootProp:%s with value:%s', rootProp, toStr(rootPropValue));
+				if (this._repo._javaBridge._indexWarnings) {
+					this.log.warning('mock-xp is only able to (index for quering) boolean and string properties, skipping rootProp:%s with value:%s', rootProp, toStr(rootPropValue));
+				}
 				continue RestKeys;
 			}
 			const valueArr = forceArray(rootPropValue) as (boolean|string)[];

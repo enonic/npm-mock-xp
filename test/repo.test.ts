@@ -1,10 +1,13 @@
 import {deepStrictEqual} from 'assert';
+import {SYSTEM_REPO} from '../src/constants';
 import {JavaBridge} from '../src/JavaBridge';
+
 
 function hasMethod(obj :unknown, name :string) {
 	// TODO check if obj is Object?
 	return typeof obj[name] === 'function';
 }
+
 
 describe('mock', () => {
 	describe('JavaBridge', () => {
@@ -98,6 +101,10 @@ describe('mock', () => {
 					});
 					deepStrictEqual(
 						[{
+							id: SYSTEM_REPO,
+							branches: ['master'],
+							settings: {}
+						},{
 							id: 'myRepoId',
 							branches: ['master'],
 							settings: {}
