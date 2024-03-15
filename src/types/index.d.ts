@@ -1,4 +1,14 @@
-export { App } from './App.d';
+import type {
+	get as getContext,
+	run as runInContext
+} from '@enonic-types/lib-context';
+
+export type { App } from './App.d';
+export type {
+	MockContext,
+	MockContextLib,
+	MockContextParams,
+} from './Context.d';
 export { Log } from './Log.d';
 export { NodeCreateParams } from './node/create.d';
 export {
