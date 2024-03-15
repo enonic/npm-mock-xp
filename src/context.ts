@@ -31,6 +31,10 @@ function _contextParamsToContext(contextParams: MockContextParams): MockContext 
 		repository: contextParams.repository || 'com.enonic.cms.default',
 	};
 
+	if (contextParams.currentApplicationKey) {
+		context.currentApplicationKey = contextParams.currentApplicationKey;
+		}
+
 	if (contextParams.currentContentkey) {
 		context.currentContentkey = contextParams.currentContentkey;
 	}

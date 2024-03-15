@@ -11,10 +11,12 @@ import type {
 // }
 
 export declare interface MockContext extends Context {
+	currentApplicationKey?: string
 	currentContentkey?: string
 }
 
 export declare interface MockContextParams extends ContextParams {
+	currentApplicationKey?: string
 	currentContentkey?: string
 }
 
