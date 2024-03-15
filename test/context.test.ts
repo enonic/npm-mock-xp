@@ -1,15 +1,24 @@
+import type {User} from '@enonic-types/lib-context';
 import type {
-	Context,
-	ContextParams,
-	User,
-} from '@enonic-types/lib-context';
+	MockContext,
+	MockContextParams,
+} from '../src/types';
 
 import {
 	describe,
 	expect,
 	test as it
 } from '@jest/globals';
-import {get, run} from '../src/context';
+import {JavaBridge} from '../src';
+const xp = new JavaBridge({
+	app: {
+		config: {},
+		name: 'com.enonic.app.test',
+		version: '0.0.1-SNAPSHOT'
+	},
+});
+const get = xp.context.get;
+const run = xp.context.run;
 
 
 describe('context', () => {
@@ -21,15 +30,16 @@ describe('context', () => {
 
 	describe('run', () => {
 		it('should run the callback in the specified context', () => {
-			const outerContext: ContextParams = {};
-			const outerExpected: Context = {
+			const outerContext: MockContextParams = {};
+			const outerExpected: MockContext = {
 				attributes: {},
 				branch: 'master',
 				repository: 'com.enonic.cms.default',
 			}
-			const innerContext: ContextParams = {
+			const innerContext: MockContextParams = {
 				attributes: {},
 				branch: 'draft',
+				currentContentkey: '123',
 				principals: ['role:system:admin'],
 				repository: 'com.enonic.cms.default',
 				user: {
@@ -38,7 +48,7 @@ describe('context', () => {
 				},
 			};
 
-			const innerExpected: Context = {
+			const innerExpected: MockContext = {
 				attributes: {},
 				authInfo: {
 					principals: ['role:system:admin'],
@@ -48,10 +58,11 @@ describe('context', () => {
 					} as User
 				},
 				branch: 'draft',
+				currentContentkey: '123',
 				repository: 'com.enonic.cms.default',
 			};
-			let outerActual: Context|undefined;
-			let innerActual: Context|undefined;
+			let outerActual: MockContext|undefined;
+			let innerActual: MockContext|undefined;
 			run(outerContext, () => {
 				outerActual = get();
 				run(innerContext, () => {

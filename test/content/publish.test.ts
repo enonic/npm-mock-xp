@@ -55,8 +55,6 @@ describe('mock', () => {
 							keys: [
 								"doesn't matter in this test"
 							],
-							sourceBranch: 'ignored',
-							targetBranch: 'also ignored',
 						});
 						expect(fn).toThrow('ContentConnection publish only allowed from the draft branch, got:master');
 					});
@@ -73,8 +71,6 @@ describe('mock', () => {
 							keys: [
 								createdOnDraftOnlyContent._id
 							],
-							sourceBranch: 'ignored',
-							targetBranch: 'also ignored',
 						})).toStrictEqual({
 							deletedContents: [],
 							failedContents: [],
@@ -98,8 +94,6 @@ describe('mock', () => {
 							keys: [
 								content._id
 							],
-							sourceBranch: 'ignored',
-							targetBranch: 'also ignored',
 						});
 						// log.debug('firstPublishRes:%s', firstPublishRes);
 
@@ -121,8 +115,6 @@ describe('mock', () => {
 							keys: [
 								content._id
 							],
-							sourceBranch: 'ignored',
-							targetBranch: 'also ignored',
 						})).toStrictEqual({
 							deletedContents: [],
 							failedContents: [],
@@ -150,8 +142,6 @@ describe('mock', () => {
 							keys: [
 								content._id
 							],
-							sourceBranch: 'ignored',
-							targetBranch: 'also ignored',
 						});
 						// log.debug('firstPublishRes:%s', firstPublishRes);
 
@@ -174,8 +164,6 @@ describe('mock', () => {
 							keys: [
 								content._id
 							],
-							sourceBranch: 'ignored',
-							targetBranch: 'also ignored',
 						})).toStrictEqual({
 							deletedContents: [],
 							failedContents: [],
@@ -199,8 +187,6 @@ describe('mock', () => {
 							keys: [
 								'non-existant'
 							],
-							sourceBranch: 'ignored',
-							targetBranch: 'also ignored',
 						})).toStrictEqual({
 							deletedContents: [],
 							failedContents: [
@@ -223,8 +209,6 @@ describe('mock', () => {
 							keys: [
 								createdOnMasterOnlyContent._id
 							],
-							sourceBranch: 'ignored',
-							targetBranch: 'also ignored',
 						})).toStrictEqual({
 							deletedContents: [
 								createdOnMasterOnlyContent._id

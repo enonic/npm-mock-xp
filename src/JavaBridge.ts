@@ -7,18 +7,20 @@ import type {
 	CreateBranchParams,
 	CreateRepoParams,
 	Log,
+	MockContextLib,
 	RepoConnection,
 	RepoLib,
 	RepositoryConfig,
 	Source,
 	ValueLib
-} from './types/index.d'
+} from './types/index.d';
 
 
 import {toStr} from '@enonic/js-utils/value/toStr';
 import { vol } from 'memfs';
 import {Connection} from './Connection';
 import {ContentConnection} from './ContentConnection';
+import {get as getContext, run as runInContext} from './context';
 import {Repo} from './Repo';
 import {RepositoryNotFoundException} from './repo/RepositoryNotFoundException';
 
@@ -91,6 +93,10 @@ function colorize(colorKey: string, str: string): string {
 export class JavaBridge {
 	private _repos: Repos = {};
 	readonly app: App;
+	readonly context: MockContextLib = {
+		get: getContext,
+		run: runInContext
+	};
 
 	readonly event: EventLib = {
 		listener: ({
