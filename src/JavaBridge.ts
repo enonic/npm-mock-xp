@@ -1,4 +1,7 @@
-import type {getContent as portalGetContentType} from '@enonic-types/lib-portal';
+import type {
+	getContent as portalGetContentType,
+	getSite as portalGetSiteType
+} from '@enonic-types/lib-portal';
 import type {
 	EventLib
 } from '@enonic/js-utils/types';
@@ -25,6 +28,7 @@ import {Connection} from './Connection';
 import {ContentConnection} from './ContentConnection';
 import {get as getContext, run as runInContext} from './context';
 import {getContent as portalGetContent} from './portal/getContent';
+import {getSite as portalGetSite} from './portal/getSite';
 import {Repo} from './Repo';
 import {RepositoryNotFoundException} from './repo/RepositoryNotFoundException';
 
@@ -105,6 +109,7 @@ export class JavaBridge {
 	public context: MockContextLib;
 	public portal: {
 		getContent: typeof portalGetContentType
+		getSite: typeof portalGetSiteType
 	}
 	public _indexWarnings = false;
 
@@ -311,7 +316,8 @@ export class JavaBridge {
 			run: runInContext
 		};
 		this.portal = {
-			getContent: portalGetContent
+			getContent: portalGetContent,
+			getSite: portalGetSite,
 		}
 		this.vol.fromJSON({}, '/');
 		// this.log.debug('in JavaBridge constructor');
