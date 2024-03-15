@@ -22,10 +22,15 @@ import { vol } from 'memfs';
 import {SYSTEM_REPO} from './constants';
 import {Connection} from './Connection';
 import {ContentConnection} from './ContentConnection';
-import {get as getContext, run as runInContext} from './context';
+import {get as getContext, run as runInContext} from './Context';
 import {Repo} from './Repo';
 import {RepositoryNotFoundException} from './repo/RepositoryNotFoundException';
 
+
+declare module globalThis {
+	var _javaBridge: JavaBridge|undefined;
+
+}
 
 export interface Repos {
 	[key: string]: Repo
@@ -95,10 +100,7 @@ function colorize(colorKey: string, str: string): string {
 export class JavaBridge {
 	private _repos: Repos = {};
 	readonly app: App;
-	readonly context: MockContextLib = {
-		get: getContext,
-		run: runInContext
-	};
+	public context: MockContextLib;
 	public _indexWarnings = false;
 
 	readonly event: EventLib = {
@@ -235,33 +237,35 @@ export class JavaBridge {
 			repoId: SYSTEM_REPO
 		});
 		systemRepoConnection.create({
-			name: 'identity',
-			parentPath: '/'
+			_name: 'identity',
+			_parentPath: '/'
 		});
 		systemRepoConnection.create({
-			name: 'roles',
-			parentPath: '/identity'
+			_name: 'roles',
+			_parentPath: '/identity'
 		});
 		systemRepoConnection.create({
-			displayName: 'Authenticated',
-			name: 'system.authenticated',
-			parentPath: '/identity/roles',
-			principalType: 'ROLE',
-		});
-		systemRepoConnection.create({
-			displayName: 'Everyone',
-			name: 'system.everyone',
-			parentPath: '/identity/roles',
-			principalType: 'ROLE',
-		});
-		systemRepoConnection.create({
+			_name: 'system.admin',
+			_parentPath: '/identity/roles',
 			displayName: 'Administrator',
 			member: 'user:system:su',
-			name: 'system.admin',
-			parentPath: '/identity/roles',
 			principalType: 'ROLE',
 		});
 		systemRepoConnection.create({
+			_name: 'system.authenticated',
+			_parentPath: '/identity/roles',
+			displayName: 'Authenticated',
+			principalType: 'ROLE',
+		});
+		systemRepoConnection.create({
+			_name: 'system.everyone',
+			_parentPath: '/identity/roles',
+			displayName: 'Everyone',
+			principalType: 'ROLE',
+		});
+		systemRepoConnection.create({
+			_name: 'system',
+			_parentPath: '/identity',
 			displayName: 'System Id Provider',
 			idProvider: {
 				applicationKey: 'com.enonic.xp.app.standardidprovider',
@@ -269,35 +273,38 @@ export class JavaBridge {
 					adminUserCreationEnabled: true // TODO hardcoded
 				}
 			},
-			name: 'system',
-			parentPath: '/identity'
 		});
 		systemRepoConnection.create({
-			name: 'groups',
-			parentPath: '/identity/system'
+			_name: 'groups',
+			_parentPath: '/identity/system'
 		});
 		systemRepoConnection.create({
-			name: 'users',
-			parentPath: '/identity/system'
+			_name: 'users',
+			_parentPath: '/identity/system'
 		});
 		systemRepoConnection.create({
+			_name: 'su',
+			_parentPath: '/identity/system/users',
 			displayName: 'Super User',
 			login: 'su',
-			name: 'su',
-			parentPath: '/identity/system/users',
 			principalType: 'USER',
 			profile: {},
 			userStoreKey: 'system',
 		});
 		systemRepoConnection.create({
+			_name: 'anonymous',
+			_parentPath: '/identity/system/users',
 			displayName: 'Anonymous User',
 			login: 'anonymous',
-			name: 'anonymous',
-			parentPath: '/identity/system/users',
 			principalType: 'USER',
 			profile: {},
 			userStoreKey: 'system',
 		});
+		globalThis._javaBridge = this;
+		this.context = {
+			get: getContext,
+			run: runInContext
+		};
 		this.vol.fromJSON({}, '/');
 		// this.log.debug('in JavaBridge constructor');
 	} // constructor
