@@ -21,7 +21,7 @@ export class Repo {
 	private _branches: Branches;
 	private _highest_id: number = 1; // root node uses 0 and it's versionKey uses 1
 	private _id: string;
-	private _javaBridge: JavaBridge;
+	readonly _javaBridge: JavaBridge;
 	// rootChildOrder
 	// rootPermissions
 	private _settings: RepositorySettings;

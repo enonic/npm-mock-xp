@@ -18,6 +18,8 @@ import type {
 
 import {toStr} from '@enonic/js-utils/value/toStr';
 import { vol } from 'memfs';
+
+import {SYSTEM_REPO} from './constants';
 import {Connection} from './Connection';
 import {ContentConnection} from './ContentConnection';
 import {get as getContext, run as runInContext} from './context';
@@ -97,6 +99,7 @@ export class JavaBridge {
 		get: getContext,
 		run: runInContext
 	};
+	public _indexWarnings = false;
 
 	readonly event: EventLib = {
 		listener: ({
@@ -210,15 +213,91 @@ export class JavaBridge {
 
 	constructor({
 		app,
+		indexWarnings = false,
 		log
 	}: {
 		app: App
+		indexWarnings?: boolean
 		log?: Log
 	}) {
 		this.app = app;
+		if (indexWarnings) {
+			this._indexWarnings = indexWarnings;
+		}
 		if (log) {
 			this.log = log;
 		}
+		this.repo.create({
+			id: SYSTEM_REPO
+		});
+		const systemRepoConnection = this.connect({
+			branch: 'master',
+			repoId: SYSTEM_REPO
+		});
+		systemRepoConnection.create({
+			name: 'identity',
+			parentPath: '/'
+		});
+		systemRepoConnection.create({
+			name: 'roles',
+			parentPath: '/identity'
+		});
+		systemRepoConnection.create({
+			displayName: 'Authenticated',
+			name: 'system.authenticated',
+			parentPath: '/identity/roles',
+			principalType: 'ROLE',
+		});
+		systemRepoConnection.create({
+			displayName: 'Everyone',
+			name: 'system.everyone',
+			parentPath: '/identity/roles',
+			principalType: 'ROLE',
+		});
+		systemRepoConnection.create({
+			displayName: 'Administrator',
+			member: 'user:system:su',
+			name: 'system.admin',
+			parentPath: '/identity/roles',
+			principalType: 'ROLE',
+		});
+		systemRepoConnection.create({
+			displayName: 'System Id Provider',
+			idProvider: {
+				applicationKey: 'com.enonic.xp.app.standardidprovider',
+				config: {
+					adminUserCreationEnabled: true // TODO hardcoded
+				}
+			},
+			name: 'system',
+			parentPath: '/identity'
+		});
+		systemRepoConnection.create({
+			name: 'groups',
+			parentPath: '/identity/system'
+		});
+		systemRepoConnection.create({
+			name: 'users',
+			parentPath: '/identity/system'
+		});
+		systemRepoConnection.create({
+			displayName: 'Super User',
+			login: 'su',
+			name: 'su',
+			parentPath: '/identity/system/users',
+			principalType: 'USER',
+			profile: {},
+			userStoreKey: 'system',
+		});
+		systemRepoConnection.create({
+			displayName: 'Anonymous User',
+			login: 'anonymous',
+			name: 'anonymous',
+			parentPath: '/identity/system/users',
+			principalType: 'USER',
+			profile: {},
+			userStoreKey: 'system',
+		});
 		this.vol.fromJSON({}, '/');
 		// this.log.debug('in JavaBridge constructor');
 	} // constructor
