@@ -1,4 +1,3 @@
-import { get } from 'http';
 import {JavaBridge} from '../../src';
 import Log from '../../src/Log';
 
