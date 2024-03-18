@@ -1,4 +1,8 @@
 import type {
+	create as contentCreateType,
+	createMedia as contentCreateMediaType
+} from '@enonic-types/lib-content';
+import type {
 	assetUrl as portalAssetUrlType,
 	getContent as portalGetContentType,
 	getSite as portalGetSiteType,
@@ -29,12 +33,18 @@ import { vol } from 'memfs';
 import {SYSTEM_REPO} from './constants';
 import {Connection} from './Connection';
 import {ContentConnection} from './ContentConnection';
+
+import {create as contentCreate} from './content/create';
+import {createMedia as contentCreateMedia} from './content/createMedia';
+
 import {get as getContext, run as runInContext} from './context';
+
 import {assetUrl as portalAssetUrl} from './portal/assetUrl';
 import {getContent as portalGetContent} from './portal/getContent';
 import {getSite as portalGetSite} from './portal/getSite';
 import {getSiteConfig as portalGetSiteConfig} from './portal/getSiteConfig';
 import {imageUrl as portalImageUrl} from './portal/imageUrl';
+
 import {Repo} from './Repo';
 import {RepositoryNotFoundException} from './repo/RepositoryNotFoundException';
 
@@ -112,6 +122,10 @@ function colorize(colorKey: string, str: string): string {
 export class JavaBridge {
 	private _repos: Repos = {};
 	readonly app: App;
+	public content: {
+		create: typeof contentCreateType
+		createMedia: typeof contentCreateMediaType
+	}
 	public context: MockContextLib;
 	public portal: {
 		assetUrl: typeof portalAssetUrlType
@@ -324,6 +338,10 @@ export class JavaBridge {
 			get: getContext,
 			run: runInContext
 		};
+		this.content = {
+			create: contentCreate,
+			createMedia: contentCreateMedia
+		}
 		this.portal = {
 			assetUrl: portalAssetUrl,
 			getContent: portalGetContent,
