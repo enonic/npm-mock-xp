@@ -113,5 +113,5 @@ describe('content', () => {
 				},
 			});
 		});
-	}); // describe create
+	}); // describe createMedia
 }); // describe content

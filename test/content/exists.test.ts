@@ -21,8 +21,7 @@ const xp = new JavaBridge({
 	log
 });
 const create = xp.content.create;
-const get = xp.content.get;
-const _delete = xp.content.delete;
+const exists = xp.content.exists;
 const run = xp.context.run;
 
 
@@ -49,23 +48,38 @@ run({
 });
 
 describe('content', () => {
-	describe('delete', () => {
+	describe('exists', () => {
 		it('should throw when there is context is not found', () => {
 			const fn = () => {
-				return _delete({ key: '00000000-0000-4000-8000-000000000004' });
+				return exists({ key: '00000000-0000-4000-8000-000000000004' });
 			}
-			expect(fn).toThrow(/^mock-xp: lib-content\.delete\(\): No context\!$/);
+			expect(fn).toThrow(/^mock-xp: lib-content\.exists\(\): No context\!$/);
 		});
 
-		it('is able to delete a folder content', () => {
-			return run({
-				currentApplicationKey: APP,
-				branch: 'draft',
-				repository: REPO,
-			},() => {
-				expect(_delete({ key: '00000000-0000-4000-8000-000000000004' })).toBe(true);
-				expect(get({ key: '00000000-0000-4000-8000-000000000004' })).toBe(null);
-			});
+		it('returns true for an existing content', () => {
+			const fn = () => {
+				return run({
+					currentApplicationKey: APP,
+					branch: 'draft',
+					repository: REPO,
+				},() => {
+					return exists({ key: '00000000-0000-4000-8000-000000000004' });
+				});
+			}
+			expect(fn()).toBe(true);
 		});
-	}); // describe delete
+
+		it('returns false for an non-existant content', () => {
+			const fn = () => {
+				return run({
+					currentApplicationKey: APP,
+					branch: 'draft',
+					repository: REPO,
+				},() => {
+					return exists({ key: 'non-existant' });
+				});
+			}
+			expect(fn()).toBe(false);
+		});
+	}); // describe exists
 }); // describe content
