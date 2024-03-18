@@ -64,7 +64,7 @@ describe('mock', () => {
 					);
 				}); // it
 				it('created repo contains a root node', () => {
-					const connection = javaBridge.connect({
+					const connection = javaBridge.node.connect({
 						branch: 'master',
 						repoId: 'myRepoId'
 					});

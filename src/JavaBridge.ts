@@ -10,6 +10,11 @@ import type {
 	publish as contentPublishType,
 } from '@enonic-types/lib-content';
 import type {
+	ConnectParams,
+	RepoConnection,
+	connect as nodeConnectType,
+} from '@enonic-types/lib-node';
+import type {
 	assetUrl as portalAssetUrlType,
 	getContent as portalGetContentType,
 	getSite as portalGetSiteType,
@@ -26,10 +31,8 @@ import type {
 	CreateRepoParams,
 	Log,
 	MockContextLib,
-	RepoConnection,
 	RepoLib,
 	RepositoryConfig,
-	Source,
 	ValueLib
 } from './types/index.d';
 
@@ -147,15 +150,18 @@ export class JavaBridge {
 		modify: typeof contentModifyType
 		move: typeof contentMoveType
 		publish: typeof contentPublishType
-	}
+	};
 	public context: MockContextLib;
+	public node: {
+		connect: typeof nodeConnectType
+	};
 	public portal: {
 		assetUrl: typeof portalAssetUrlType
 		getContent: typeof portalGetContentType
 		getSite: typeof portalGetSiteType
 		getSiteConfig: typeof portalGetSiteConfigType
 		imageUrl: typeof portalImageUrlType
-	}
+	};
 	public _indexWarnings = false;
 
 	readonly event: EventLib = {
@@ -287,7 +293,27 @@ export class JavaBridge {
 		this.repo.create({
 			id: SYSTEM_REPO
 		});
-		const systemRepoConnection = this.connect({
+		this.node = {
+			connect: ({
+				repoId,
+				branch// ,
+				// user,
+				// principals
+			}: ConnectParams): RepoConnection => {
+				const repo = this._repos[repoId];
+				if (!repo) {
+					throw new Error(`connect: No repo with id:${repoId}!`);
+				}
+				const branchObj = repo.getBranch(branch);
+				const connection = new Connection({
+					branch: branchObj,
+					javaBridge: this
+				});
+				return connection as unknown as RepoConnection;
+			}
+			// TODO multiRepoConnect
+		};
+		const systemRepoConnection = this.node.connect({
 			branch: 'master',
 			repoId: SYSTEM_REPO
 		});
@@ -382,22 +408,10 @@ export class JavaBridge {
 		// this.log.debug('in JavaBridge constructor');
 	} // constructor
 
-	connect({
-		repoId,
-		branch// ,
-		// user,
-		// principals
-	}: Source): RepoConnection {
-		const repo = this._repos[repoId];
-		if (!repo) {
-			throw new Error(`connect: No repo with id:${repoId}!`);
-		}
-		const branchObj = repo.getBranch(branch);
-		const connection = new Connection({
-			branch: branchObj,
-			javaBridge: this
-		});
-		return connection;
+	// TODO: Remove this in some future major version (breaking change)
+	connect(params: ConnectParams): RepoConnection {
+		this.log.warning('JavaBridge.connect() is DEPRECATED: Please use JavaBridge.node.connect() instead.');
+		return this.node.connect(params);
 	}
 
 	contentConnect({
