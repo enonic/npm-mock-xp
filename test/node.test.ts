@@ -41,7 +41,7 @@ describe('mock', () => {
 			it('throws TypeError when no params', () => {
 				assert.throws(() => {
 					//@ts-ignore
-					javaBridge.connect();
+					javaBridge.node.connect();
 				}, {
 					name: 'TypeError',
 					message: /^Cannot (destructure|read) propert.* 'repoId'/
@@ -50,7 +50,7 @@ describe('mock', () => {
 			it('throws Error when param.repoId is missing', () => {
 				assert.throws(() => {
 					//@ts-ignore
-					javaBridge.connect({
+					javaBridge.node.connect({
 						branch: 'master'
 					});
 				}, {
@@ -61,7 +61,7 @@ describe('mock', () => {
 			it('throws Error when param.branch is missing', () => {
 				assert.throws(() => {
 					//@ts-ignore
-					javaBridge.connect({
+					javaBridge.node.connect({
 						repoId: 'myRepoId'
 					});
 				}, {
@@ -69,7 +69,7 @@ describe('mock', () => {
 					message: /No branch with branchId/
 				});
 			}); // it
-			const connection = javaBridge.connect({
+			const connection = javaBridge.node.connect({
 				branch: 'master',
 				repoId: 'myRepoId'
 			});

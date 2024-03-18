@@ -33,7 +33,7 @@ describe('mock', () => {
 		});
 		describe('connect()', () => {
 			describe('Connection', () => {
-				const connection = javaBridge.connect({
+				const connection = javaBridge.node.connect({
 					branch: 'master',
 					repoId: 'myRepoId'
 				});

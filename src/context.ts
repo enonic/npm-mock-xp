@@ -50,7 +50,7 @@ function _contextParamsToContext(contextParams: MockContextParams): MockContext 
 	}
 
 	if (contextParams.user?.login) {
-		const systemRepoConnection = globalThis._javaBridge.connect({
+		const systemRepoConnection = globalThis._javaBridge.node.connect({
 			branch: 'master',
 			repoId: SYSTEM_REPO
 		});
