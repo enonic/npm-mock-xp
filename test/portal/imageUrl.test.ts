@@ -91,7 +91,7 @@ const leaSeydouxJpg = contentDraftConnection.createMedia({
 
 describe('portal', () => {
 	describe('imageUrl', () => {
-		it('should throw when there is context is not found', () => {
+		it('should throw when there is no context', () => {
 			const fn = () => {
 				return imageUrl({
 					id: '123',
@@ -152,7 +152,7 @@ describe('portal', () => {
 			expect(fn).toThrow(/^lib-portal.imageUrl\(\): No imageContent with key:123$/);
 		});
 
-		it('should handle preview by id inside Content Studio', () => {
+		it('should handle preview by id under admin', () => {
 			const fn = () => {
 				return run({
 					currentApplicationKey: APP,
@@ -169,7 +169,7 @@ describe('portal', () => {
 			expect(fn()).toEqual('/admin/site/preview/myproject/draft/some/path/_/image/00000000-0000-4000-8000-000000000004:0123456789abcdef/block-1920-1280/Lea-Seydoux.jpg');
 		});
 
-		it('should handle preview by path inside Content Studio', () => {
+		it('should handle preview by path under admin', () => {
 			const fn = () => {
 				return run({
 					currentApplicationKey: APP,
@@ -194,7 +194,7 @@ describe('portal', () => {
 			expect(fn()).toEqual('http://localhost:8080/admin/site/preview/myproject/draft/some/path/_/image/00000000-0000-4000-8000-000000000004:0123456789abcdef/full/Lea-Seydoux.jpg.png?key=value&background=FFFFFF&filter=rounded%285%29%3Bsharpen%28%29&quality=100');
 		});
 
-		it('should handle preview by id outside Content Studio', () => {
+		it('should handle preview by id outside admin', () => {
 			const fn = () => {
 				return run({
 					currentApplicationKey: APP,
