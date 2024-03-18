@@ -1,72 +1,85 @@
-import {
-	describe,
-	expect,
-	// jest,
-	// test
-} from '@jest/globals';
 import {JavaBridge} from '../../src';
 import Log from '../../src/Log';
-import { hasMethod } from '../hasMethod';
+
+
+const APP = 'com.enonic.app.myapp';
+const PROJECT = 'myproject';
+const REPO = `com.enonic.cms.${PROJECT}`;
+
 
 const log = Log.createLogger({
+	// loglevel: 'debug'
 	loglevel: 'silent'
 });
 
-const APP_NAME = 'com.enonic.app.test';
-const CONTENT_TYPE = `${APP_NAME}:myContentType`;
+const xp = new JavaBridge({
+	app: {
+		config: {},
+		name: APP,
+		version: '0.0.1-SNAPSHOT'
+	},
+	log
+});
+const create = xp.content.create;
+const run = xp.context.run;
 
 
-describe('mock', () => {
-	describe('JavaBridge', () => {
-		const javaBridge = new JavaBridge({
-			app: {
-				config: {},
-				name: APP_NAME,
-				version: '0.0.1-SNAPSHOT'
-			},
-			log
+xp.repo.create({
+    id: REPO
+});
+
+xp.repo.createBranch({
+    branchId: 'draft',
+    repoId: REPO
+});
+
+
+describe('content', () => {
+	describe('create', () => {
+		it('should throw when there is context is not found', () => {
+			const fn = () => {
+				return create({
+					contentType: 'base:folder',
+					data: {},
+					name: 'folder',
+					parentPath: '/',
+				});
+			}
+			expect(fn).toThrow(/^mock-xp: lib-content\.create\(\): No context\!$/);
 		});
-		javaBridge.repo.create({
-			id: 'com.enonic.cms.default'
-		});
-		describe('contentConnect', () => {
-			const contentConnection = javaBridge.contentConnect({
-				branch: 'master',
-				project: 'default'
-			});
-			it('returns an object which has a create method', () => {
-				expect(hasMethod(contentConnection, 'create')).toBe(true);
-			});
-			describe('contentConnection', () => {
-				describe('create', () => {
-					it('creates content', () => {
-						const createdContent = contentConnection.create({
-							childOrder: 'displayname ASC',
-							contentType: CONTENT_TYPE,
-							data: {},
-							name: 'name',
-							parentPath: '/',
-						});
-						expect(createdContent).toEqual({
-							_id: createdContent._id,
-							_name: 'name',
-							_path: '/name',
-							attachments: {},
-							childOrder: 'displayname ASC',
-							createdTime: createdContent.createdTime,
-							creator: createdContent.creator,
-							displayName: 'name',
-							hasChildren: true, // TODO: Hardcode
-							data: {},
-							owner: createdContent.owner,
-							publish: {},
-							type: CONTENT_TYPE,
-							valid: true,
-							x: {}
-						});
+
+		it('is able to create a folder content', () => {
+			const fn = () => {
+				return run({
+					currentApplicationKey: APP,
+					branch: 'draft',
+					repository: REPO,
+				},() => {
+					return create({
+						contentType: 'base:folder',
+						data: {},
+						name: 'folder',
+						parentPath: '/',
 					});
 				});
+			}
+			expect(fn()).toEqual({
+				_id: '00000000-0000-4000-8000-000000000004',
+				_name: 'folder',
+				_path: '/folder',
+				attachments: {},
+				childOrder: undefined,
+				createdTime: expect.any(String) as unknown as string,
+				creator: 'user:system:su',
+				data: {},
+				displayName: 'folder',
+				hasChildren: true,
+				owner: 'user:system:su',
+				publish: {},
+				type: 'base:folder',
+				valid: true,
+				x: {},
 			});
 		});
-	});
-});
+	}); // describe create
+}); // describe content
