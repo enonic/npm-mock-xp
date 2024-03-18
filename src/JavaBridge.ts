@@ -1,4 +1,5 @@
 import type {
+	assetUrl as portalAssetUrlType,
 	getContent as portalGetContentType,
 	getSite as portalGetSiteType,
 	getSiteConfig as portalGetSiteConfigType
@@ -28,6 +29,7 @@ import {SYSTEM_REPO} from './constants';
 import {Connection} from './Connection';
 import {ContentConnection} from './ContentConnection';
 import {get as getContext, run as runInContext} from './context';
+import {assetUrl as portalAssetUrl} from './portal/assetUrl';
 import {getContent as portalGetContent} from './portal/getContent';
 import {getSite as portalGetSite} from './portal/getSite';
 import {getSiteConfig as portalGetSiteConfig} from './portal/getSiteConfig';
@@ -110,6 +112,7 @@ export class JavaBridge {
 	readonly app: App;
 	public context: MockContextLib;
 	public portal: {
+		assetUrl: typeof portalAssetUrlType
 		getContent: typeof portalGetContentType
 		getSite: typeof portalGetSiteType
 		getSiteConfig: typeof portalGetSiteConfigType
@@ -319,6 +322,7 @@ export class JavaBridge {
 			run: runInContext
 		};
 		this.portal = {
+			assetUrl: portalAssetUrl,
 			getContent: portalGetContent,
 			getSite: portalGetSite,
 			getSiteConfig: portalGetSiteConfig
