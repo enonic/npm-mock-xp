@@ -78,7 +78,7 @@ describe('portal', () => {
 					type: 'absolute'
 				});
 			}
-			expect(fn).toThrow(/^lib-portal.asset\(\): No context\!/);
+			expect(fn).toThrow(/^mock-xp: lib-portal.assetUrl\(\): No context\!/);
 		});
 
 		it('should throw when there is request in the context', () => {
@@ -98,7 +98,7 @@ describe('portal', () => {
 					});
 				});
 			}
-			expect(fn).toThrow(/lib-portal.asset\(\): No context.request\! Support for assetUrl outside portal is not yet implemented./);
+			expect(fn).toThrow(/mock-xp: lib-portal.assetUrl\(\): No context.request\! Support for assetUrl outside portal is not yet implemented./);
 		});
 
 		it('should handle preview inside Content Studio', () => {

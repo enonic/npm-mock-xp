@@ -15,16 +15,16 @@ const FINGERPRINT = '0123456789abcdef';
 
 export function assetUrl(params: AssetUrlParams): string {
 	if (!globalThis._javaBridge) {
-		throw new Error('In order to use the lib-portal.asset() mock, an instance of JavaBridge must be created and assigned to globalThis._javaBridge');
+		throw new Error('mock-xp: In order to use the lib-portal.assetUrl() mock, an instance of JavaBridge must be created and assigned to globalThis._javaBridge');
 	}
 
 	const context = getContext();
 	if (!context) {
-		throw new Error('lib-portal.asset(): No context!');
+		throw new Error('mock-xp: lib-portal.assetUrl(): No context!');
 	}
 
 	if (!context.request) {
-		throw new Error('lib-portal.asset(): No context.request! Support for assetUrl outside portal is not yet implemented.');
+		throw new Error('mock-xp: lib-portal.assetUrl(): No context.request! Support for assetUrl outside portal is not yet implemented.');
 	}
 
 	// TODO Both these could be vhosted!
