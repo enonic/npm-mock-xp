@@ -49,73 +49,71 @@ function _contextParamsToContext(contextParams: MockContextParams): MockContext 
 		}
 	}
 
-	if (contextParams.user) {
-		if (contextParams.user.login) {
-			const systemRepoConnection = globalThis._javaBridge.connect({
-				branch: 'master',
-				repoId: SYSTEM_REPO
-			});
-			const idProvider = contextParams.user.idProvider || 'system';
+	if (contextParams.user?.login) {
+		const systemRepoConnection = globalThis._javaBridge.connect({
+			branch: 'master',
+			repoId: SYSTEM_REPO
+		});
+		const idProvider = contextParams.user.idProvider || 'system';
 
-			// const systemRepoQueryRes = systemRepoConnection.query({});
-			// const allSystemRepoNodes = systemRepoQueryRes.hits.map(({id}) => systemRepoConnection.get(id))
-			// console.debug('allSystemRepoNodes', allSystemRepoNodes);
+		// const systemRepoQueryRes = systemRepoConnection.query({});
+		// const allSystemRepoNodes = systemRepoQueryRes.hits.map(({id}) => systemRepoConnection.get(id))
+		// console.debug('allSystemRepoNodes', allSystemRepoNodes);
 
-			const userNode = systemRepoConnection.get(`/identity/${idProvider}/users/${contextParams.user.login}`) as Node<{
-				authenticationHash?: string
-				disabled?: boolean
-				displayName: string
-				email?: string
-				idProvider: string
-				login: string
-				modifiedTime?: string
-				profile?: Record<string, unknown>
-			}>;
-			// console.debug('userNode', userNode);
-			if (userNode) {
-				const {
-					_ts,
-					disabled,
-					displayName,
-					email,
-					login,
-				} = userNode;
+		const userNode = systemRepoConnection.get(`/identity/${idProvider}/users/${contextParams.user.login}`) as Node<{
+			authenticationHash?: string
+			disabled?: boolean
+			displayName: string
+			email?: string
+			idProvider: string
+			login: string
+			modifiedTime?: string
+			profile?: Record<string, unknown>
+		}>;
+		// console.debug('userNode', userNode);
+		if (userNode) {
+			const {
+				_ts,
+				disabled,
+				displayName,
+				email,
+				login,
+			} = userNode;
 
-				const principalKey: PrincipalKey = `user:${idProvider}:${login}`;
+			const principalKey: PrincipalKey = `user:${idProvider}:${login}`;
 
-				const user: User = {
-					type: 'user',
-					key: principalKey,
-					displayName,
-					login,
-					modifiedTime: _ts,
-					idProvider
-				};
-				if (disabled) {
-					user.disabled = true;
-				}
-				if (email) {
-					user.email = email;
-				}
-				if (!context.authInfo) {
-					context.authInfo = {}
-				}
-				if (!context.authInfo.principals) {
-					context.authInfo.principals = [];
-				}
-
-				// TODO Lookup members of all roles, instead of this hack:
-				if (idProvider === 'system' && login === 'su') {
-					context.authInfo.principals.push('role:system.admin');
-				}
-
-				context.authInfo.principals.push('role:system.authenticated');
-				context.authInfo.principals.push('role:system.everyone');
-				if (!context.authInfo.principals.includes(principalKey)) {
-					context.authInfo.principals.push(principalKey);
-				}
-				context.authInfo.user = user;
+			const user: User = {
+				type: 'user',
+				key: principalKey,
+				displayName,
+				login,
+				modifiedTime: _ts,
+				idProvider
+			};
+			if (disabled) {
+				user.disabled = true;
 			}
+			if (email) {
+				user.email = email;
+			}
+			if (!context.authInfo) {
+				context.authInfo = {}
+			}
+			if (!context.authInfo.principals) {
+				context.authInfo.principals = [];
+			}
+
+			// TODO Lookup members of all roles, instead of this hack:
+			if (idProvider === 'system' && login === 'su') {
+				context.authInfo.principals.push('role:system.admin');
+			}
+
+			context.authInfo.principals.push('role:system.authenticated');
+			context.authInfo.principals.push('role:system.everyone');
+			if (!context.authInfo.principals.includes(principalKey)) {
+				context.authInfo.principals.push(principalKey);
+			}
+			context.authInfo.user = user;
 		}
 	}
 	return context;
