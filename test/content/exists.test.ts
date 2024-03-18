@@ -69,14 +69,14 @@ describe('content', () => {
 			expect(fn()).toBe(true);
 		});
 
-		it('returns false for an non-existant content', () => {
+		it('returns false for a non-existent content', () => {
 			const fn = () => {
 				return run({
 					currentApplicationKey: APP,
 					branch: 'draft',
 					repository: REPO,
 				},() => {
-					return exists({ key: 'non-existant' });
+					return exists({ key: 'non-existent' });
 				});
 			}
 			expect(fn()).toBe(false);
