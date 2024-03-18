@@ -2,7 +2,12 @@ import type {
 	create as contentCreateType,
 	createMedia as contentCreateMediaType,
 	delete as contentDeleteType,
+	exists as contentExistsType,
 	get as contentGetType,
+	getAttachmentStream as contentGetAttachmentStreamType,
+	modify as contentModifyType,
+	move as contentMoveType,
+	publish as contentPublishType,
 } from '@enonic-types/lib-content';
 import type {
 	assetUrl as portalAssetUrlType,
@@ -40,6 +45,12 @@ import {create as contentCreate} from './content/create';
 import {createMedia as contentCreateMedia} from './content/createMedia';
 import {delete as contentDelete} from './content/delete';
 import {get as contentGet} from './content/get';
+import {exists as contentExists} from './content/exists';
+import {getAttachmentStream as contentGetAttachmentStream} from './content/getAttachmentStream';
+import {modify as contentModify} from './content/modify';
+import {move as contentMove} from './content/move';
+import {publish as contentPublish} from './content/publish';
+
 
 import {get as getContext, run as runInContext} from './context';
 
@@ -131,6 +142,11 @@ export class JavaBridge {
 		createMedia: typeof contentCreateMediaType
 		delete: typeof contentDeleteType
 		get: typeof contentGetType
+		exists: typeof contentExistsType
+		getAttachmentStream: typeof contentGetAttachmentStreamType
+		modify: typeof contentModifyType
+		move: typeof contentMoveType
+		publish: typeof contentPublishType
 	}
 	public context: MockContextLib;
 	public portal: {
@@ -348,7 +364,12 @@ export class JavaBridge {
 			create: contentCreate,
 			createMedia: contentCreateMedia,
 			delete: contentDelete,
-			get: contentGet
+			get: contentGet,
+			exists: contentExists,
+			getAttachmentStream: contentGetAttachmentStream,
+			modify: contentModify,
+			move: contentMove,
+			publish: contentPublish
 		}
 		this.portal = {
 			assetUrl: portalAssetUrl,
