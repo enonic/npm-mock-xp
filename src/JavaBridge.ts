@@ -2,7 +2,8 @@ import type {
 	assetUrl as portalAssetUrlType,
 	getContent as portalGetContentType,
 	getSite as portalGetSiteType,
-	getSiteConfig as portalGetSiteConfigType
+	getSiteConfig as portalGetSiteConfigType,
+	imageUrl as portalImageUrlType,
 } from '@enonic-types/lib-portal';
 import type {
 	EventLib
@@ -33,6 +34,7 @@ import {assetUrl as portalAssetUrl} from './portal/assetUrl';
 import {getContent as portalGetContent} from './portal/getContent';
 import {getSite as portalGetSite} from './portal/getSite';
 import {getSiteConfig as portalGetSiteConfig} from './portal/getSiteConfig';
+import {imageUrl as portalImageUrl} from './portal/imageUrl';
 import {Repo} from './Repo';
 import {RepositoryNotFoundException} from './repo/RepositoryNotFoundException';
 
@@ -116,6 +118,7 @@ export class JavaBridge {
 		getContent: typeof portalGetContentType
 		getSite: typeof portalGetSiteType
 		getSiteConfig: typeof portalGetSiteConfigType
+		imageUrl: typeof portalImageUrlType
 	}
 	public _indexWarnings = false;
 
@@ -325,7 +328,8 @@ export class JavaBridge {
 			assetUrl: portalAssetUrl,
 			getContent: portalGetContent,
 			getSite: portalGetSite,
-			getSiteConfig: portalGetSiteConfig
+			getSiteConfig: portalGetSiteConfig,
+			imageUrl: portalImageUrl
 		}
 		this.vol.fromJSON({}, '/');
 		// this.log.debug('in JavaBridge constructor');
