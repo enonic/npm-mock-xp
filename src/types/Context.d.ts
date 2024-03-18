@@ -4,6 +4,8 @@ import type {
 	Context,
 	ContextParams,
 } from '@enonic-types/lib-context';
+import type {Request} from './Request';
+
 
 // export declare interface ContextLib {
 // 	get: typeof getContext
@@ -13,11 +15,13 @@ import type {
 export declare interface MockContext extends Context {
 	currentApplicationKey?: string
 	currentContentkey?: string
+	request?: Request
 }
 
 export declare interface MockContextParams extends ContextParams {
 	currentApplicationKey?: string
 	currentContentkey?: string
+	request?: Request
 }
 
 export declare interface MockContextLib {

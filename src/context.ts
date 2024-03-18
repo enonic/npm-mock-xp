@@ -33,10 +33,14 @@ function _contextParamsToContext(contextParams: MockContextParams): MockContext 
 
 	if (contextParams.currentApplicationKey) {
 		context.currentApplicationKey = contextParams.currentApplicationKey;
-		}
+	}
 
 	if (contextParams.currentContentkey) {
 		context.currentContentkey = contextParams.currentContentkey;
+	}
+
+	if (contextParams.request) {
+		context.request = contextParams.request;
 	}
 
 	if (contextParams.principals) {
