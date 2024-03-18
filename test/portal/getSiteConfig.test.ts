@@ -142,7 +142,7 @@ describe('portal', () => {
 			});
 		});
 
-		it("should return null when there is no site config for the currentApplicationKey", () => {
+		it("should return null when there is no site config for the specified application", () => {
 			run({
 				branch: 'master',
 				currentApplicationKey: 'whatnot',
