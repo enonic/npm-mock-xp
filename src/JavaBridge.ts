@@ -408,12 +408,6 @@ export class JavaBridge {
 		// this.log.debug('in JavaBridge constructor');
 	} // constructor
 
-	// TODO: Remove this in some future major version (breaking change)
-	connect(params: ConnectParams): RepoConnection {
-		this.log.warning('JavaBridge.connect() is DEPRECATED: Please use JavaBridge.node.connect() instead.');
-		return this.node.connect(params);
-	}
-
 	contentConnect({
 		branch,
 		project,
