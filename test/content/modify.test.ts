@@ -49,7 +49,7 @@ const folderContent = run({
 
 describe('content', () => {
 	describe('modify', () => {
-		it('should throw when there is context is not found', () => {
+		it('should throw when there is no context', () => {
 			const fn = () => {
 				return modify({
 					key:folderContent._id,

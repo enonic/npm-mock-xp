@@ -50,7 +50,7 @@ const folderContent = run({
 
 describe('content', () => {
 	describe('publish', () => {
-		it('should throw when there is context is not found', () => {
+		it('should throw when there is no context', () => {
 			const fn = () => {
 				return publish({
 					keys: [folderContent._id],

@@ -49,7 +49,7 @@ run({
 
 describe('content', () => {
 	describe('exists', () => {
-		it('should throw when there is context is not found', () => {
+		it('should throw when there is no context', () => {
 			const fn = () => {
 				return exists({ key: '00000000-0000-4000-8000-000000000004' });
 			}
