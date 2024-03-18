@@ -6,6 +6,7 @@ import {
 import * as assert from 'assert';
 import {JavaBridge} from '../src/JavaBridge';
 import Log from '../src/Log';
+import { hasOwnProperty } from '@enonic/js-utils';
 
 
 function hasMethod(obj :unknown, name :string) {
@@ -31,10 +32,16 @@ describe('mock', () => {
 		javaBridge.repo.create({
 			id: 'myRepoId'
 		});
-		it('instance has property connect', () => {
+		it('instance has property node', () => {
 			deepStrictEqual(
 				true,
-				hasMethod(javaBridge, 'connect')
+				hasOwnProperty(javaBridge, 'node')
+			);
+		}); // it
+		it('instance.node has property connect', () => {
+			deepStrictEqual(
+				true,
+				hasMethod(javaBridge.node, 'connect')
 			);
 		}); // it
 		describe('connect', () => {
