@@ -1,6 +1,8 @@
 import type {
 	create as contentCreateType,
-	createMedia as contentCreateMediaType
+	createMedia as contentCreateMediaType,
+	delete as contentDeleteType,
+	get as contentGetType,
 } from '@enonic-types/lib-content';
 import type {
 	assetUrl as portalAssetUrlType,
@@ -36,6 +38,8 @@ import {ContentConnection} from './ContentConnection';
 
 import {create as contentCreate} from './content/create';
 import {createMedia as contentCreateMedia} from './content/createMedia';
+import {delete as contentDelete} from './content/delete';
+import {get as contentGet} from './content/get';
 
 import {get as getContext, run as runInContext} from './context';
 
@@ -125,6 +129,8 @@ export class JavaBridge {
 	public content: {
 		create: typeof contentCreateType
 		createMedia: typeof contentCreateMediaType
+		delete: typeof contentDeleteType
+		get: typeof contentGetType
 	}
 	public context: MockContextLib;
 	public portal: {
@@ -340,7 +346,9 @@ export class JavaBridge {
 		};
 		this.content = {
 			create: contentCreate,
-			createMedia: contentCreateMedia
+			createMedia: contentCreateMedia,
+			delete: contentDelete,
+			get: contentGet
 		}
 		this.portal = {
 			assetUrl: portalAssetUrl,
