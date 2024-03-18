@@ -67,7 +67,7 @@ const assetUrl = xp.portal.assetUrl;
 
 describe('portal', () => {
 	describe('assetUrl', () => {
-		it('should throw when there is context is not found', () => {
+		it('should throw when there is no context', () => {
 			const fn = () => {
 				return assetUrl({
 					application: APP2,
@@ -101,7 +101,7 @@ describe('portal', () => {
 			expect(fn).toThrow(/mock-xp: lib-portal.assetUrl\(\): No context.request\! Support for assetUrl outside portal is not yet implemented./);
 		});
 
-		it('should handle preview inside Content Studio', () => {
+		it('should handle preview under admin', () => {
 			const fn = () => {
 				return run({
 					currentApplicationKey: APP1,
@@ -120,7 +120,7 @@ describe('portal', () => {
 			expect(fn()).toEqual('/admin/site/preview/myproject/draft/some/path/_/asset/com.enonic.app.myapp1:0123456789abcdef//images/asset.png?key=value');
 		});
 
-		it('should handle preview inside Content Studio with type absolute', () => {
+		it('should handle preview under admin with type absolute', () => {
 			const fn = () => {
 				return run({
 					currentApplicationKey: APP1,
@@ -141,7 +141,7 @@ describe('portal', () => {
 			expect(fn()).toEqual('http://localhost:8080/admin/site/preview/myproject/draft/some/path/_/asset/com.enonic.app.myapp2:0123456789abcdef//images/asset.png?key=value');
 		});
 
-		it('should handle live url outside Content Studio', () => {
+		it('should handle live url outside admin', () => {
 			const fn = () => {
 				return run({
 					currentApplicationKey: APP1,
@@ -160,7 +160,7 @@ describe('portal', () => {
 			expect(fn()).toEqual('/site/myproject/master/some/path/_/asset/com.enonic.app.myapp1:0123456789abcdef//images/asset.png?key=value');
 		});
 
-		it('should handle live url outside Content Studio with type absolute', () => {
+		it('should handle live url outside admin with type absolute', () => {
 			const fn = () => {
 				return run({
 					currentApplicationKey: APP1,
