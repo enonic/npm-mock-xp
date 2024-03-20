@@ -19,6 +19,10 @@
 		"skipLibCheck": true,
 		"sourceMap": true, // Needed to get correct Uncovered Line numbers
 		"target": "ES2022",
+		"types": [
+			"jest",
+			"node"
+		]
 	},
 	"include": [
 		"./**/*.ts"
