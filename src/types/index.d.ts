@@ -2,6 +2,7 @@ import type {
 	get as getContext,
 	run as runInContext
 } from '@enonic-types/lib-context';
+import type { vol } from 'memfs';
 
 export type { App } from './App.d';
 export type {
@@ -35,3 +36,4 @@ export {
 } from './Repo.d';
 export {Request} from './Request.d';
 export {ValueLib} from './Value.d';
+export type Vol = typeof vol;
