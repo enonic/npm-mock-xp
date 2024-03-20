@@ -1,4 +1,4 @@
-import type {Log as LogType} from './types/index.d';
+import type {Log as LogType} from '../types';
 
 
 import {
@@ -26,7 +26,7 @@ export type LogLevel =
 ;
 
 
-export default class Log {
+export class Log {
 
 	static colorize(a: unknown[]) {
 		return a.map(i => reset(stringify(i, { maxItems: Infinity })));
