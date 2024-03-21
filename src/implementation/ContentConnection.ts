@@ -188,7 +188,7 @@ export class ContentConnection {
 			// idGenerator, // TODO undocumented?
 			mimeType,
 			name,
-			parentPath,
+			parentPath = '/',
 		} = params;
 		// this.log.debug('ContentConnection createMedia(%s)', {
 		// 	focalX, focalY, mimeType, name, parentPath
