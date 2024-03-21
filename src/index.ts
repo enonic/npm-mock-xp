@@ -18,5 +18,8 @@ export {Reference} from './libs/value/Reference';
 
 export {LibContent} from './libs/LibContent';
 export {LibContext} from './libs/LibContext';
+export {LibEvent} from './libs/LibEvent';
+export {LibNode} from './libs/LibNode';
 export {LibPortal} from './libs/LibPortal';
+export {LibRepo} from './libs/LibRepo';
 export {LibValue} from './libs/LibValue';

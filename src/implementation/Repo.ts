@@ -1,7 +1,10 @@
 import type {
-	BranchConfig,
-	Log,
+	Repository,
 	RepositorySettings
+} from '@enonic-types/lib-repo';
+import type {
+	Log,
+	// RepositorySettings
 } from '../types'
 import type {Server} from './Server';
 
@@ -53,7 +56,7 @@ export class Repo {
 		};
 	}
 
-	public createBranch(branchId: string): BranchConfig {
+	public createBranch(branchId: string): Branch {
 		if (this.branches[branchId]) {
 			throw new BranchAlreadyExistException(`Branch [{${branchId}}] already exists`);
 		}
@@ -61,7 +64,8 @@ export class Repo {
 			branchId,
 			repo: this
 		});
-		return { id: branchId };
+		//return { id: branchId };
+		return this.branches[branchId]
 	}
 
 	// TODO delete()
@@ -78,7 +82,7 @@ export class Repo {
 		return `00000000-0000-4000-8000-${lpad(this._highest_id,12,'0')}`;
 	}
 
-	get() {
+	get(): Repository {
 		return {
 			id: this.id,
 			branches: Object.keys(this.branches),
