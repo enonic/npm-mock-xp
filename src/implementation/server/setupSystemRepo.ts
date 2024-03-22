@@ -78,4 +78,5 @@ export function setupSystemRepo({
 		profile: {},
 		userStoreKey: 'system',
 	});
+	return systemRepoConnection;
 }

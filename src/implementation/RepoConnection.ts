@@ -76,6 +76,10 @@ export class RepoConnection implements RepoConnectionInterface {
 		return this.branch.getNodeActiveVersion({key});
 	}
 
+	public getSingle<T>(key: string): T {
+		return this.branch.getNode(key) as T;
+	}
+
 	// TODO getBinary()
 
 	// TODO getCommit()
