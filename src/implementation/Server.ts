@@ -13,6 +13,7 @@ import type {Repos} from './Repo';
 
 import {vol} from 'memfs';
 
+import {Auth} from './Auth';
 import {ContentConnection} from './ContentConnection';
 import {Log} from './Log';
 import {Repo} from './Repo';
@@ -24,11 +25,13 @@ import {Version} from './Version';
 
 export class Server {
 	readonly applications: App[] = [];
-	readonly version: string = '7.14.0';
+	readonly auth: Auth;
 	readonly indexWarnings: boolean = false;
-	readonly vol = vol;
 	readonly log: LogType = Log.createLogger({loglevel: 'info'});
 	readonly repos: Repos = {};
+	readonly systemRepoConnection: RepoConnection;
+	readonly version: string = '7.14.0';
+	readonly vol = vol;
 
 	constructor({
 		indexWarnings = false,
@@ -53,7 +56,10 @@ export class Server {
 			this.version = version;
 		}
 		this.vol.fromJSON({}, '/');
-		setupSystemRepo({server: this});
+		this.systemRepoConnection = setupSystemRepo({server: this});
+		this.auth = new Auth({
+			server: this
+		});
 	} // constructor
 
 	public connect({
