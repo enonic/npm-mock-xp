@@ -14,7 +14,7 @@ import {Branch} from './Branch';
 import {BranchAlreadyExistException} from './repo/BranchAlreadyExistException';
 
 
-interface ServerRepoBranches {
+interface Branches {
 	[key: string]: Branch
 }
 
@@ -25,7 +25,7 @@ export interface Repos {
 export class Repo {
 	private _highest_id: number = 1; // root node uses 0 and it's versionKey uses 1
 	// #id: string; // Private identifiers are only available when targeting ECMAScript 2015 and higher.
-	readonly branches: ServerRepoBranches;
+	readonly branches: Branches;
 	readonly id: string;
 	readonly server: Server;
 	// rootChildOrder

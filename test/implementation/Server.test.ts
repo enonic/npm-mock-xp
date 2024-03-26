@@ -2,15 +2,16 @@ import {
 	RepoConnection,
 	Server,
 } from '../../src';
+import {SYSTEM_REPO} from '../../src/constants';
 
 
 const REPO_ID = 'com.enonic.myapp';
 
-const REPO_INFO = {
-	branches: ['master'],
-	id: REPO_ID,
-	settings: {}
-}
+// const REPO_INFO = {
+// 	branches: ['master'],
+// 	id: REPO_ID,
+// 	settings: {}
+// }
 const NODE_ID = '00000000-0000-4000-8000-000000000002';
 const NODE_VERSION_KEY = '00000000-0000-4000-8000-000000000003';
 const NODE_VERSION_KEY_MODIFIED = '00000000-0000-4000-8000-000000000004';
@@ -43,33 +44,48 @@ describe('Server', () => {
 		expect(server).toBeInstanceOf(Server);
 	});
 
+	it('comes with system-repo', () => {
+		const server = new Server();
+		expect(server.getRepo(SYSTEM_REPO)).toBeDefined();
+	});
+
 	it('can be used to create a repo', () => {
 		const server = new Server();
-		expect(server.repo.list()).toStrictEqual([]);
-		expect(() => server.repo.get(REPO_ID)).toThrow();
-		expect(server.repo.create({id: REPO_ID})).toStrictEqual(REPO_INFO);
-		expect(server.repo.get(REPO_ID)).toStrictEqual(REPO_INFO);
-		expect(server.repo.list()).toStrictEqual([REPO_INFO]);
+		expect(server.listRepos().length).toStrictEqual(1);
+		expect(() => server.getRepo(REPO_ID)).toThrow();
+
+		const repo = server.createRepo({id: REPO_ID});
+		expect(repo.id).toStrictEqual(REPO_ID);
+		expect(repo.branches['master']).toBeDefined();
+		expect(repo.settings).toStrictEqual({});
+
+		const gottenRepo = server.getRepo(REPO_ID);
+		expect(gottenRepo.id).toStrictEqual(REPO_ID);
+		expect(gottenRepo.branches['master']).toBeDefined
+		expect(gottenRepo.settings).toStrictEqual({});
+
+		expect(server.listRepos().length).toStrictEqual(2);
 	});
 
 	it('can be used to create a draft branch', () => {
 		const server = new Server();
-		expect(() => server.repo.createBranch({
+		expect(() => server.createBranch({
 			branchId: 'draft',
 			repoId: REPO_ID
 		})).toThrow();
-		server.repo.create({id: REPO_ID});
-		expect(server.repo.createBranch({
+		server.createRepo({id: REPO_ID});
+		const branch = server.createBranch({
 			branchId: 'draft',
 			repoId: REPO_ID
-		})).toStrictEqual({id: 'draft'});
+		});
+		expect(branch.id).toStrictEqual('draft');
 	});
 
 	it('can be used to connect and create, exists, get, getActiveVersion, modify and delete a node', () => {
 		const server = new Server({
 			loglevel: 'debug'
 		});
-		server.repo.create({id: REPO_ID});
+		server.createRepo({id: REPO_ID});
 		const connection = new RepoConnection({
 			branch: server.repos[REPO_ID].getBranch('master')
 		});

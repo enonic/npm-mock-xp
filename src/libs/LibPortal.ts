@@ -2,6 +2,8 @@ import type {
 	AssetUrlParams,
 	Content,
 	ImageUrlParams,
+	Site,
+	SiteConfig,
 } from '@enonic-types/lib-portal';
 import type {
 	Log,
@@ -9,10 +11,12 @@ import type {
 } from '../types';
 
 
-import {Project} from '../implementation/Project';
-// import {Server} from './Server';
+import {forceArray} from '@enonic/js-utils/array/forceArray'
+import {CONTENT_TYPE_PORTAL_SITE} from '../constants';
 import {App} from '../implementation/App';
+import {ContentConnection} from '../implementation/ContentConnection';
 import {Request} from '../implementation/Request';
+import {Server} from '../implementation/Server';
 
 
 export declare interface QueryParams {
@@ -30,37 +34,51 @@ const FINGERPRINT = '0123456789abcdef';
 export class LibPortal {
 	readonly app: App;
 	readonly log: Log;
-	readonly project: Project;
-	readonly repositoryId: string;
+	readonly server: Server;
+
 	public request: Request;
 
 	constructor({
 		app,
-		// branch = 'draft',
-		project,
-		// projectName,
-		// server,
-		// settings
+		server,
 	}: {
 		app: App
-		// branch?: 'draft' | 'master'
-		project: Project
-		// projectName: string
-		// server: Server
-		// settings?: RepositorySettings
+		server: Server
 	}) {
 		this.app = app;
-		this.log = project.server.log;
-		this.project = project;
-		// this.project = new Project({
-		// 	branch,
-		// 	projectName,
-		// 	server,
-		// 	settings
-		// });
-		this.repositoryId = project.repositoryId;
+		this.log = server.log;
+		this.server = server;
 	} // constructor
 
+	private _getParentContent({
+		path
+	}: {
+		path: string
+	}) {
+		const pathParts = path.split('/');
+		pathParts.pop();
+		const parentPath = pathParts.join('/');
+		return this.connect().get({key: parentPath});
+	}
+
+	private _recursiveReturnParentIfSite<Config = Record<string, unknown>>({
+		path
+	}: {
+		path: string
+	}) {
+		const parentContent = this._getParentContent({
+			path
+		});
+		if (!parentContent) {
+			return null;
+		}
+		if (parentContent.type == CONTENT_TYPE_PORTAL_SITE) {
+			return parentContent as Site<Config>;
+		}
+		return this._recursiveReturnParentIfSite<Config>({
+			path: parentContent._path
+		});
+	}
 
 	public assetUrl(params: AssetUrlParams): string {
 		if(!this.request) {
@@ -103,14 +121,73 @@ export class LibPortal {
 		return `${scheme}://${host}${port && port !== 80 ? `:${port}`: ''}${urlPathAndQuery}`;
 	} // assetUrl
 
+	connect() {
+		const repoId = this.server.context.repository;
+		if (!repoId) {
+			throw new Error('mock-xp: LibPortal.connect: No repository set in context!');
+		}
+		const repo = this.server.repos[repoId];
+		const branchId = this.server.context.branch;
+		if (!branchId) {
+			throw new Error('mock-xp: LibPortal.connect: No branch set in context!');
+		}
+		const branch = repo.getBranch(branchId);
+		const contentConnection = new ContentConnection({
+			branch
+		});
+		return contentConnection;
+	}
 
 	public getContent<Hit extends Content<unknown> = Content>(): Hit | null {
 		if(!this.request) {
 			throw new Error('mock-xp: Portal.getContent(): Unable to determine current contentId as there is no request set on the Portal object instance!');
 		}
+		// this.log.debug('getContent: request', this.request);
 		const contentPath = this.request.contentPath();
-		// this.log.debug('getContent', contentPath);
-		return this.project.connection.get({key: contentPath});
+		// this.log.debug('getContent: contentPath', contentPath);
+		return this.connect().get({key: contentPath});
+	}
+
+	public getSite<Config = Record<string, unknown>>(): Site<Config> | null {
+		if(!this.request) {
+			throw new Error('mock-xp: Portal.getSite(): Unable to determine current contentId as there is no request set on the Portal object instance!');
+		}
+		const currentContent = this.getContent();
+		if (!currentContent) {
+			throw new Error('mock-xp: Portal.getSite(): Unable to find current content!');
+		}
+		if (currentContent.type == CONTENT_TYPE_PORTAL_SITE) {
+			return currentContent as Site<Config>;
+		}
+		return this._recursiveReturnParentIfSite<Config>({
+			path: currentContent._path
+		});
+	}
+
+	public getSiteConfig<Config = Record<string, unknown>>(): Config | null {
+		if(!this.request) {
+			throw new Error('mock-xp: Portal.getSiteConfig(): Unable to determine current contentId as there is no request set on the Portal object instance!');
+		}
+		const site = this.getSite<Config>();
+		if (!site) {
+			throw new Error('No site!');
+		}
+		this.log.debug('site', site);
+		if (!site.data.siteConfig) {
+			return null;
+		}
+
+		const siteConfigsObj = forceArray(site.data.siteConfig);
+		this.log.debug('siteConfigsObj', siteConfigsObj);
+
+		const filteredSiteConfigs = siteConfigsObj.filter((siteConfig) => siteConfig.applicationKey === this.app.key);
+		this.log.debug('filteredSiteConfigs', filteredSiteConfigs);
+
+		if (filteredSiteConfigs.length === 0) {
+			return null;
+		}
+		const aSiteConfig: SiteConfig<Config> = filteredSiteConfigs[0] as SiteConfig<Config>;
+		return aSiteConfig.config;
 	}
 
 	public imageUrl(params: ImageUrlParams): string {
@@ -139,7 +216,7 @@ export class LibPortal {
 			throw new Error('lib-portal.imageUrl(): Either id or path must be set!');
 		}
 
-		const imageContent = this.project.connection.get({key});
+		const imageContent = this.connect().get({key});
 		// console.debug(imageContent);
 		if (!imageContent) {
 			throw new Error(`lib-portal.imageUrl(): No imageContent with key:${key}`);
@@ -188,7 +265,7 @@ export class LibPortal {
 			return urlPathAndQuery;
 		}
 
-		return `${scheme}://${host}${port ? `:${port}`: ''}${urlPathAndQuery}`;
+		return `${scheme}://${host}${port && port !== 80 ? `:${port}`: ''}${urlPathAndQuery}`;
 	} // imageUrl
 
 } // class Portal

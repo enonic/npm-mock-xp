@@ -15,7 +15,8 @@ describe('App', () => {
 
 	it('should be installable on a server', () => {
 		const server = new Server({
-			loglevel: 'debug'
+			// loglevel: 'debug'
+			loglevel: 'error'
 		});
 		const app = new App({
 			config: {},
@@ -28,7 +29,8 @@ describe('App', () => {
 
 	it('should throw if minSystemVersion is higher than server version', () => {
 		const server = new Server({
-			loglevel: 'debug',
+			// loglevel: 'debug',
+			loglevel: 'error',
 			version: '1.0.0'
 		});
 		const app = new App({
@@ -42,7 +44,8 @@ describe('App', () => {
 
 	it('should throw if maxSystemVersion is lower than server version', () => {
 		const server = new Server({
-			loglevel: 'debug',
+			// loglevel: 'debug',
+			loglevel: 'error',
 			version: '1.0.0'
 		});
 		const app = new App({
