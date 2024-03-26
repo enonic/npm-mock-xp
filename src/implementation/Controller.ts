@@ -56,6 +56,19 @@ export class Controller extends Resource {
 } // class Controller
 
 /*
+http://localhost:8080/site/intro/master/persons/lea-seydoux context: {
+    "branch": "master",
+    "repository": "com.enonic.cms.intro",
+    "authInfo": {
+        "principals": [
+            "user:system:anonymous",
+            "role:system.everyone"
+        ]
+    },
+    "attributes": {
+        "__currentTimeMillis": 1711349074978
+    }
+}
 
 /main context: {
     "branch": "draft",

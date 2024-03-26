@@ -26,6 +26,12 @@ export class LibNode {
 		// principals,
 		// user
 	}: ConnectParams): RepoConnection {
+		if (!repoId) {
+			throw new Error('No repo with id');
+		}
+		if(!branch) {
+			throw new Error('No branch with branchId');
+		}
 		return this.server.connect({
 			repoId,
 			branchId: branch

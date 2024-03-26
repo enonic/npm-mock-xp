@@ -275,7 +275,10 @@ export class ContentConnection {
 
 	delete(params: DeleteContentParams): boolean {
 		// this.log.debug('ContentConnection delete(%s)', params);
-		const { key } = params;
+		let { key } = params;
+		if (key.startsWith('/')) {
+			key = `/content${ key }`;
+		}
 		const [deletedId] = this.branch.deleteNode(key);
 		return !!deletedId;
 	} // delete
@@ -306,7 +309,8 @@ export class ContentConnection {
 		}
 		const node = this.branch.getNode(key) as RepoNodeWithData;
 		if (!node) {
-			this.log.warning('ContentConnection get: No content for key:%s', key);
+			// TODO Some setting to show this warning? Maybe TRACE level?
+			// this.log.warning('ContentConnection get: No content for key:%s', key);
 			return null;
 		}
 		return this.nodeToContent({node}) as Hit;
@@ -316,8 +320,13 @@ export class ContentConnection {
 
 	getAttachmentStream(params: GetAttachmentStreamParams): ByteSource | null {
 		// this.log.debug('ContentConnection getAttachmentStream(%s)', params);
-		const {
+		let {
 			key,
+		} = params;
+		if (key.startsWith('/')) {
+			key = `/content${ key }`;
+		}
+		const {
 			name: paramName
 		} = params;
 		const node = this.branch.getNode(key) as Node<{
@@ -326,6 +335,7 @@ export class ContentConnection {
 				sha512: string
 			}
 		}>;
+		// console.debug('node', node);
 		if (!node) {
 			return null;
 		}
@@ -563,53 +573,62 @@ export class ContentConnection {
 			pushedContents: [],
 		};
 		contentKeysLoop: for (let i = 0; i < keys.length; i++) {
-			let key = keys[i] as string;
-			const existsOnDraft = this.exists({ key });
-			const existsOnMaster = contentMasterConnection.exists({ key });
+			const contentKey = keys[i] as string;
+			const nodeKey = contentKey.startsWith('/') ? `/content${contentKey}`: contentKey;
+
+			const existsOnDraft = this.exists({ key: contentKey });
+
 			if (existsOnDraft) {
-				const nodeOnDraft = this.branch.getNode(key) as RepoNodeWithData;
+				const nodeOnDraft = this.branch.getNode(nodeKey) as RepoNodeWithData;
 				// this.log.debug('ContentConnection nodeOnDraft(%s)', nodeOnDraft);
+				// this.log.debug('ContentConnection nodeOnDraft(%s)', {
+				// 	_id: nodeOnDraft._id,
+				// 	_path: nodeOnDraft._path,
+				// });
+
+				const nodeId = nodeOnDraft._id;  // Path may have changed by move on draft
+				const existsOnMaster = contentMasterConnection.exists({ key: nodeId });
 				if (existsOnMaster) {
 					const overriddenNode = masterBranch._overwriteNode({ node: nodeOnDraft });
 					if (overriddenNode) {
-						this.log.debug("ContentConnection publish: Modified content with key %s on the master branch!", key);
-						res.pushedContents.push(key);
+						this.log.debug("ContentConnection publish: Modified content with id %s on the master branch!", nodeId);
+						res.pushedContents.push(contentKey);
 					} else {
-						this.log.error("ContentConnection publish: Failed to modify content with key %s on the master branch!", key);
-						res.failedContents.push(key);
+						this.log.error("ContentConnection publish: Failed to modify content with id %s on the master branch!", nodeId);
+						res.failedContents.push(contentKey);
 					}
 					continue contentKeysLoop;
-				}
-				if (key.startsWith('/')) {
-					key = `/content${ key }`;
-				}
+				} // if existsOnMaster
+
 				const pathParts = nodeOnDraft._path.split('/');
 				pathParts.pop();
 				nodeOnDraft['_parentPath'] = pathParts.join('/');
 				// deleteIn(nodeOnDraft as unknown as NestedRecord, '_path'); // Causes problems
 				const createdNode = masterBranch._createNodeInternal(nodeOnDraft);
 				if (createdNode) {
-					this.log.debug("ContentConnection publish: Created content with key %s on the master branch!", key);
-					res.pushedContents.push(key);
+					this.log.debug("ContentConnection publish: Created content with key %s on the master branch!", contentKey);
+					res.pushedContents.push(contentKey);
 				} else {
-					this.log.error("ContentConnection publish: Failed to create content with key %s on the master branch!", key);
-					res.failedContents.push(key);
+					this.log.error("ContentConnection publish: Failed to create content with key %s on the master branch!", contentKey);
+					res.failedContents.push(contentKey);
 				}
 				continue contentKeysLoop;
-			}
+			} // if existsOnDraft
+
+			const existsOnMaster = contentMasterConnection.exists({ key: contentKey });
 			if (existsOnMaster) {
-				if (contentMasterConnection.delete({ key })) {
-					this.log.debug("ContentConnection publish: Deleted content with key %s from the master branch!", key);
-					res.deletedContents.push(key);
+				if (contentMasterConnection.delete({ key: contentKey })) {
+					this.log.debug("ContentConnection publish: Deleted content with key %s from the master branch!", contentKey);
+					res.deletedContents.push(contentKey);
 					continue contentKeysLoop;
 				} else {
-					this.log.error("ContentConnection publish: Failed to delete content with key %s from the master branch!", key);
-					res.failedContents.push(key);
+					this.log.error("ContentConnection publish: Failed to delete content with key %s from the master branch!", contentKey);
+					res.failedContents.push(contentKey);
 					continue contentKeysLoop;
 				}
 			}
-			this.log.error("ContentConnection publish: Content with key %s doesn't exist on the draft nor the master branch!", key);
-			res.failedContents.push(key);
+			this.log.error("ContentConnection publish: Content with key %s doesn't exist on the draft nor the master branch!", contentKey);
+			res.failedContents.push(contentKey);
 		} // for
 		return res;
 	}

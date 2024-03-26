@@ -329,7 +329,9 @@ export class Branch {
 					// this.log.debug('rootPropValue:%s', rootPropValue);
 
 					if (!isString(rootPropValue)) {
-						this.log.warning('mock-xp is not able to handle non-string properties yet, skipping rootProp:%s with value:%s', rootPropKey, toStr(rootPropValue));
+						if (this.repo.server.indexWarnings) {
+							this.log.warning('mock-xp is not able to handle non-string properties yet, skipping rootProp:%s with value:%s', rootPropKey, toStr(rootPropValue));
+						}
 						continue RootProps;
 					}
 					// this.log.debug('this._searchIndex:%s', this._searchIndex);
@@ -364,6 +366,7 @@ export class Branch {
 			return [];
 		}
 		const flattenedKeys: string[] = flatten(keys) as string[];
+		// this.log.debug('pathIndex', this.pathIndex);
 		// this.log.debug('getNode() flattenedKeys:%s', flattenedKeys);
 		const existingKeys = flattenedKeys
 			.map(k => this.existsNode(k) ? k : undefined)
@@ -491,6 +494,9 @@ export class Branch {
 	}: {
 		node: RepoNodeWithData
 	}): RepoNodeWithData {
+		const previousPath = this.nodes[node._id]._path;
+		delete this.pathIndex[previousPath];
+		this.pathIndex[node._path] = node._id;
 		this.nodes[node._id] = node;
 		return deref(this.nodes[node._id] as RepoNodeWithData);
 	}

@@ -115,6 +115,7 @@ export class Request {
 	// "rawPath": "/admin/site/preview/intro/draft/persons/lea-seydoux",
 	// "contextPath": "/admin/site/preview/draft/",
 	contentPath(): string {
+		// console.debug('contentPath() this.project():', this.project());
 		return this.path
 			.replace(/^\/admin/, '')
 			.replace(/^\/site/, '')
@@ -128,6 +129,9 @@ export class Request {
 	}
 
 	project() {
+		if (!this.repositoryId) {
+			throw new Error('Unable to get project from request without repositoryId!');
+		}
 		return this.repositoryId.replace(/^com\.enonic\.cms\./, '');
 	}
 

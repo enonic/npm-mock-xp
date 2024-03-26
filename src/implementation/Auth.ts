@@ -28,16 +28,15 @@ type UserNode = Node<{
 //
 // In addition we assume only the 'system' id provider.
 export class Auth {
-	// readonly server: Server;
+	readonly server: Server;
 	readonly systemRepoConnection: RepoConnection;
-	public user: User | undefined;
 
 	constructor({
 		server
 	}: {
 		server: Server
 	}) {
-		// this.server = server;
+		this.server = server;
 		this.systemRepoConnection = server.systemRepoConnection;
 	}
 
@@ -48,7 +47,11 @@ export class Auth {
 		name: string
 		idProvider?: string
 	}): UserNode {
-		return this.systemRepoConnection.getSingle<UserNode>(`/identity/${idProvider}/users/${name}`);
+		const userNode = this.systemRepoConnection.getSingle<UserNode>(`/identity/${idProvider}/users/${name}`);
+		if (!userNode) {
+			throw new Error(`User not found: user:${idProvider}:${name}!`);
+		}
+		return userNode;
 	}
 
 	public createRole({
@@ -100,7 +103,7 @@ export class Auth {
 	}
 
 	public getUser() {
-		return this.user;
+		return this.server.user;
 	}
 
 	public getUserByName({
@@ -138,15 +141,17 @@ export class Auth {
 			login: user,
 			modifiedTime: userNode._ts
 		});
-		this.user = userObject;
+		const authenticated = password === userNode.password;
+		this.server.user = userObject;
 		return {
-			authenticated: password === userNode.password,
+			authenticated,
 			message: 'Login Message',
 			user: userObject
 		};
 	}
 
 	public logout(): void {
-		this.user = undefined;
+		// this.server.context.setUser(null);
+		this.server.user = undefined;
 	}
 } // class Auth

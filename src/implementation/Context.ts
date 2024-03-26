@@ -5,12 +5,15 @@ import type {
 	PrincipalKey,
 } from '@enonic-types/lib-context';
 import type {Auth} from './Auth';
-import type {Project} from './Project';
 import type {Server} from './Server';
 import type {User} from './User';
 
 
-import {ContentConnection} from './ContentConnection';
+import {
+	ROLE_SYSTEM_ADMIN,
+	USER_SYSTEM_ANONYMOUS,
+	ROLE_SYSTEM_EVERYONE,
+} from '../constants';
 
 
 // Needs access to SystemRepo to get user and principals
@@ -18,43 +21,11 @@ export class Context implements ContextInterface {
 	readonly attributes: ContextAttributes;
 	readonly auth: Auth;
 	readonly branch: ContextInterface['branch'];
-	readonly principals: ContextParams['principals'] = [];
-	readonly user: User
 	readonly repository: ContextInterface['repository'];
 	readonly server: Server;
 
-	static runProject<T>({
-		callback,
-		contextParams,
-		project
-	}: {
-		callback: () => T
-		contextParams: ContextParams,
-		project: Project
-	}): T {
-		const {
-			attributes = {},
-			branch,
-			principals = [],
-			repository,
-			user
-		} = contextParams;
-		const context = new Context({
-			attributes,
-			branch,
-			principals,
-			repository,
-			server: project.server,
-			user
-		});
-		const currentConnection = project.connection;
-		project.connection = new ContentConnection({
-			branch: project.repo.getBranch(context.branch)
-		});
-		const res = callback();
-		project.connection = currentConnection;
-		return res;
-	}
+	public principals: ContextParams['principals'] = [];
+	public user: User // Can be different than the logged in user
 
 	constructor({
 		branch,
@@ -66,8 +37,8 @@ export class Context implements ContextInterface {
 		user,
 	}: {
 		// Required
-		branch: ContextInterface['branch']
-		repository: ContextInterface['repository']
+		branch?: ContextInterface['branch']
+		repository?: ContextInterface['repository']
 		server: Server
 
 		// Optional
@@ -75,6 +46,9 @@ export class Context implements ContextInterface {
 		principals?: ContextParams['principals']
 		user?: ContextParams['user']
 	}) {
+		if (repository.startsWith('com.enonic.cms.') && !['draft', 'master'].includes(branch)) {
+			throw new Error(`Invalid branch: ${branch} for repository: ${repository}!`);
+		}
 		this.server = server;
 		this.auth = server.auth;
 
@@ -92,31 +66,47 @@ export class Context implements ContextInterface {
 				name: login
 			});
 			if (idProvider === 'system' && login === 'su') {
-				this.principals.push('role:system.admin');
+				this.addPrincipal(ROLE_SYSTEM_ADMIN);
 			}
 			([
-				// 'role:system.authenticated',
-				'role:system.everyone',
-				// TODO What about anonymous?
+				// ROLE_SYSTEM_AUTHENTICATED,
+				ROLE_SYSTEM_EVERYONE,
 				this.user.key
 			] as PrincipalKey[]).forEach((principalKey) => {
-				if (!this.principals.includes(principalKey)) {
-					this.principals.push(principalKey);
-				}
+				this.addPrincipal(principalKey);
 			});
+		} else {
+			this.addPrincipal(USER_SYSTEM_ANONYMOUS);
 		}
 	} // constructor
+
+	public addPrincipal(principal: PrincipalKey) {
+		if (!this.principals.includes(principal)) {
+			this.principals.push(principal);
+		}
+		return this;
+	}
 
 	public get(): ContextInterface {
 		return {
 			attributes: this.attributes,
 			authInfo: {
 				principals: this.principals,
-				user: this.user,
+				user: this.user || null,
 			},
 			branch: this.branch,
 			repository: this.repository,
 		};
 	}
+
+	// public setPrincipals(principals: PrincipalKey[]) {
+	// 	this.principals = principals;
+	// 	return this;
+	// }
+
+	// public setUser(user: User) {
+	// 	this.user = user;
+	// 	return this;
+	// }
 
 } // class Context

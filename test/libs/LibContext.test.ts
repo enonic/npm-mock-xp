@@ -16,14 +16,15 @@ import {
 
 const APP_KEY = 'com.example.myapp';
 const PROJECT_NAME = 'myproject';
+const REPO_ID = `com.enonic.cms.${PROJECT_NAME}`;
 
 const server = new Server({
-    loglevel: 'debug'
-});
-
-const project = new Project({
-    projectName: PROJECT_NAME,
-    server
+	// loglevel: 'debug',
+	loglevel: 'error',
+}).createProject({
+	projectName: PROJECT_NAME,
+}).setContext({
+	projectName: PROJECT_NAME,
 });
 
 const app = new App({
@@ -31,7 +32,7 @@ const app = new App({
 });
 
 const libContent = new LibContent({
-    project
+    server
 });
 
 const libContext = new LibContext({
@@ -40,7 +41,7 @@ const libContext = new LibContext({
 
 const libPortal = new LibPortal({
 	app,
-	project
+	server
 });
 
 const leaSeydouxJpg = libContent.createMedia({
@@ -51,7 +52,7 @@ const leaSeydouxJpg = libContent.createMedia({
     focalY: 0.5,
 });
 
-const leaContent = libContent.create({
+const originalContent = libContent.create({
     contentType: 'com.example.myapp:person',
     data: {
         bio: "French actress Léa Seydoux was born in 1985 in Paris, France, to Valérie Schlumberger, a philanthropist, and Henri Seydoux, a businessman.",
@@ -64,11 +65,11 @@ const leaContent = libContent.create({
 });
 
 libContent.publish({
-	keys: [leaContent._id, leaSeydouxJpg._id]
+	keys: [originalContent._id, leaSeydouxJpg._id]
 });
 
-libContent.modify({
-	key: leaContent._id,
+const modifiedContent = libContent.modify({
+	key: originalContent._id,
 	editor: (content) => {
 		content.displayName = 'Léa Seydoux';
 		return content;
@@ -77,18 +78,20 @@ libContent.modify({
 
 describe('lib-context', () => {
 	describe('run', () => {
-		it('should NOT change which branch a content is fetched from', () => {
+		it('should change which branch a content is fetched from', () => {
 			libPortal.request = new Request({
-				repositoryId: libPortal.repositoryId,
+				repositoryId: REPO_ID,
 				path: '/admin/site/preview/myproject/draft/lea-seydoux'
 			});
 			const draftContent = libPortal.getContent();
 			expect(draftContent.displayName).toBe('Léa Seydoux');
+			expect(draftContent).toStrictEqual(modifiedContent);
 			libContext.run({
-				branch: 'master'
+				branch: 'master',
+				repository: REPO_ID,
 			}, () => {
 				const unknownContent = libPortal.getContent();
-				expect(unknownContent).toStrictEqual(draftContent);
+				expect(unknownContent).toStrictEqual(originalContent);
 			});
 		});
 	}); // describe run

@@ -10,17 +10,14 @@ import {
 } from '../../src';
 
 
-const REPO_ID = 'com.enonic.myapp';
+const PROJECT_NAME = 'myproject';
+const REPO_ID = `com.enonic.cms.${PROJECT_NAME}`;
 const FILENAME = 'Lea-Seydoux.jpg'
 const DATA: ByteSource = readFileSync(join(__dirname, '..', FILENAME)) as unknown as ByteSource;
 
-const server = new Server();
-server.repo.create({id: REPO_ID});
-server.repo.createBranch({
-	branchId: 'draft',
-	repoId: REPO_ID
+const server = new Server().createProject({
+	projectName: PROJECT_NAME,
 });
-
 
 describe('ContentConnection', () => {
 	it('should be instantiable', () => {

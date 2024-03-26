@@ -12,71 +12,95 @@ import type {
 	PublishContentParams,
 	PublishContentResult
 } from '@enonic-types/lib-content';
-import type {Project} from '../implementation/Project';
-// import type {ContentConnection} from '../implementation/ContentConnection';
+// import type {Project} from '../implementation/Project';
+import type {Server} from '../implementation/Server';
+
+
+import {ContentConnection} from '../implementation/ContentConnection';
 
 
 export class LibContent {
 	// readonly connection: ContentConnection;
-	readonly project: Project;
+	// readonly project: Project;
+	readonly server: Server;
 
 	constructor({
-		project
+		// project
+		server
 	}: {
-		project: Project
+		// project: Project
+		server: Server
 	}) {
 		// Since project.connection can be changed by Context this will break
 		// stuff. So don't do this:
 		// this.connection = project.connection;
-		this.project = project;
+		// this.project = project;
+		this.server = server;
 	}
 
-	create<
+	connect() {
+		const repoId = this.server.context.repository;
+		if (!repoId) {
+			throw new Error('No repository set in context!');
+		}
+		const repo = this.server.repos[repoId];
+		const branchId = this.server.context.branch;
+		if (!branchId) {
+			throw new Error('No branch set in context!');
+		}
+		const branch = repo.getBranch(branchId);
+		const contentConnection = new ContentConnection({
+			branch
+		});
+		return contentConnection;
+	}
+
+	public create<
 		Data = Record<string, unknown>, Type extends string = string
 	>(params: CreateContentParams<Data, Type>): Content<Data, Type> {
-		return this.project.connection.create(params);
+		return this.connect().create(params);
 	}
 
-	createMedia<
+	public createMedia<
 		Data = Record<string, unknown>,
 		Type extends string = string
 	>(params: CreateMediaParams): Content<Data, Type> {
-		return this.project.connection.createMedia(params);
+		return this.connect().createMedia(params);
 	}
 
-	delete(params: DeleteContentParams): boolean {
-		return this.project.connection.delete(params);
+	public delete(params: DeleteContentParams): boolean {
+		return this.connect().delete(params);
 	}
 
-	exists(params: ContentExistsParams): boolean {
-		return this.project.connection.exists(params);
+	public exists(params: ContentExistsParams): boolean {
+		return this.connect().exists(params);
 	}
 
-	get<
+	public get<
 		Hit extends Content<unknown> = Content
 	>(params: GetContentParams): Hit | null {
-		return this.project.connection.get(params);
+		return this.connect().get(params);
 	}
 
-	getAttachmentStream(params: GetAttachmentStreamParams): ByteSource | null {
-		return this.project.connection.getAttachmentStream(params);
+	public getAttachmentStream(params: GetAttachmentStreamParams): ByteSource | null {
+		return this.connect().getAttachmentStream(params);
 	}
 
-	modify<
+	public modify<
 		Data = Record<string, unknown>,
 		Type extends string = string
 	>(params: ModifyContentParams<Data, Type>): Content<Data, Type> | null {
-		return this.project.connection.modify(params);
+		return this.connect().modify(params);
 	}
 
-	move<
+	public move<
 		Data = Record<string, unknown>, Type extends string = string
 	>(params: MoveContentParams): Content<Data, Type> {
-		return this.project.connection.move(params);
+		return this.connect().move(params);
 	}
 
-	publish(params: PublishContentParams): PublishContentResult {
-		return this.project.connection.publish(params);
+	public publish(params: PublishContentParams): PublishContentResult {
+		return this.connect().publish(params);
 	}
 
 } // class LibContent
