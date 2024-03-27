@@ -1,5 +1,6 @@
 import type {
 	LoginParams,
+	UserKey,
 } from '@enonic-types/lib-auth';
 import type {
 	ContextAttributes,
@@ -20,7 +21,6 @@ import type {
 } from '../types';
 import type {App} from './App';
 import type {Repos} from './Repo';
-import type {User} from './User';
 
 
 import {vol} from 'memfs';
@@ -55,7 +55,7 @@ export class Server {
 
 	// At some point these should live somewhere else, but this simplification
 	// is fine for now:
-	public user?: User | undefined
+	public userKey?: UserKey | undefined
 	public context: Context
 
 	constructor({
@@ -252,12 +252,7 @@ export class Server {
 		login,
 		user = login
 			? {login, idProvider}
-			: this.user
-				? {
-					idProvider: this.user.idProvider,
-					login: this.user.login,
-				}
-				: undefined,
+			: undefined,
 	}: {
 		attributes?: ContextAttributes
 		branch?: string
@@ -268,6 +263,15 @@ export class Server {
 		repository?: string
 		user?: ContextUserParams
 	}) {
+		if (!user) {
+			const currentUser = this.auth.getUser();
+			if (currentUser) {
+				user = {
+					idProvider: currentUser.idProvider,
+					login: currentUser.login,
+				};
+			}
+		}
 		this.context = new Context({
 			attributes,
 			branch,

@@ -5,6 +5,16 @@ import type {
 
 import {Principal} from './Principal';
 
+export declare interface UserConstructorParams {
+	displayName: Principal['displayName']
+	idProvider: UserInterface['idProvider']
+	key: UserInterface['key']
+	login: UserInterface['login']
+	// Optional
+	email?: UserInterface['email']
+	disabled?: UserInterface['disabled']
+	modifiedTime?: Principal['modifiedTime']
+}
 
 export class User extends Principal implements UserInterface {
 	// Constrict Principal
@@ -29,16 +39,7 @@ export class User extends Principal implements UserInterface {
 		login,
 		// Optional
 		disabled = false,
-	}: {
-		displayName: Principal['displayName']
-		idProvider: UserInterface['idProvider']
-		key: UserInterface['key']
-		login: UserInterface['login']
-		// Optional
-		email?: UserInterface['email']
-		disabled?: UserInterface['disabled']
-		modifiedTime?: Principal['modifiedTime']
-	}) {
+	}: UserConstructorParams) {
 		super({
 			displayName,
 			key,

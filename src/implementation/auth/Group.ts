@@ -8,10 +8,10 @@ import {Principal} from './Principal';
 
 export class Group extends Principal implements GroupInterface {
 	// Constrict Principal
-	readonly key: GroupInterface['key'];
+	declare readonly key: GroupInterface['key'];
 	readonly type = 'group';
 	// Override
-	public modifiedTime: GroupInterface['modifiedTime'];
+	declare public modifiedTime: GroupInterface['modifiedTime'];
 
 	// Extend Principal
 	readonly description: GroupInterface['description']// = '';

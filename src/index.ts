@@ -16,6 +16,7 @@ export {LocalDateTime} from './libs/value/LocalDateTime';
 export {LocalTime} from './libs/value/LocalTime';
 export {Reference} from './libs/value/Reference';
 
+export {LibAuth} from './libs/LibAuth';
 export {LibContent} from './libs/LibContent';
 export {LibContext} from './libs/LibContext';
 export {LibEvent} from './libs/LibEvent';
