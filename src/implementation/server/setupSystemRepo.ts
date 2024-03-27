@@ -66,7 +66,7 @@ export function setupSystemRepo({
 		displayName: 'Super User',
 		login: 'su',
 		principalType: 'USER',
-		profile: {},
+		profile: {}, // This seems to be correct when viewing with Data Toolbox
 		userStoreKey: 'system',
 	});
 	systemRepoConnection.create({
@@ -75,7 +75,7 @@ export function setupSystemRepo({
 		displayName: 'Anonymous User',
 		login: 'anonymous',
 		principalType: 'USER',
-		profile: {},
+		profile: {}, // This seems to be correct when viewing with Data Toolbox
 		userStoreKey: 'system',
 	});
 	return systemRepoConnection;

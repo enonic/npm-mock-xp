@@ -6,7 +6,7 @@ import type {
 } from '@enonic-types/lib-context';
 import type {Auth} from './Auth';
 import type {Server} from './Server';
-import type {User} from './User';
+import type {User} from './auth/User';
 
 
 import {
