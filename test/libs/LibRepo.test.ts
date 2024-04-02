@@ -27,25 +27,26 @@ describe('mock', () => {
 				true,
 				hasMethod(libRepo, 'create')
 			);
-		}); // it
+		});
 		it('repo object has method get', () => {
 			deepStrictEqual(
 				true,
 				hasMethod(libRepo, 'get')
 			);
-		}); // it
+		});
 		it('repo object has method list', () => {
 			deepStrictEqual(
 				true,
 				hasMethod(libRepo, 'list')
 			);
-		}); // it
+		});
 		/*it('repo object has method refresh', () => {
 			deepStrictEqual(
 				true,
 				hasMethod(libRepo, 'refresh')
 			);
-		}); // it*/
+		});*/
+
 		describe('create', () => {
 			const createdRepo = libRepo.create({
 				id: 'myRepoId'
@@ -59,7 +60,7 @@ describe('mock', () => {
 					},
 					createdRepo
 				);
-			}); // it
+			});
 			it('created repo contains a root node', () => {
 				const connection = server.connect({
 					branchId: 'master',
@@ -77,20 +78,43 @@ describe('mock', () => {
 					},
 					connection.query({})
 				); // deepStrictEqual
-			}); // it
+			});
 		}); // describe create
+
+		describe('createBranch', () => {
+			it('returns info about created branch', () => {
+				const createdBranch = libRepo.createBranch({
+					branchId: 'myBranchId',
+					repoId: 'myRepoId'
+				});
+				deepStrictEqual(
+					createdBranch,
+					{
+						id: 'myBranchId'
+					},
+				);
+			});
+		}); // describe createBranch
+
 		describe('get', () => {
 			it('returns info about a repo', () => {
 				deepStrictEqual(
 					{
 						id: 'myRepoId',
-						branches: ['master'],
+						branches: ['master', 'myBranchId'],
 						settings: {}
 					},
 					libRepo.get('myRepoId')
 				);
-			}); // it
+			});
+			it('returns null if repo does not exist', () => {
+				deepStrictEqual(
+					null,
+					libRepo.get('nonExistingRepoId')
+				);
+			});
 		}); // describe get
+
 		describe('list', () => {
 			it('returns list with info about all repos', () => {
 				libRepo.create({
@@ -103,7 +127,7 @@ describe('mock', () => {
 						settings: {}
 					},{
 						id: 'myRepoId',
-						branches: ['master'],
+						branches: ['master', 'myBranchId'],
 						settings: {}
 					},{
 						id: 'myRepoId2',
@@ -112,12 +136,13 @@ describe('mock', () => {
 					}],
 					libRepo.list()
 				);
-			}); // it
+			});
 		}); // describe list
-		/*describe('refresh', () => {
+
+		describe('refresh', () => {
 			it('can be called', () => {
-				libRepo.refresh();
-			}); // it
-		}); // describe refresh*/
+				libRepo.refresh({});
+			});
+		}); // describe refresh
 	}); // describe LibRepo
 }); // describe mock
