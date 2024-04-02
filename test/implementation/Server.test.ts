@@ -1,4 +1,6 @@
 import {
+	App,
+	ContentConnection,
 	RepoConnection,
 	Server,
 } from '../../src';
@@ -38,10 +40,41 @@ const NODE = {
 	_versionKey: NODE_VERSION_KEY
 };
 
+
 describe('Server', () => {
 	it('should be instantiable without any params', () => {
 		const server = new Server();
 		expect(server).toBeInstanceOf(Server);
+	});
+
+	it('should be instantiable with indexWarnings: true', () => {
+		const server = new Server({
+			loglevel: 'silent',
+			indexWarnings: true
+		});
+		expect(server).toBeInstanceOf(Server);
+		expect(server.indexWarnings).toBe(true);
+	});
+
+	it('should be instantiable with custom logger', () => {
+		const server = new Server({
+			log: {
+				debug: () => {},
+				error: () => {},
+				info: () => {},
+				warning: () => {}
+			}
+		});
+		expect(server).toBeInstanceOf(Server);
+	});
+
+	it('should be instantiable with version', () => {
+		const server = new Server({
+			loglevel: 'silent',
+			version: '7.14.0'
+		});
+		expect(server).toBeInstanceOf(Server);
+		expect(server.version).toBe('7.14.0');
 	});
 
 	it('comes with system-repo', () => {
@@ -80,6 +113,30 @@ describe('Server', () => {
 		});
 		expect(branch.id).toStrictEqual('draft');
 	});
+
+	describe('connect', () => {
+		it('throws an error if no repoId is provided', () => {
+			const server = new Server();
+			// @ts-expect-error
+			expect(() => server.connect({})).toThrow('connect: No repoId provided!');
+		});
+
+		it('throws an error if no branchId is provided', () => {
+			const server = new Server();
+			// @ts-expect-error
+			expect(() => server.connect({repoId: REPO_ID})).toThrow('connect: No branchId provided!');
+		});
+
+		it('returns a RepoConnection', () => {
+			const server = new Server();
+			server.createRepo({id: REPO_ID});
+			const connection = server.connect({
+				branchId: 'master',
+				repoId: REPO_ID
+			});
+			expect(connection).toBeInstanceOf(RepoConnection);
+		});
+	}); // describe connect
 
 	it('can be used to connect and create, exists, get, getActiveVersion, modify and delete a node', () => {
 		const server = new Server({
@@ -131,4 +188,174 @@ describe('Server', () => {
 		expect(connection.exists(NODE_ID)).toBe(false);
 		expect(connection.get(NODE_ID)).toBeUndefined();
 	});
-});
+
+	describe('createProject', () => {
+		it('throws an error if no projectName is provided', () => {
+			const server = new Server();
+			// @ts-expect-error
+			expect(() => server.createProject({})).toThrow('Server: createProject: No projectName provided!');
+		});
+
+		it('does nothing if project already exists', () => {
+			const server = new Server().createProject({projectName: 'myproject'});
+			expect(server.createProject({projectName: 'myproject'})).toBeInstanceOf(Server);
+		});
+
+		it('is chainable', () => {
+			const server = new Server();
+			const newServer = server.createProject({
+				projectName: 'myproject'
+			});
+			expect(newServer).toBeInstanceOf(Server);
+		});
+	}); // describe createProject
+
+	describe('contentConnect', () => {
+		it('throws an error if no projectId is provided', () => {
+			const server = new Server();
+			// @ts-expect-error
+			expect(() => server.contentConnect({})).toThrow('Server: contentConnect: No projectId provided!');
+		});
+
+		it('throws an error if no branchId is provided', () => {
+			const server = new Server();
+			// @ts-expect-error
+			expect(() => server.contentConnect({projectId: REPO_ID})).toThrow('Server: contentConnect: No branchId provided!');
+		});
+
+		it('returns a ContentConnection', () => {
+			const server = new Server().createProject({
+				projectName: 'myproject'
+			});
+			const connection = server.contentConnect({
+				branchId: 'master',
+				projectId: 'myproject'
+			});
+			expect(connection).toBeInstanceOf(ContentConnection);
+		});
+	}); // describe contentConnect
+
+	describe('getProject', () => {
+		it('throws an error if no projectName is provided', () => {
+			const server = new Server();
+			// @ts-expect-error
+			expect(() => server.getProject()).toThrow('Server: getProject: No projectName provided!');
+		});
+
+		it('throws an error if project does not exist', () => {
+			const server = new Server();
+			expect(() => server.getProject('myproject')).toThrow('Server: getProject: Project myproject not found!');
+		});
+
+		it('returns a project', () => {
+			const server = new Server().createProject({
+				projectName: 'myproject'
+			});
+			expect(server.getProject('myproject')).toBeDefined();
+		});
+	}); // describe getProject
+
+	describe('install', () => {
+		it('throws an error if version is lower than minSystemVersion', () => {
+			const server = new Server({
+				version: '7.14.0'
+			});
+			const app = new App({
+				key: 'com.enonic.myapp',
+				minSystemVersion: '7.15.0'
+			});
+			expect(() => server.install(app)).toThrow('System version 7.14.0 is lower than App minSystemVersion 7.15.0!');
+		});
+
+		it('throws an error if version is higher than maxSystemVersion', () => {
+			const server = new Server({
+				version: '7.16.0'
+			});
+			const app = new App({
+				key: 'com.enonic.myapp',
+				maxSystemVersion: '7.15.0'
+			});
+			expect(() => server.install(app)).toThrow('System version 7.16.0 is higher than App maxSystemVersion 7.15.0!');
+		});
+
+		it('installs an app if is version is within minSystemVersion and maxSystemVersion', () => {
+			const server = new Server({
+				version: '7.15.0'
+			});
+			const app = new App({
+				key: 'com.enonic.myapp',
+				minSystemVersion: '7.14.0',
+				maxSystemVersion: '7.16.0'
+			});
+			expect(server.install(app)).toBeInstanceOf(Server);
+		});
+
+		it('replaces an existing app with the same key', () => {
+			const server = new Server({
+				version: '7.15.0'
+			});
+			const app = new App({
+				key: 'com.enonic.myapp',
+				minSystemVersion: '7.14.0',
+				maxSystemVersion: '7.16.0'
+			});
+			server.install(app);
+			expect(server.applications.length).toStrictEqual(1);
+			expect(server.install(app)).toBeInstanceOf(Server);
+			expect(server.applications.length).toStrictEqual(1);
+		});
+	}); // describe install
+
+	describe('login', () => {
+		it('logs in a user', () => {
+			const server = new Server();
+			expect(server.userKey).toBeUndefined();
+			server.login({
+				user: 'su'
+			});
+			expect(server.userKey).toBe('user:system:su');
+		});
+	}); // describe login
+
+	describe('logout', () => {
+		it('logs out a user', () => {
+			const server = new Server().login({
+				user: 'su'
+			});
+			expect(server.userKey).toBe('user:system:su');
+			server.logout();
+			expect(server.userKey).toBeUndefined();
+		});
+	}); // describe logout
+
+	describe('setContext', () => {
+		it('sets context', () => {
+			const server = new Server();
+			expect(server.context.attributes).toEqual({});
+			expect(server.context.branch).toBe('master');
+			expect(server.context.principals).toEqual([
+				'user:system:anonymous',
+				'role:system.everyone'
+			]);
+			expect(server.context.repository).toBe('system-repo');
+			expect(server.context.user).toBeUndefined();
+			server.setContext({
+				attributes: {
+					key: 'value'
+				},
+				principals: ['role:system.admin'],
+				projectName: 'myproject'
+			});
+			expect(server.context.attributes).toEqual({
+				key: 'value'
+			});
+			expect(server.context.branch).toBe('draft');
+			expect(server.context.principals).toEqual([
+				'role:system.admin',
+				'user:system:anonymous'
+			]);
+			expect(server.context.repository).toBe('com.enonic.cms.myproject');
+			expect(server.context.user).toBeUndefined();
+		});
+	}); // describe setContext
+}); // describe Server

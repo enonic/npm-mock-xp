@@ -82,10 +82,17 @@ export class Server {
 			this.version = version;
 		}
 		this.vol.fromJSON({}, '/');
-		this.systemRepoConnection = setupSystemRepo({server: this});
+		this.createRepo({
+			id: SYSTEM_REPO
+		});
+		this.systemRepoConnection = this.connect({
+			branchId: 'master',
+			repoId: SYSTEM_REPO
+		});
 		this.auth = new Auth({
 			server: this
 		});
+		setupSystemRepo({server: this});
 		this.context = new Context({
 			branch: 'master',
 			repository: SYSTEM_REPO,
@@ -175,27 +182,36 @@ export class Server {
 		projectName: string
 		settings?: RepositorySettings
 	}) {
+		if (!projectName) {
+			throw new Error('Server: createProject: No projectName provided!');
+		}
+
 		if (this.projects[projectName]) {
 			// TODO Compare settings and throw if different
 			this.log.info(`Project ${projectName} already exists.`);
 			return this; // Chainable
 		}
+
 		this.projects[projectName] = new Project({
 			projectName,
 			server: this,
 			settings
 		});
+
 		return this; // Chainable
 	}
 
-	// public getProject(projectName: string): Project {
-	// 	const project = this.projects[projectName];
-	// 	if (!project) {
-	// 		throw new Error(`Project ${projectName} not found!`);
-	// 		// TODO Perhaps just return null?
-	// 	}
-	// 	return project;
-	// }
+	public getProject(projectName: string): Project {
+		if (!projectName) {
+			throw new Error('Server: getProject: No projectName provided!');
+		}
+		const project = this.projects[projectName];
+		if (!project) {
+			throw new Error(`Server: getProject: Project ${projectName} not found!`);
+			// TODO Perhaps just return null?
+		}
+		return project;
+	}
 
 	public getRepo(repoId: string): Repo {
 		const repo = this.repos[repoId];

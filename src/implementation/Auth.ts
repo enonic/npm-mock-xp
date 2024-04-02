@@ -147,7 +147,8 @@ export class Auth {
 		email = '',
 		password = '',
 		profile = {}, // This seems to be correct when viewing with Data Toolbox
-	}: CreateUserParams & {
+	}: Omit<CreateUserParams, 'idProvider'> & {
+		idProvider?: string
 		password?: string
 		profile?: Record<string, unknown>
 	}): User {
