@@ -20,6 +20,7 @@ import type {
 	Log as LogType,
 } from '../types';
 import type {App} from './App';
+import type {Branch} from './Branch';
 import type {Repos} from './Repo';
 
 
@@ -133,11 +134,11 @@ export class Server {
 		if(!branchId) {
 			throw new Error('Server: contentConnect: No branchId provided!');
 		}
-		const repoId = `com.enonic.cms.${projectId}`;
-		const repo = this.getRepo(repoId);
-		const branch = repo.getBranch(branchId);
 		return new ContentConnection({
-			branch
+			branch: this.getBranch({
+				branchId,
+				repoId: Project.repoIdFromProjectName(projectId)
+			})
 		});
 	}
 
@@ -202,6 +203,16 @@ export class Server {
 			throw new RepositoryNotFoundException(`Repository with id [${repoId}] not found`);
 		}
 		return repo;
+	}
+
+	public getBranch({
+		branchId,
+		repoId,
+	}: {
+		branchId: string
+		repoId: string
+	}): Branch {
+		return this.getRepo(repoId).getBranch(branchId);
 	}
 
 	install(app: App) {

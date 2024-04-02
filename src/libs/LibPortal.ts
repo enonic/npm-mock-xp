@@ -168,9 +168,11 @@ export class LibPortal {
 		if(!this.request) {
 			throw new Error('mock-xp: Portal.getSiteConfig(): Unable to determine current contentId as there is no request set on the Portal object instance!');
 		}
-		const site = this.getSite<Config>();
-		if (!site) {
-			throw new Error('No site!');
+		let site;
+		try {
+			site = this.getSite<Config>();
+		} catch (e) {
+			throw new Error('mock-xp: Portal.getSiteConfig(): Unable to find site content!');
 		}
 		this.log.debug('site', site);
 		if (!site.data.siteConfig) {

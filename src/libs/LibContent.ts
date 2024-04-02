@@ -17,6 +17,7 @@ import type {Server} from '../implementation/Server';
 
 
 import {ContentConnection} from '../implementation/ContentConnection';
+import {Project} from '../implementation/Project';
 
 
 export class LibContent {
@@ -38,69 +39,67 @@ export class LibContent {
 		this.server = server;
 	}
 
-	connect() {
+	private _connect() {
 		const repoId = this.server.context.repository;
 		if (!repoId) {
-			throw new Error('No repository set in context!');
+			throw new Error('mock-xp: LibContent._connect: No repository set in context!');
 		}
-		const repo = this.server.repos[repoId];
 		const branchId = this.server.context.branch;
 		if (!branchId) {
-			throw new Error('No branch set in context!');
+			throw new Error('mock-xp: LibContent._connect: No branch set in context!');
 		}
-		const branch = repo.getBranch(branchId);
-		const contentConnection = new ContentConnection({
-			branch
-		});
-		return contentConnection;
+		return this.server.contentConnect({
+			branchId,
+			projectId: Project.projectNameFromRepoId(repoId),
+		})
 	}
 
 	public create<
 		Data = Record<string, unknown>, Type extends string = string
 	>(params: CreateContentParams<Data, Type>): Content<Data, Type> {
-		return this.connect().create(params);
+		return this._connect().create(params);
 	}
 
 	public createMedia<
 		Data = Record<string, unknown>,
 		Type extends string = string
 	>(params: CreateMediaParams): Content<Data, Type> {
-		return this.connect().createMedia(params);
+		return this._connect().createMedia(params);
 	}
 
 	public delete(params: DeleteContentParams): boolean {
-		return this.connect().delete(params);
+		return this._connect().delete(params);
 	}
 
 	public exists(params: ContentExistsParams): boolean {
-		return this.connect().exists(params);
+		return this._connect().exists(params);
 	}
 
 	public get<
 		Hit extends Content<unknown> = Content
 	>(params: GetContentParams): Hit | null {
-		return this.connect().get(params);
+		return this._connect().get(params);
 	}
 
 	public getAttachmentStream(params: GetAttachmentStreamParams): ByteSource | null {
-		return this.connect().getAttachmentStream(params);
+		return this._connect().getAttachmentStream(params);
 	}
 
 	public modify<
 		Data = Record<string, unknown>,
 		Type extends string = string
 	>(params: ModifyContentParams<Data, Type>): Content<Data, Type> | null {
-		return this.connect().modify(params);
+		return this._connect().modify(params);
 	}
 
 	public move<
 		Data = Record<string, unknown>, Type extends string = string
 	>(params: MoveContentParams): Content<Data, Type> {
-		return this.connect().move(params);
+		return this._connect().move(params);
 	}
 
 	public publish(params: PublishContentParams): PublishContentResult {
-		return this.connect().publish(params);
+		return this._connect().publish(params);
 	}
 
 } // class LibContent

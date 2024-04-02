@@ -29,9 +29,9 @@ const app = new App({
 	key: 'com.example.myapp'
 });
 
-const libContent = new LibContent({
-	server
-});
+// const libContent = new LibContent({
+// 	server
+// });
 
 const libContext = new LibContext({
 	server
@@ -43,7 +43,7 @@ const libPortal = new LibPortal({
 });
 
 
-describe('Portal', () => {
+describe('LibPortal', () => {
 	it('should be instantiable', () => {
 		expect(libPortal).toBeInstanceOf(LibPortal);
 	});
@@ -67,4 +67,23 @@ describe('Portal', () => {
 			});
 		});
 	});
+
+	describe('getSite', () => {
+		it('should throw if currentContent is null', () => {
+			libPortal.request = new Request({
+				repositoryId: REPO_ID,
+			});
+			expect(() => libPortal.getSite()).toThrow('mock-xp: Portal.getSite(): Unable to find current content!');
+		});
+	}); // describe getSite
+
+	describe('getSiteConfig', () => {
+		it('should throw if currentContent is null', () => {
+			libPortal.request = new Request({
+				repositoryId: REPO_ID,
+			});
+			expect(() => libPortal.getSiteConfig()).toThrow('mock-xp: Portal.getSiteConfig(): Unable to find site content!');
+		});
+	}); // describe getSite
+
 }); // describe Portal

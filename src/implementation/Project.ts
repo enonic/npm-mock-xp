@@ -7,6 +7,16 @@ export class Project {
 	readonly repo: Repo;
 	readonly server: Server;
 
+	public static repoPrefix = 'com.enonic.cms.';
+
+	public static projectNameFromRepoId(repoId: string) {
+		return repoId.replace(Project.repoPrefix, '');
+	}
+
+	public static repoIdFromProjectName(projectName: string) {
+		return `${Project.repoPrefix}${projectName}`;
+	}
+
 	constructor({
 		projectName,
 		server,
@@ -18,7 +28,7 @@ export class Project {
 	}) {
 		this.server = server;
 		this.repo = server.createRepo({
-			id: `com.enonic.cms.${projectName}`,
+			id: Project.repoIdFromProjectName(projectName),
 			settings
 		});
 		this.repo.getBranch('master');

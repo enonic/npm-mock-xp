@@ -6,6 +6,7 @@ import { vol } from 'memfs';
 import {join} from 'path';
 import {
 	// App,
+	Context,
 	LibContent,
 	LibContext,
 	Server
@@ -445,4 +446,21 @@ describe('LibContent', () => {
 			});
 		}); // it
 	}); // describe createMedia
+
+	describe('_connect', () => {
+		it("should throw if context doesn't contain repository", () => {
+			server.setContext({
+				repository: ''
+			});
+			expect(() => libContent.exists({key: '00000000-0000-4000-8000-000000000004'})).toThrow('mock-xp: LibContent._connect: No repository set in context!')
+		});
+		it("should throw if context doesn't contain repository", () => {
+			server.context = new Context({
+				branch: '',
+				repository: 'whatnot',
+				server
+			});
+			expect(() => libContent.exists({key: '00000000-0000-4000-8000-000000000004'})).toThrow('mock-xp: LibContent._connect: No branch set in context!')
+		});
+	});
 }); // describe LibContent

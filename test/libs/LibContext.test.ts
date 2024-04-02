@@ -95,4 +95,13 @@ describe('lib-context', () => {
 			});
 		});
 	}); // describe run
+
+	describe('get', () => {
+		it('should return the current context', () => {
+			const context = libContext.get();
+			expect(context.branch).toBe('draft');
+			expect(context.repository).toBe(REPO_ID);
+		});
+	}); // describe get
+
 }); // describe lib-context

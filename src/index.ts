@@ -5,6 +5,7 @@ export {Resource} from './implementation/app/Resource';
 export {ResourceKey} from './implementation/app/ResourceKey';
 export {Branch} from './implementation/Branch';
 export {ContentConnection} from './implementation/ContentConnection';
+export {Context} from './implementation/Context';
 export {Log} from './implementation/Log';
 export {Project} from './implementation/Project';
 export {Repo} from './implementation/Repo';
