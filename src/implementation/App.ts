@@ -1,6 +1,13 @@
 import type {
-	Application
+	Application,
+	ByteSource,
 } from '@enonic-types/lib-app';
+
+
+import {vol} from 'memfs';
+import {Asset} from './app/Asset';
+import {Controller} from './app/Controller';
+import {Resource} from './app/Resource';
 
 
 export declare type Config = Record<string, string | undefined>
@@ -21,6 +28,7 @@ export class App {
 	readonly maxSystemVersion: Application['maxSystemVersion'];
 	readonly minSystemVersion: Application['minSystemVersion'];
 	readonly version: Application['version'];
+	readonly vol = vol;
 
 	public config: Config;
 
@@ -38,5 +46,69 @@ export class App {
 		this.minSystemVersion = minSystemVersion;
 		this.key = key;
 		this.version = version;
+		this.vol.fromJSON({}, '/');
+	}
+
+	public addAsset({
+		data,
+		path
+	}: {
+		data: ByteSource|string
+		path: string
+	}) {
+		if (!this.vol.existsSync(Asset.path)) {
+			this.vol.mkdirSync(Asset.path)
+		}
+		this.vol.writeFileSync(Asset.prefixPath(path), data.toString())
+		return this; // Chainable
+	}
+
+	public addController({
+		data,
+		path
+	}: {
+		data: ByteSource|string
+		path: string
+	}) {
+		const absPath = path.startsWith('/') ? path : `/${path}`;
+		new Controller({ // Will throw if path is invalid
+			app: this,
+			path: absPath,
+		});
+		this.vol.writeFileSync(absPath, data.toString())
+		return this; // Chainable
+	}
+
+	public addResource({
+		data,
+		path
+	}: {
+		data: ByteSource|string
+		path: string
+	}) {
+		const absPath = path.startsWith('/') ? path : `/${path}`;
+		this.vol.writeFileSync(absPath, data.toString())
+		return this; // Chainable
+	}
+
+	public getAsset(path: string) {
+		return new Asset({
+			app: this,
+			path,
+		});
+	}
+
+	public getController(path: string) {
+		return new Controller({
+			app: this,
+			path,
+		});
+	}
+
+	public getResource(path: string) {
+		return new Resource({
+			app: this,
+			path,
+		});
 	}
 } // class ServerApp

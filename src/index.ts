@@ -1,4 +1,8 @@
 export {App} from './implementation/App';
+export {Asset} from './implementation/app/Asset';
+export {Controller} from './implementation/app/Controller';
+export {Resource} from './implementation/app/Resource';
+export {ResourceKey} from './implementation/app/ResourceKey';
 export {Branch} from './implementation/Branch';
 export {ContentConnection} from './implementation/ContentConnection';
 export {Log} from './implementation/Log';
@@ -20,6 +24,7 @@ export {LibAuth} from './libs/LibAuth';
 export {LibContent} from './libs/LibContent';
 export {LibContext} from './libs/LibContext';
 export {LibEvent} from './libs/LibEvent';
+export {LibIo} from './libs/LibIo';
 export {LibNode} from './libs/LibNode';
 export {LibPortal} from './libs/LibPortal';
 export {LibRepo} from './libs/LibRepo';

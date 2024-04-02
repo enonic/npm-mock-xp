@@ -1,11 +1,14 @@
-import {App} from './App';
+import {App} from '../App';
 import {Resource} from './Resource';
 
 
 // An asset is a file inside the an app.
 export class Asset extends Resource {
-	app: App;
-	path: string;
+	static path = '/assets';
+
+	static prefixPath(path: string) {
+		return `/assets/${path}`;
+	}
 
 	constructor({
 		app,
@@ -16,7 +19,7 @@ export class Asset extends Resource {
 	}) {
 		super({
 			app,
-			path,
+			path: Asset.prefixPath(path),
 		});
 	}
 } // class Controller

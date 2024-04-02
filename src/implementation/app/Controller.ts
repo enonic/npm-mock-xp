@@ -1,4 +1,4 @@
-import {App} from './App';
+import {App} from '../App';
 import {Resource} from './Resource';
 
 /*
@@ -38,9 +38,6 @@ Any other path is probably like /lib/*
 */
 
 export class Controller extends Resource {
-	app: App;
-	path: string;
-
 	constructor({
 		app,
 		path,
@@ -48,6 +45,12 @@ export class Controller extends Resource {
 		app: App
 		path: string
 	}) {
+		if (path.startsWith('/assets/')) {
+			throw new Error('Controller path must NOT start with "/assets/"!');
+		}
+		if (path.startsWith('/import/')) {
+			throw new Error('Controller path must NOT start with "/import/"!');
+		}
 		super({
 			app,
 			path,
