@@ -9,8 +9,8 @@ import {App} from '../App';
 
 // A resource is a file inside the an app.
 export class Resource implements ResourceInterface {
-	app: App;
-	path: string;
+	private readonly app: App;
+	public readonly path: string;
 
 	constructor({
 		app,

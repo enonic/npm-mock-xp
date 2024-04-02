@@ -7,7 +7,7 @@ export class Asset extends Resource {
 	static path = '/assets';
 
 	static prefixPath(path: string) {
-		return `/assets/${path}`;
+		return `${Asset.path}/${path}`;
 	}
 
 	constructor({
