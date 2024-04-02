@@ -31,7 +31,7 @@ export class ResourceKey implements ResourceKeyInterface {
 	}
 
 	public isRoot(): boolean {
-		return this.path.startsWith('/');
+		return this.path === '/';
 	}
 
 	public getName(): string {
