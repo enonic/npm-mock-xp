@@ -56,4 +56,53 @@ describe('App', () => {
 		});
 		expect(() => server.install(app)).toThrow();
 	});
-});
+
+	describe('addResource', () => {
+		it('should add a resource to the app', () => {
+			const app = new App({
+				config: {},
+				key: 'com.enonic.myapp',
+				version: '1.0.0'
+			});
+			app.addResource({
+				data: "log.info('Hello, world!');",
+				path: 'main.js'
+			});
+			const resource = app.getResource('main.js');
+			expect(resource.readText()).toBe("log.info('Hello, world!');");
+		});
+	}); // describe addResource
+
+	describe('getAsset', () => {
+		it('should return an asset', () => {
+			const app = new App({
+				config: {},
+				key: 'com.enonic.myapp',
+				version: '1.0.0'
+			});
+			app.addAsset({
+				data: 'Hello, world!',
+				path: 'main.txt'
+			});
+			const asset = app.getAsset('main.txt');
+			expect(asset.readText()).toBe('Hello, world!');
+		});
+	}); // describe getAsset
+
+	describe('getController', () => {
+		it('should return a controller', () => {
+			const app = new App({
+				config: {},
+				key: 'com.enonic.myapp',
+				version: '1.0.0'
+			});
+			app.addController({
+				data: "exports.get = function() { return 'Hello, world!'; }",
+				path: 'main.js'
+			});
+			const controller = app.getController('main.js');
+			expect(controller.readText()).toBe("exports.get = function() { return 'Hello, world!'; }");
+		});
+	}); // describe getController
+
+}); // describe App

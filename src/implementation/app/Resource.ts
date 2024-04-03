@@ -39,4 +39,10 @@ export class Resource implements ResourceInterface {
 	public getTimestamp(): number {
 		return this.app.vol.statSync(this.path).mtimeMs;
 	}
+
+	// This method is not part of the Resource interface, but is useful in mock-xp
+	readText(): string {
+		return this.getStream().toString();
+	}
+
 } // class Controller
