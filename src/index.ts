@@ -1,8 +1,11 @@
 export {App} from './implementation/App';
+
 export {Asset} from './implementation/app/Asset';
 export {Controller} from './implementation/app/Controller';
 export {Resource} from './implementation/app/Resource';
 export {ResourceKey} from './implementation/app/ResourceKey';
+
+export {Auth} from './implementation/Auth';
 export {Branch} from './implementation/Branch';
 export {ContentConnection} from './implementation/ContentConnection';
 export {Context} from './implementation/Context';
