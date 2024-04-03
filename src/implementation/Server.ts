@@ -1,4 +1,5 @@
 import type {
+	CreateUserParams,
 	LoginParams,
 	UserKey,
 } from '@enonic-types/lib-auth';
@@ -198,6 +199,15 @@ export class Server {
 			settings
 		});
 
+		return this; // Chainable
+	}
+
+	public createUser(params: Omit<CreateUserParams, 'idProvider'> & {
+		idProvider?: string
+		password?: string
+		profile?: Record<string, unknown>
+	}) {
+		this.auth.createUser(params);
 		return this; // Chainable
 	}
 

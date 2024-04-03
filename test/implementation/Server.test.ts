@@ -343,8 +343,8 @@ describe('Server', () => {
 				attributes: {
 					key: 'value'
 				},
-				principals: ['role:system.admin'],
-				projectName: 'myproject'
+				login: 'su',
+				projectName: 'myproject',
 			});
 			expect(server.context.attributes).toEqual({
 				key: 'value'
@@ -352,10 +352,26 @@ describe('Server', () => {
 			expect(server.context.branch).toBe('draft');
 			expect(server.context.principals).toEqual([
 				'role:system.admin',
-				'user:system:anonymous'
+				'role:system.everyone',
+				'user:system:su',
 			]);
 			expect(server.context.repository).toBe('com.enonic.cms.myproject');
-			expect(server.context.user).toBeUndefined();
+			expect(server.context.user.key).toBe('user:system:su');
+		});
+
+		it('sets context with loggedin user, if user is not passed', () => {
+			const server = new Server().su().createUser({
+					displayName: 'My User',
+					email: 'myuser@example.com',
+					name: 'myuser',
+					password: 'mypassword'
+				}).login({
+					user: 'myuser',
+					password: 'mypassword'
+				}).setContext({
+					principals: ['role:system.admin'],
+				});
+				expect(server.context.user.key).toEqual('user:system:myuser');
 		});
 	}); // describe setContext
 }); // describe Server
