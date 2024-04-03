@@ -113,7 +113,8 @@ export class Request {
 
 	// "path": "/admin/site/preview/intro/draft/persons/lea-seydoux",
 	// "rawPath": "/admin/site/preview/intro/draft/persons/lea-seydoux",
-	// "contextPath": "/admin/site/preview/draft/",
+	// "contextPath": "/admin/site/preview/draft/", 7.14.0
+	// "contextPath": "/admin/site/preview/intro/draft/", 7.14.1
 	contentPath(): string {
 		// console.debug('contentPath() this.project():', this.project());
 		return this.path

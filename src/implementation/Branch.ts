@@ -301,7 +301,7 @@ export class Branch {
 
 	deleteNode(keys: string | string[]): string[] {
 		const keysArray = forceArray(keys);
-		const deletedKeys = [];
+		const deletedKeys: string[] = [];
 		NodeKeys: for (const key of keysArray) {
 			let maybeNode;
 			try {

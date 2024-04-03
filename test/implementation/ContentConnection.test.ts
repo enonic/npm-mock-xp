@@ -305,6 +305,165 @@ describe('ContentConnection', () => {
 				target: target._path
 			})).toThrow('Cannot move content with source 00000000-0000-4000-8000-000000000020 to target /target: Content already exists at target!');
 		});
-	});
+	}); // describe move
+
+	describe('nodeToContent', () => {
+		it('adds page property from components', () => {
+			const server = new Server({
+				loglevel: 'debug',
+			}).createProject({
+				projectName: PROJECT_NAME,
+			});
+
+			const draftBranch = server.getBranch({
+				branchId: 'draft',
+				repoId: REPO_ID,
+			});
+
+			const draftConnection = new ContentConnection({
+				branch: draftBranch
+			});
+
+			expect(draftConnection.nodeToContent({
+				node: {
+					_childOrder: 'displayname ASC',
+					_id: '00000000-0000-4000-8000-000000000022',
+					_indexConfig: {
+						default: 'byType',
+					},
+					_inheritsPermissions: false,
+					_name: 'mycontent',
+					_nodeType: 'com.enonic.myapp:mycontent',
+					_path: '/mycontent',
+					_permissions: [],
+					_state: 'PUBLISHED',
+					_versionKey: '00000000-0000-4000-8000-000000000023',
+					_ts: '2021-07-01T12:00:00Z',
+					components: [{
+						page: {
+							config: {
+								'com-enonic-app-myapp': {
+									'mypage': {
+										pageProp: 'pageValue'
+									}
+								}
+							},
+							customized: true,
+							descriptor: 'com.enonic.app.myapp:mypage',
+						},
+						path: '/',
+						type: 'page',
+					}, {
+						part: {
+							config: {
+								'com-enonic-app-myapp': {
+									'mypart': {
+										partProp: 'partValue'
+									}
+								}
+							},
+							descriptor: 'com.enonic.app.myapp:mypart',
+						},
+						path: '/main/0',
+						type: 'part'
+					}, {
+						layout: {
+							config: {
+								'com-enonic-app-myapp': {
+									'mylayout': {
+										layoutProp: 'layoutValue'
+									}
+								}
+							},
+							descriptor: 'com.enonic.app.myapp:mylayout',
+						},
+						path: '/main/1',
+						type: 'layout',
+					}, {
+						part: {
+							config: {
+								'com-enonic-app-myapp': {
+									'mypart': {
+										partProp: 'partValue'
+									}
+								}
+							},
+							descriptor: 'com.enonic.app.myapp:mypart',
+						},
+						path: '/main/1/left/0',
+						type: 'part'
+					}],
+				}
+			})).toStrictEqual({
+				_id: '00000000-0000-4000-8000-000000000022',
+				// _indexConfig: {
+				// 	default: 'byType',
+				// },
+				// _inheritsPermissions: false,
+				_name: 'mycontent',
+				// _nodeType: 'com.enonic.myapp:mycontent',
+				_path: '/mycontent',
+				// _permissions: [],
+				// _state: 'PUBLISHED',
+				// _versionKey: '00000000-0000-4000-8000-000000000023',
+				// _ts: '2021-07-01T12:00:00Z',
+				attachments: {},
+				childOrder: 'displayname ASC',
+				createdTime: undefined,
+				creator: undefined,
+				data: undefined,
+				displayName: "mycontent",
+				hasChildren: true,
+				owner: undefined,
+				page: {
+					config: {
+						pageProp: 'pageValue'
+					},
+					descriptor: 'com.enonic.app.myapp:mypage',
+					path: '/',
+					regions: {
+						main: {
+							components: [{
+								config: {
+									partProp: 'partValue'
+								},
+								descriptor: 'com.enonic.app.myapp:mypart',
+								path: '/main/0',
+								type: 'part',
+							}, {
+								config: {
+									layoutProp: 'layoutValue'
+								},
+								descriptor: 'com.enonic.app.myapp:mylayout',
+								path: '/main/1',
+								regions: {
+									left: {
+										components: [{
+											config: {
+												partProp: 'partValue'
+											},
+											descriptor: 'com.enonic.app.myapp:mypart',
+											path: '/main/1/left/0',
+											type: 'part',
+										}]
+									}
+								},
+								type: 'layout',
+							}]
+						}
+					},
+					type: 'page',
+				},
+				publish: {},
+				type: undefined,
+				valid: true,
+				x: {},
+			});
+		});
+	}); // describe nodeToContent
+
+	// describe('publish', () => {
+
+	// }); // describe publish
 
 }); // describe ContentConnection

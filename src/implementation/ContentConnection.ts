@@ -1,4 +1,7 @@
-import type { NestedRecord } from '@enonic-types/core';
+import type {
+	ComponentDescriptor,
+	NestedRecord
+} from '@enonic-types/core';
 import type {
 	ByteSource,
 	Content,
@@ -23,6 +26,7 @@ import type { Branch } from './Branch';
 
 
 import {
+	getIn,
 	// deleteIn,
 	setIn,
 	// toStr // log mock does not support need toStr, but throwing Errors does.
@@ -37,34 +41,35 @@ import {NodeAlreadyExistAtPathException} from './node/NodeAlreadyExistAtPathExce
 import {NodeNotFoundException} from './node/NodeNotFoundException';
 
 
-interface NodeComponentLayout {
+declare interface NodeComponentLayout {
 	layout: {
-		config: NestedRecord
-		descriptor: string;
+		config?: NestedRecord
+		descriptor: ComponentDescriptor
 	}
-	path: string;
-	type: 'layout';
+	path: string
+	type: 'layout'
 }
 
-interface NodeComponentPage {
+declare interface NodeComponentPage {
 	page: {
-		customized: boolean;
-		descriptor: string;
+		config?: NestedRecord
+		customized: boolean
+		descriptor: ComponentDescriptor
 	}
-	path: string;
-	type: 'page';
+	path: string
+	type: 'page'
 }
 
-interface NodeComponentPart {
+declare interface NodeComponentPart {
 	part: {
-		config: NestedRecord
-		descriptor: string;
+		config?: NestedRecord
+		descriptor: ComponentDescriptor
 	}
-	path: string;
-	type: 'part';
+	path: string
+	type: 'part'
 }
 
-type NodeComponent = NodeComponentLayout | NodeComponentPage | NodeComponentPart;
+declare type NodeComponent = NodeComponentLayout | NodeComponentPage | NodeComponentPart;
 
 
 const CHILD_ORDER_DEFAULT = 'displayname ASC'; // NOTE: With small n is actually what Content Studio does.
@@ -545,32 +550,112 @@ export class ContentConnection {
 		if (modifiedTime) {
 			content.modifiedTime = modifiedTime;
 		}
+
+		// If you create a page with a layout and parts, there is a difference
+		// in how it looks in the Content Viewer Widget versus how it looks in
+		// Data Toolbox. The stored format is flattened, while the content
+		// viewer one is hierarchical. This code tries to convert from the
+		// flattened format to the hierarchical one.
 		if (components) {
 			const fragmentOrPage = {} as Content['fragment'] | Content['page'];
 			for (let i = 0; i < components.length; i++) {
 				const component = components[i] as NodeComponent;
 				// this.log.debug('ContentConnection nodeToContent component:%s', component);
 				const {
-					type,
 					path,
+					type,
 					// part,
 					// layout
 				} = component;
 				if (type === 'page' && path === '/') {
-					const { page: {
-						descriptor
-					} } = component;
+					const {
+						page: {
+							config,
+							descriptor
+						}
+					} = component;
+					const [app, componentName] = descriptor.split(':');
+					const dashedApp = app.replace(/\./g, '-');
 					setIn(fragmentOrPage, 'descriptor', descriptor);
 					setIn(fragmentOrPage, 'path', path);
+					if (config?.[dashedApp]?.[componentName]) {
+						setIn(fragmentOrPage, 'config', config?.[dashedApp]?.[componentName]);
+					}
 					setIn(fragmentOrPage, 'type', type);
 					setIn(fragmentOrPage, 'regions', {});
 					content.page = fragmentOrPage;
 				} else {
 					const pathParts = path.split('/');
-					this.log.debug('ContentConnection nodeToContent pathParts:%s', pathParts);
+					pathParts.shift(); // Remove first empty string
+					// this.log.debug('ContentConnection nodeToContent pathParts:%s', pathParts);
+
+
+					const pageRegionName = pathParts[0];
+					if (!getIn(fragmentOrPage.regions, pageRegionName)) {
+						setIn(fragmentOrPage.regions, pageRegionName, {
+							components: []
+						});
+					}
+
+					const pageRegion = fragmentOrPage.regions[pageRegionName]
+					// this.log.debug('pageRegion: %s', pageRegion)
+
+					if (type === 'layout') {
+						const {
+							layout: {
+								config,
+								descriptor
+							}
+						} = component;
+						const [app, componentName] = descriptor.split(':');
+						const dashedApp = app.replace(/\./g, '-');
+						const layout = {
+							config: config?.[dashedApp]?.[componentName],
+							descriptor,
+							path,
+							regions: {},
+							type
+						};
+						pageRegion.components.push(layout);
+					} else if (type === 'part') {
+						const {
+							part: {
+								config,
+								descriptor
+							}
+						} = component;
+						const [app, componentName] = descriptor.split(':');
+						const dashedApp = app.replace(/\./g, '-');
+						const part = {
+							config: config?.[dashedApp]?.[componentName],
+							descriptor,
+							path,
+							type
+						};
+						if (pathParts.length === 2) {
+							pageRegion.components.push(part);
+						} else if (pathParts.length === 4) {
+							const pageComponentRegionIndex = pathParts[1];
+							// this.log.debug('pageComponentRegionIndex: %s', pageComponentRegionIndex)
+
+							const layoutComponent = pageRegion.components[pageComponentRegionIndex];
+							// this.log.debug('layoutComponent: %s', layoutComponent)
+
+							const layoutRegionName = pathParts[2];
+							// this.log.debug('layoutRegionName: %s', layoutRegionName)
+
+							if (!layoutComponent.regions[layoutRegionName]) {
+								layoutComponent.regions[layoutRegionName] = {
+									components: []
+								}
+							};
+							layoutComponent.regions[layoutRegionName].components.push(part);
+						}
+					}
 				}
 			} // for components
 		}
+
 		return content;
 	} // nodeToContent
 
@@ -615,16 +700,17 @@ export class ContentConnection {
 				// 	_path: nodeOnDraft._path,
 				// });
 
-				const nodeId = nodeOnDraft._id;  // Path may have changed by move on draft
+				const nodeId = nodeOnDraft._id; // Path may have changed by move on draft
 				const existsOnMaster = contentMasterConnection.exists({ key: nodeId });
 				if (existsOnMaster) {
 					const overriddenNode = masterBranch._overwriteNode({ node: nodeOnDraft });
 					if (overriddenNode) {
 						this.log.debug("ContentConnection publish: Modified content with id %s on the master branch!", nodeId);
 						res.pushedContents.push(contentKey);
-					} else {
-						this.log.error("ContentConnection publish: Failed to modify content with id %s on the master branch!", nodeId);
-						res.failedContents.push(contentKey);
+					// ASFAIK This can't happen?
+					// } else {
+					// 	this.log.error("ContentConnection publish: Failed to modify content with id %s on the master branch!", nodeId);
+					// 	res.failedContents.push(contentKey);
 					}
 					continue contentKeysLoop;
 				} // if existsOnMaster
@@ -633,13 +719,14 @@ export class ContentConnection {
 				pathParts.pop();
 				nodeOnDraft['_parentPath'] = pathParts.join('/');
 				// deleteIn(nodeOnDraft as unknown as NestedRecord, '_path'); // Causes problems
-				const createdNode = masterBranch._createNodeInternal(nodeOnDraft);
+				const createdNode = masterBranch._createNodeInternal(nodeOnDraft); // This can throw, but not return falsy
 				if (createdNode) {
 					this.log.debug("ContentConnection publish: Created content with key %s on the master branch!", contentKey);
 					res.pushedContents.push(contentKey);
-				} else {
-					this.log.error("ContentConnection publish: Failed to create content with key %s on the master branch!", contentKey);
-					res.failedContents.push(contentKey);
+				// _createNodeInternal can throw, but not return falsy, so this can't happen:
+				// } else {
+				// 	this.log.error("ContentConnection publish: Failed to create content with key %s on the master branch!", contentKey);
+				// 	res.failedContents.push(contentKey);
 				}
 				continue contentKeysLoop;
 			} // if existsOnDraft
@@ -651,6 +738,7 @@ export class ContentConnection {
 					res.deletedContents.push(contentKey);
 					continue contentKeysLoop;
 				} else {
+					// Not certain how to trigger this via testing, not even sure it can happen?
 					this.log.error("ContentConnection publish: Failed to delete content with key %s from the master branch!", contentKey);
 					res.failedContents.push(contentKey);
 					continue contentKeysLoop;
