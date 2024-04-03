@@ -487,7 +487,7 @@ export class Branch {
 		this.nodes[node._id] = node;
 
 		return deref(this.nodes[node._id] as RepoNodeWithData);
-	}
+	} // moveNode
 
 	_overwriteNode({
 		node

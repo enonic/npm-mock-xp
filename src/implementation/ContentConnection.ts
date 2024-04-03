@@ -33,6 +33,8 @@ import {
 	INDEX_CONFIG_DEFAULT,
 	PERMISSIONS_DEFAULT,
 } from './node/constants';
+import {NodeAlreadyExistAtPathException} from './node/NodeAlreadyExistAtPathException';
+import {NodeNotFoundException} from './node/NodeNotFoundException';
 
 
 interface NodeComponentLayout {
@@ -140,7 +142,7 @@ export class ContentConnection {
 		if (mode === 'create') {
 			node['_parentPath'] = `/content${parentPath}`;
 		} else if (mode === 'modify') {
-			if (node._path?.startsWith('/content')) {
+			if (!node._path?.startsWith('/content')) {
 				node._path = `/content${node._path}`;
 			}
 			node['modifiedTime'] = new Date().toISOString();
@@ -320,6 +322,7 @@ export class ContentConnection {
 
 	getAttachmentStream(params: GetAttachmentStreamParams): ByteSource | null {
 		// this.log.debug('ContentConnection getAttachmentStream(%s)', params);
+
 		let {
 			key,
 		} = params;
@@ -335,25 +338,29 @@ export class ContentConnection {
 				sha512: string
 			}
 		}>;
-		// console.debug('node', node);
 		if (!node) {
 			return null;
 		}
+		// this.log.debug('ContentConnection getAttachmentStream node:%s', node);
+
 		const {
 			attachment: {
 				name: attachmentName,
 				sha512
 			} = {}
 		} = node;
-		// this.log.debug('ContentConnection getAttachmentStream node:%s', node);
+		// this.log.debug('ContentConnection getAttachmentStream attachmentName:%s', attachmentName);
+
 		if (attachmentName !== paramName) {
 			this.log.warning('ContentConnection getAttachmentStream content has no attachment named:%s', paramName);
 			return null;
 		}
+
 		if(!sha512) {
 			this.log.warning('ContentConnection getAttachmentStream unable to find sha512 for attachment named:%s', paramName);
 			return null;
 		}
+
 		return this.vol.readFileSync(`/${sha512}`) as unknown as ByteSource;
 	} // getAttachmentStream
 
@@ -383,7 +390,7 @@ export class ContentConnection {
 		} = params;
 		const content = this.get({key: contentIdOrPath}) as Content<Data, Type> | null;
 		if (!content) {
-			throw new Error(`Content not found for key: ${contentIdOrPath}`);
+			throw new Error(`modify: Content not found for key: ${contentIdOrPath}`);
 		}
 		const contentToBeModified = editor(content) // as Content<Data, Type>;
 		// this.log.debug('ContentConnection contentToBeModified(%s)', contentToBeModified);
@@ -422,25 +429,47 @@ export class ContentConnection {
 		Data = Record<string, unknown>, Type extends string = string
 	>(params: MoveContentParams): Content<Data, Type> {
 		// this.log.debug('ContentConnection move(%s)', params);
-		let {
+
+		const {
 			source,
 			target
 		} = params;
-		if (source.startsWith('/')) {
-			source = `/content${source}`
+
+		if (!this.exists({ key: source })) {
+			throw new Error(`move: Source content not found! key: ${source}`);
+		};
+
+		// Target can be a folder, so it can exist...
+		// if (this.exists({ key: target })) {
+		// 	throw new Error(`move: Target already exists! key: ${target}`);
+		// }
+
+		const nodeSource = source.startsWith('/') ? `/content${source}`: source;
+		const nodeTarget = target.startsWith('/') ? `/content${target}`: target;
+
+		let movedNode;
+		try {
+			movedNode = this.branch.moveNode({
+				source: nodeSource,
+				target: nodeTarget
+			}); // This can throw
+		} catch(e) {
+			if (e instanceof NodeNotFoundException) {
+				// `Cannot move node with source ${source} to target ${target}: Parent '${newParentPath}' not found!`
+				throw new Error(`Cannot move content with source ${source} to target ${target}: Parent of target not found!`);
+			}
+			if (e instanceof NodeAlreadyExistAtPathException) {
+				// `Cannot move node with source ${source} to target ${target}: Node already exists at ${node._path} repository: ${this.repo.id} branch: ${this.id}!`
+				throw new Error(`Cannot move content with source ${source} to target ${target}: Content already exists at target!`);
+			}
 		}
-		if (target.startsWith('/')) {
-			target = `/content${target}`
-		}
-		const movedNode = this.branch.moveNode({ source, target }) // This can throw
-		if (movedNode) {
-			const modifiedContent = this.modify({ // Adds/updates modifiedTime and modifier
-				key: movedNode._id,
-				editor: (n) => n
-			});
-			return modifiedContent as Content<Data, Type>;
-		}
-		throw new Error(`Unable to move content from ${source} to ${target}!`);
+
+		const modifiedContent = this.modify({ // Adds/updates modifiedTime and modifier
+			key: movedNode._id,
+			editor: (n) => n
+		});
+
+		return modifiedContent as Content<Data, Type>;
 	} // move
 
 	nodeToContent({

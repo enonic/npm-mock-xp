@@ -43,7 +43,7 @@ const NODE = {
 
 describe('Server', () => {
 	it('should be instantiable without any params', () => {
-		const server = new Server();
+		const server = new Server({loglevel: 'silent'});
 		expect(server).toBeInstanceOf(Server);
 	});
 
@@ -78,12 +78,12 @@ describe('Server', () => {
 	});
 
 	it('comes with system-repo', () => {
-		const server = new Server();
+		const server = new Server({loglevel: 'silent'});
 		expect(server.getRepo(SYSTEM_REPO)).toBeDefined();
 	});
 
 	it('can be used to create a repo', () => {
-		const server = new Server();
+		const server = new Server({loglevel: 'silent'});
 		expect(server.listRepos().length).toStrictEqual(1);
 		expect(() => server.getRepo(REPO_ID)).toThrow();
 
@@ -101,7 +101,7 @@ describe('Server', () => {
 	});
 
 	it('can be used to create a draft branch', () => {
-		const server = new Server();
+		const server = new Server({loglevel: 'silent'});
 		expect(() => server.createBranch({
 			branchId: 'draft',
 			repoId: REPO_ID
@@ -116,19 +116,19 @@ describe('Server', () => {
 
 	describe('connect', () => {
 		it('throws an error if no repoId is provided', () => {
-			const server = new Server();
+			const server = new Server({loglevel: 'silent'});
 			// @ts-expect-error
 			expect(() => server.connect({})).toThrow('connect: No repoId provided!');
 		});
 
 		it('throws an error if no branchId is provided', () => {
-			const server = new Server();
+			const server = new Server({loglevel: 'silent'});
 			// @ts-expect-error
 			expect(() => server.connect({repoId: REPO_ID})).toThrow('connect: No branchId provided!');
 		});
 
 		it('returns a RepoConnection', () => {
-			const server = new Server();
+			const server = new Server({loglevel: 'silent'});
 			server.createRepo({id: REPO_ID});
 			const connection = server.connect({
 				branchId: 'master',
@@ -140,7 +140,7 @@ describe('Server', () => {
 
 	it('can be used to connect and create, exists, get, getActiveVersion, modify and delete a node', () => {
 		const server = new Server({
-			loglevel: 'debug'
+			loglevel: 'silent'
 		});
 		server.createRepo({id: REPO_ID});
 		const connection = new RepoConnection({
@@ -191,18 +191,18 @@ describe('Server', () => {
 
 	describe('createProject', () => {
 		it('throws an error if no projectName is provided', () => {
-			const server = new Server();
+			const server = new Server({loglevel: 'silent'});
 			// @ts-expect-error
 			expect(() => server.createProject({})).toThrow('Server: createProject: No projectName provided!');
 		});
 
 		it('does nothing if project already exists', () => {
-			const server = new Server().createProject({projectName: 'myproject'});
+			const server = new Server({loglevel: 'silent'}).createProject({projectName: 'myproject'});
 			expect(server.createProject({projectName: 'myproject'})).toBeInstanceOf(Server);
 		});
 
 		it('is chainable', () => {
-			const server = new Server();
+			const server = new Server({loglevel: 'silent'});
 			const newServer = server.createProject({
 				projectName: 'myproject'
 			});
@@ -212,19 +212,19 @@ describe('Server', () => {
 
 	describe('contentConnect', () => {
 		it('throws an error if no projectId is provided', () => {
-			const server = new Server();
+			const server = new Server({loglevel: 'silent'});
 			// @ts-expect-error
 			expect(() => server.contentConnect({})).toThrow('Server: contentConnect: No projectId provided!');
 		});
 
 		it('throws an error if no branchId is provided', () => {
-			const server = new Server();
+			const server = new Server({loglevel: 'silent'});
 			// @ts-expect-error
 			expect(() => server.contentConnect({projectId: REPO_ID})).toThrow('Server: contentConnect: No branchId provided!');
 		});
 
 		it('returns a ContentConnection', () => {
-			const server = new Server().createProject({
+			const server = new Server({loglevel: 'silent'}).createProject({
 				projectName: 'myproject'
 			});
 			const connection = server.contentConnect({
@@ -237,18 +237,18 @@ describe('Server', () => {
 
 	describe('getProject', () => {
 		it('throws an error if no projectName is provided', () => {
-			const server = new Server();
+			const server = new Server({loglevel: 'silent'});
 			// @ts-expect-error
 			expect(() => server.getProject()).toThrow('Server: getProject: No projectName provided!');
 		});
 
 		it('throws an error if project does not exist', () => {
-			const server = new Server();
+			const server = new Server({loglevel: 'silent'});
 			expect(() => server.getProject('myproject')).toThrow('Server: getProject: Project myproject not found!');
 		});
 
 		it('returns a project', () => {
-			const server = new Server().createProject({
+			const server = new Server({loglevel: 'silent'}).createProject({
 				projectName: 'myproject'
 			});
 			expect(server.getProject('myproject')).toBeDefined();
@@ -258,6 +258,7 @@ describe('Server', () => {
 	describe('install', () => {
 		it('throws an error if version is lower than minSystemVersion', () => {
 			const server = new Server({
+				loglevel: 'silent',
 				version: '7.14.0'
 			});
 			const app = new App({
@@ -269,6 +270,7 @@ describe('Server', () => {
 
 		it('throws an error if version is higher than maxSystemVersion', () => {
 			const server = new Server({
+				loglevel: 'silent',
 				version: '7.16.0'
 			});
 			const app = new App({
@@ -280,6 +282,7 @@ describe('Server', () => {
 
 		it('installs an app if is version is within minSystemVersion and maxSystemVersion', () => {
 			const server = new Server({
+				loglevel: 'silent',
 				version: '7.15.0'
 			});
 			const app = new App({
@@ -292,6 +295,7 @@ describe('Server', () => {
 
 		it('replaces an existing app with the same key', () => {
 			const server = new Server({
+				loglevel: 'silent',
 				version: '7.15.0'
 			});
 			const app = new App({
@@ -308,7 +312,7 @@ describe('Server', () => {
 
 	describe('login', () => {
 		it('logs in a user', () => {
-			const server = new Server();
+			const server = new Server({loglevel: 'silent'});
 			expect(server.userKey).toBeUndefined();
 			server.login({
 				user: 'su'
@@ -319,7 +323,7 @@ describe('Server', () => {
 
 	describe('logout', () => {
 		it('logs out a user', () => {
-			const server = new Server().login({
+			const server = new Server({loglevel: 'silent'}).login({
 				user: 'su'
 			});
 			expect(server.userKey).toBe('user:system:su');
@@ -330,7 +334,7 @@ describe('Server', () => {
 
 	describe('setContext', () => {
 		it('sets context', () => {
-			const server = new Server();
+			const server = new Server({loglevel: 'silent'});
 			expect(server.context.attributes).toEqual({});
 			expect(server.context.branch).toBe('master');
 			expect(server.context.principals).toEqual([
@@ -360,7 +364,7 @@ describe('Server', () => {
 		});
 
 		it('sets context with loggedin user, if user is not passed', () => {
-			const server = new Server().su().createUser({
+			const server = new Server({loglevel: 'silent'}).su().createUser({
 					displayName: 'My User',
 					email: 'myuser@example.com',
 					name: 'myuser',

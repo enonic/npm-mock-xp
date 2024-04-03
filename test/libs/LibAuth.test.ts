@@ -4,9 +4,9 @@ import {
 } from '../../src';
 
 const server = new Server({
-	loglevel: 'debug'
+	// loglevel: 'debug'
 	// loglevel: 'error'
-	// loglevel: 'silent'
+	loglevel: 'silent'
 });
 
 const libAuth = new LibAuth({
