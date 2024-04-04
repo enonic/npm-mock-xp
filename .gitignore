@@ -4,3 +4,4 @@
 /node_modules/
 /enonic-mock-xp-v*.tgz
 /yarn-error.log
+.idea

@@ -42,9 +42,9 @@
     "tslib": "^2",
     "typescript": "^5"
   },
-  "description": "Enonic Mock XP JavaScript Library",
+  "description": "Mock Enonic XP API JavaScript Library",
   "engines": {
-    "node": ">=18.17.0"
+    "node": ">=20.11.1"
   },
   "files": [
     "/dist",
@@ -77,7 +77,8 @@
     "prebuild": "yarn copy",
     "precopy": "yarn clean",
     "prepack": "yarn test && yarn build",
+    "prepublishOnly": "node setversion.cjs",
     "test": "jest --coverage --no-cache"
   },
-  "version": "0.10.0"
+  "version": "0.0.0"
 }
