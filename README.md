@@ -8,27 +8,24 @@ Used to run tests in node, without the need to run Enonic XP.
 
 ```ts
 import {deepStrictEqual} from 'assert';
-import {JavaBridge} from '@enonic/mock-xp';
+import {
+  LibNode,
+  Server
+} from '@enonic/mock-xp';
 
 
 const APP_NAME = 'com.enonic.app.example';
 
+const server = new Server().createRepo({id: APP_NAME});
 
-const xp = new JavaBridge({
-  app: {
-    config: {},
-    name: APP_NAME,
-    version: '0.0.1-SNAPSHOT'
-  }
-});
-xp.repo.create({
-  id: APP_NAME
+const libNode = new LibNode({
+	server
 });
 
 
 describe('whatever', () => {
   it(`is correct`, () => {
-    const connection = xp.connect({
+    const connection = libNode.connect({
       repoId: APP_NAME,
       branch: 'master'
     });
@@ -39,6 +36,19 @@ describe('whatever', () => {
     deepStrictEqual(
       {
         _id: createdNode._id,
+        _indexConfig: {
+          configs: [],
+          default: {
+            decideByType: true,
+            enabled: true,
+            fulltext: false,
+            includeInAllText: false,
+            indexValueProcessors: [],
+            languages: [],
+            nGram: false,
+            path: false,
+          },
+        },
         _name: FOLDER_NAME,
         _path: createdNode._path,
         _nodeType: 'default',
