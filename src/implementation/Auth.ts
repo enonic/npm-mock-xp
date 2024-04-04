@@ -31,20 +31,24 @@ import {Server} from './Server';
 import { UserWithProfile } from './auth/UserWithProfile';
 
 
-export declare type GroupNode = Node<{
+export declare interface GroupNodeData {
 	description?: string
 	displayName: string
 	principalType: 'GROUP'
 	userStoreKey: string
 	member?: GroupKey | UserKey | (GroupKey | UserKey)[]
-}>
+}
 
-export declare type RoleNode = Node<{
+export declare type GroupNode = Node<GroupNodeData>
+
+export declare interface RoleNodeData {
 	description?: string
 	displayName: string
 	principalType: 'ROLE'
 	member?: GroupKey | UserKey | (GroupKey | UserKey)[]
-}>
+}
+
+export declare type RoleNode = Node<RoleNodeData>
 
 export declare interface UserData<
 	Profile extends Record<string, unknown> = Record<string, unknown>
@@ -104,7 +108,7 @@ export class Auth {
 		idProvider,
 		name,
 	}: CreateGroupParams): Group {
-		const groupNode = this.systemRepoConnection.create({
+		const groupNode = this.systemRepoConnection.create<GroupNodeData>({
 			_name: name,
 			_parentPath: `/identity/${idProvider}/groups`,
 			description: description,
@@ -125,13 +129,13 @@ export class Auth {
 		displayName,
 		description
 	}: CreateRoleParams): Role {
-		const roleNode = this.systemRepoConnection.create({
+		const roleNode = this.systemRepoConnection.create<RoleNodeData>({
 			_name: name,
 			_parentPath: '/identity/roles',
 			description,
 			displayName,
 			principalType: 'ROLE',
-		}) as RoleNode;
+		});
 		return new Role({
 			displayName,
 			key: `role:${name}`,
@@ -163,7 +167,7 @@ export class Auth {
 			profile,
 			userStoreKey: idProvider,
 		};
-		const userNode = this.systemRepoConnection.create(createParams) as unknown as UserNode;
+		const userNode = this.systemRepoConnection.create<UserData>(createParams);
 		return new User({
 			displayName,
 			key: `user:${idProvider}:${name}`,

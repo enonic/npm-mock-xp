@@ -1,4 +1,5 @@
 import type {
+	CreateNodeParams,
 	MoveNodeParams,
 	// RepoConnection as RepoConnectionOrig // TODO Doesn't match currently?
 } from '@enonic-types/lib-node';
@@ -9,7 +10,6 @@ import type {
 	// RepoNode,
 	RepoNodeWithData
 } from './node.d';
-import type { NodeCreateParams } from './create.d';
 // import type { NodeGetParams } from './get.d';
 import type {
 	GetActiveVersionParamObject,
@@ -58,12 +58,7 @@ export type RepoConnection = {
 
 	// commit(params: MultiCommitParams): ReadonlyArray<CommitResponse>;
 
-	// Creating a node. To create a content where the name is not important and
-	// there could be multiple instances under the same parent content, skip the
-	// name parameter and specify a displayName.
-	// create<NodeData>(a: NodeData & NodeCreateParams): NodeData & RepoNode;
-	// create<NodeData>(a: NodeData & NodeCreateParams) :RepoNodeWithData
-	create(a: NodeCreateParams) :RepoNodeWithData
+	create<NodeData = Record<string, unknown>>(params: CreateNodeParams<NodeData>): Node<NodeData>;
 
 	// Deleting a node or nodes.
 	delete(keys: string | Array<string>): Array<string>;

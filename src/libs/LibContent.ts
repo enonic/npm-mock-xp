@@ -12,30 +12,20 @@ import type {
 	PublishContentParams,
 	PublishContentResult
 } from '@enonic-types/lib-content';
-// import type {Project} from '../implementation/Project';
 import type {Server} from '../implementation/Server';
 
 
-import {ContentConnection} from '../implementation/ContentConnection';
 import {Project} from '../implementation/Project';
 
 
 export class LibContent {
-	// readonly connection: ContentConnection;
-	// readonly project: Project;
 	readonly server: Server;
 
 	constructor({
-		// project
 		server
 	}: {
-		// project: Project
 		server: Server
 	}) {
-		// Since project.connection can be changed by Context this will break
-		// stuff. So don't do this:
-		// this.connection = project.connection;
-		// this.project = project;
 		this.server = server;
 	}
 
@@ -51,20 +41,20 @@ export class LibContent {
 		return this.server.contentConnect({
 			branchId,
 			projectId: Project.projectNameFromRepoId(repoId),
-		})
+		});
 	}
 
 	public create<
 		Data = Record<string, unknown>, Type extends string = string
 	>(params: CreateContentParams<Data, Type>): Content<Data, Type> {
-		return this._connect().create(params);
+		return this._connect().create<Data, Type>(params);
 	}
 
 	public createMedia<
 		Data = Record<string, unknown>,
 		Type extends string = string
 	>(params: CreateMediaParams): Content<Data, Type> {
-		return this._connect().createMedia(params);
+		return this._connect().createMedia<Data, Type>(params);
 	}
 
 	public delete(params: DeleteContentParams): boolean {
@@ -78,7 +68,7 @@ export class LibContent {
 	public get<
 		Hit extends Content<unknown> = Content
 	>(params: GetContentParams): Hit | null {
-		return this._connect().get(params);
+		return this._connect().get<Hit>(params);
 	}
 
 	public getAttachmentStream(params: GetAttachmentStreamParams): ByteSource | null {
@@ -89,13 +79,13 @@ export class LibContent {
 		Data = Record<string, unknown>,
 		Type extends string = string
 	>(params: ModifyContentParams<Data, Type>): Content<Data, Type> | null {
-		return this._connect().modify(params);
+		return this._connect().modify<Data,Type>(params);
 	}
 
 	public move<
 		Data = Record<string, unknown>, Type extends string = string
 	>(params: MoveContentParams): Content<Data, Type> {
-		return this._connect().move(params);
+		return this._connect().move<Data,Type>(params);
 	}
 
 	public publish(params: PublishContentParams): PublishContentResult {

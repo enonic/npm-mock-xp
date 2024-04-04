@@ -1,12 +1,13 @@
 import type {
+	CreateNodeParams,
 	MoveNodeParams,
+	Node,
 	// RepoConnection as RepoConnectionInterface // TODO Doesn't match currently
 } from '@enonic-types/lib-node';
 import type {
 	GetActiveVersionParamObject,
 	GetActiveVersionResponse,
 	// Log,
-	NodeCreateParams,
 	NodeModifyParams,
 	NodeQueryParams,
 	NodeQueryResponse,
@@ -40,8 +41,8 @@ export class RepoConnection implements RepoConnectionInterface {
 
 	// TODO: commit()
 
-	create(param: NodeCreateParams): RepoNodeWithData {
-		return this.branch.createNode(param);
+	create<NodeData = unknown>(param: CreateNodeParams<NodeData>): Node<NodeData> {
+		return this.branch.createNode<NodeData>(param);
 	}
 
 	delete(keys: string | Array<string>): Array<string> {

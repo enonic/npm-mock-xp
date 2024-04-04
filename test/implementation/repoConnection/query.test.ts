@@ -3,7 +3,8 @@ import {hasMethod} from '../../hasMethod';
 
 
 const server = new Server({
-	loglevel: 'silent'
+	// loglevel: 'debug',
+	loglevel: 'silent',
 });
 
 
@@ -26,11 +27,15 @@ describe('mock', () => {
 					boolean: true,
 					url: 'https://www.enonic.com'
 				});
+				// server.log.debug('createRes1:%s', createRes1);
+
 				const createRes2 = connection.create({
 					_nodeType: 'com.enonic.app.explorer:document',
 					boolean: false,
 					url: 'https://www.enonic.com/platform/overview'
 				});
+				// server.log.debug('createRes2:%s', createRes2);
+
 				describe('query', () => {
 					it('returns all nodes when query is an empty string', () => {
 						const queryRes = connection.query({

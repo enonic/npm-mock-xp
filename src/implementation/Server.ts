@@ -8,7 +8,10 @@ import type {
 	ContextUserParams,
 	PrincipalKey,
 } from '@enonic-types/lib-context';
-import type {ConnectParams} from '@enonic-types/lib-node';
+import type {
+	ConnectParams,
+	CreateNodeParams,
+} from '@enonic-types/lib-node';
 import type {
 	CreateRepositoryParams,
 	RepositorySettings,
@@ -160,12 +163,28 @@ export class Server {
 		return this.getRepo(repoId).createBranch(branchId);
 	}
 
+	public createNode({
+		branchId,
+		repoId,
+		node
+	}: {
+		branchId: string
+		node: CreateNodeParams
+		repoId: string
+	}) {
+		this.connect({
+			branchId,
+			repoId
+		}).create(node);
+		return this; // Chainable
+	}
+
 	public createRepo({
 		id,
 		// rootChildOrder,
 		// rootPermissions,
 		settings
-	}: CreateRepositoryParams): Repo {
+	}: CreateRepositoryParams) {
 		const repo = new Repo({
 			id,
 			server: this,
@@ -173,7 +192,8 @@ export class Server {
 			settings
 		});
 		this.repos[id] = repo;
-		return repo;
+		// return repo;
+		return this; // Chainable
 	}
 
 	public createProject({

@@ -337,8 +337,8 @@ describe('ContentConnection', () => {
 					_path: '/mycontent',
 					_permissions: [],
 					_state: 'PUBLISHED',
-					_versionKey: '00000000-0000-4000-8000-000000000023',
 					_ts: '2021-07-01T12:00:00Z',
+					_versionKey: '00000000-0000-4000-8000-000000000023',
 					components: [{
 						page: {
 							config: {

@@ -5,15 +5,16 @@ import type {
 } from '@enonic-types/core';
 import type {
 	BooleanFilter,
+	CreateNodeParams,
 	HasValueFilter,
 	MoveNodeParams,
+	Node,
 	QueryNodeParams,
 } from '@enonic-types/lib-node';
 import type {
 	GetActiveVersionParamObject,
 	GetActiveVersionResponse,
 	Log,
-	NodeCreateParams,
 	NodeModifyParams,
 	NodeQueryResponse,
 	NodeRefreshParams,
@@ -166,7 +167,7 @@ export class Branch {
 		// this.log.debug('in Branch constructor');
 	}
 
-	_createNodeInternal({
+	_createNodeInternal<NodeData = unknown>({
 		// _childOrder,
 		_id = this.repo.generateId(),
 		_indexConfig = DEFAULT_INDEX_CONFIG,
@@ -178,19 +179,17 @@ export class Branch {
 		_ts = Branch.generateInstantString(),
 		_versionKey = this.repo.generateId(),
 		...rest // contains _nodeType
-	}: NodeCreateParams & {
+	}: CreateNodeParams<NodeData> & {
 		_id?: string
-		_ts?: string
-		_versionKey?: string
-	}): RepoNodeWithData {
+	}): Node<NodeData> {
 		for (const k of IGNORED_ON_CREATE) {
 			if (rest.hasOwnProperty(k)) { delete rest[k]; }
 		}
+		if (!_name) { _name = _id as string; }
 		if (!rest._nodeType) {
+			// @ts-expect-error Too complex to waste time on making perfect!
 			rest._nodeType = 'default';
 		}
-		if (!_name) { _name = _id as string; }
-
 		if(!_parentPath.endsWith('/')) {
 			_parentPath += '/'
 		}
@@ -213,17 +212,18 @@ export class Branch {
 			throw new NodeAlreadyExistAtPathException(`Node already exists at ${_path} repository: ${this.repo.id} branch: ${this.id}`);
 		}
 
-		const node: RepoNodeWithData = {
+		const node: Node<NodeData> = {
 			_id,
 			_indexConfig,
 			_name,
+			// _nodeType,
 			_path,
 			_state: 'DEFAULT',
 			_ts,
 			_versionKey,
 			...(enonify(rest) as Object)
-		} as unknown as RepoNodeWithData;
-		this.nodes[_id] = node;
+		} as unknown as Node<NodeData>;
+		this.nodes[_id] = node as RepoNodeWithData;
 		this.pathIndex[_path] = _id;
 
 		const restKeys = Object.keys(rest).filter(k => !SEARCH_INDEX_BLACKLIST.includes(k));
@@ -263,8 +263,8 @@ export class Branch {
 		return deref(node);
 	} // _createNodeInternal
 
-	createNode(params: NodeCreateParams): RepoNodeWithData {
-		return this._createNodeInternal(params); // already dereffed
+	createNode<NodeData = unknown>(params: CreateNodeParams<NodeData>): Node<NodeData> {
+		return this._createNodeInternal<NodeData>(params); // already dereffed
 	}
 
 	private keyToId(key: string): string | undefined {
@@ -650,7 +650,7 @@ export class Branch {
 		}
 
 		if (isQueryDsl(query)) {
-			this.log.info('query: Search Index: %s', this.searchIndex);
+			this.log.info('query:%s Search Index: %s', query, this.searchIndex);
 			const mustSets: string[][] = [];
 			const mustNotSets: string[][] = [];
 

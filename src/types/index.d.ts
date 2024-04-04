@@ -11,7 +11,6 @@ export type {
 	MockContextParams,
 } from './Context.d';
 export { Log } from './Log.d';
-export { NodeCreateParams } from './node/create.d';
 export {
 	GetActiveVersionParamObject,
 	GetActiveVersionResponse

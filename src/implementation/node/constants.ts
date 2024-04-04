@@ -1,4 +1,10 @@
-export const INDEX_CONFIG_DEFAULT = {
+import type {
+	AccessControlEntry,
+	NodeIndexConfigParams
+} from '@enonic-types/lib-node'
+
+
+export const INDEX_CONFIG_DEFAULT: NodeIndexConfigParams = {
 	analyzer: "document_index_default",
 	default: {
 		decideByType: true,
@@ -170,7 +176,7 @@ export const INDEX_CONFIG_DEFAULT = {
 	],
 };
 
-export const PERMISSIONS_DEFAULT = [
+export const PERMISSIONS_DEFAULT: AccessControlEntry[] = [
 	{
 		principal: "role:system.admin",
 		allow: [

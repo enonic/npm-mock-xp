@@ -87,7 +87,7 @@ describe('Server', () => {
 		expect(server.listRepos().length).toStrictEqual(1);
 		expect(() => server.getRepo(REPO_ID)).toThrow();
 
-		const repo = server.createRepo({id: REPO_ID});
+		const repo = server.createRepo({id: REPO_ID}).getRepo(REPO_ID);
 		expect(repo.id).toStrictEqual(REPO_ID);
 		expect(repo.branches['master']).toBeDefined();
 		expect(repo.settings).toStrictEqual({});

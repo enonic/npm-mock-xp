@@ -27,11 +27,13 @@ export class Project {
 		settings?: RepositorySettings
 	}) {
 		this.server = server;
-		this.repo = server.createRepo({
-			id: Project.repoIdFromProjectName(projectName),
+		const repoId = Project.repoIdFromProjectName(projectName);
+		server.createRepo({
+			id: repoId,
 			settings
 		});
-		this.repo.getBranch('master');
+		this.repo = server.getRepo(repoId);
+		// this.repo.getBranch('master');
 		this.repo.createBranch('draft');
 	}
 }

@@ -30,12 +30,13 @@ export class LibRepo {
 		// rootPermissions,
 		settings,
 	}: CreateRepositoryParams): Repository {
-		return this.server.createRepo({
+		this.server.createRepo({
 			id,
 			// rootChildOrder,
 			// rootPermissions,
 			settings
-		}).get();
+		})
+		return this.server.getRepo(id).get();
 	}
 
 	public createBranch(params: CreateBranchParams): BranchResult {

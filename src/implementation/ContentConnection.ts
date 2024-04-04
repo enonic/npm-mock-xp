@@ -1,22 +1,35 @@
 import type {
+	Attachment,
 	ComponentDescriptor,
-	NestedRecord
+	Content,
+	// PageComponent,
+	NestedRecord,
+	PublishInfo,
+	UserKey,
 } from '@enonic-types/core';
 import type {
+	AccessControlEntry,
 	ByteSource,
-	Content,
 	ContentExistsParams,
 	CreateContentParams,
 	CreateMediaParams,
 	DeleteContentParams,
 	GetAttachmentStreamParams,
 	GetContentParams,
+	// IdGeneratorSupplier,
 	ModifyContentParams,
 	MoveContentParams,
 	PublishContentParams,
-	PublishContentResult
+	PublishContentResult,
 } from '@enonic-types/lib-content';
-import type { Node } from '@enonic-types/lib-node';
+import type {
+	CommonNodeProperties,
+	CreateNodeParams,
+	ModifyNodeParams,
+	Node,
+	NodeIndexConfig,
+	NodeIndexConfigParams,
+} from '@enonic-types/lib-node';
 import type {
 	Log,
 	RepoNodeWithData,
@@ -71,9 +84,58 @@ declare interface NodeComponentPart {
 
 declare type NodeComponent = NodeComponentLayout | NodeComponentPage | NodeComponentPart;
 
+declare interface ContentProperties<Data, Type> {
+	createdTime: string
+	creator: UserKey
+	data: Data
+	owner: UserKey
+	type: Type
+	x?: XpXData
+}
+
+// Whether a property is required or optional depends on create vs get, etc...
+// So here they are all required, but on can wrap with Partial<>
+declare interface AllContentProperties {
+	_id: string
+	_name: string
+	_path: string
+	attachments: Record<string, Attachment>
+	childOrder: string
+	// components:
+	creator: UserKey
+	createdTime: string
+	hasChildren: boolean
+	modifiedTime: string
+	owner: string
+	data: any
+	displayName: string
+	language: string
+	modifier: UserKey
+	page: Content['fragment'] | Content['page'] // PageComponent
+	publish: PublishInfo
+	type: string
+	valid: boolean
+	x: XpXData
+}
+
+declare type ContentToNode<
+	C extends Partial<AllContentProperties> = Partial<AllContentProperties>
+> = Omit<
+	C, 'childOrder'
+> & {
+	_childOrder: C['childOrder']
+	_indexConfig: NodeIndexConfig | NodeIndexConfigParams
+	_inheritsPermissions: boolean
+	_nodeType: string
+	_permissions: AccessControlEntry[]
+	_state: string
+	_ts: string
+	_versionKey: string
+	components?: NodeComponent[]
+};
 
 const CHILD_ORDER_DEFAULT = 'displayname ASC'; // NOTE: With small n is actually what Content Studio does.
-const USER_DEFAULT = 'user:system:su';
+const USER_DEFAULT: UserKey = 'user:system:su';
 
 
 export class ContentConnection {
@@ -112,14 +174,15 @@ export class ContentConnection {
 	// TODO archive()
 
 	contentToNode<
-		Data = Record<string, unknown>, Type extends string = string
+		Data = Record<string, unknown>,
+		Type extends string = string
 	>({
 		content,
 		mode = 'create',
 	}: {
 		content: CreateContentParams<Data, Type> // | ModifyContentParams<Data, Type>
 		mode: 'create' | 'modify'
-	}): RepoNodeWithData {
+	}) {
 		const {
 			name,
 			parentPath,
@@ -136,7 +199,8 @@ export class ContentConnection {
 			// idGenerator, // TODO undocumented?
 			// workflow // TODO undocumented?
 		} = content;
-		const node: Partial<RepoNodeWithData> = {
+
+		const node: Partial<CommonNodeProperties> & ContentProperties<Data, Type> = {
 			createdTime: new Date().toISOString(),
 			creator: USER_DEFAULT, // NOTE: Hardcode
 			data,
@@ -165,22 +229,28 @@ export class ContentConnection {
 		if (name) {
 			node._name = name;
 		}
-		return node as RepoNodeWithData;
+		if (mode === 'create') {
+			return node as CreateNodeParams<ContentProperties<Data, Type>>;
+		}
+		return node as unknown as ModifyNodeParams<ContentProperties<Data, Type>>;
 	} // contentToNode
 
 	create<
-		Data = Record<string, unknown>, Type extends string = string
+		Data = Record<string, unknown>,
+		Type extends string = string
 	>(params: CreateContentParams<Data, Type>): Content<Data, Type> {
 		// this.log.debug('ContentConnection create(%s)', params);
-		const createNodeParams = this.contentToNode({
+		const createNodeParams = this.contentToNode<Data, Type>({
 			content: params,
 			mode: 'create'
 		});
 		// this.log.debug('ContentConnection createNodeParams(%s)', createNodeParams);
-		const createdNode = this.branch.createNode(createNodeParams);
+		const createdNode = this.branch.createNode<ContentProperties<Data, Type>>(createNodeParams as CreateNodeParams<ContentProperties<Data, Type>>);
 		// this.log.debug('ContentConnection createdNode(%s)', createdNode);
 		// TODO: Modify node to apply displayName if missing
-		return this.nodeToContent({node: createdNode}) as Content<Data, Type>;
+
+		// @ts-expect-error Typing too complex to waste time on making perfect!
+		return this.nodeToContent({node: createdNode});
 	} // create
 
 	createMedia<
@@ -272,10 +342,10 @@ export class ContentConnection {
 		});
 		// this.log.debug('ContentConnection createMedia createdNode:%s', createdNode);
 
-		const createdContent = this.nodeToContent({node: createdNode}) as Content<Data, Type>;
+		const createdContent = this.nodeToContent({node: createdNode});
 		// this.log.debug('ContentConnection createMedia createdContent:%s', createdContent);
 
-		return createdContent;
+		return createdContent as Content<Data, Type>;
 	} // createMedia
 
 	// TODO modifyMedia()
@@ -314,13 +384,13 @@ export class ContentConnection {
 		if (key.startsWith('/')) {
 			key = `/content${ key }`;
 		}
-		const node = this.branch.getNode(key) as RepoNodeWithData;
+		const node = this.branch.getNode(key) as unknown as ContentToNode<Hit>;
 		if (!node) {
 			// TODO Some setting to show this warning? Maybe TRACE level?
 			// this.log.warning('ContentConnection get: No content for key:%s', key);
 			return null;
 		}
-		return this.nodeToContent({node}) as Hit;
+		return this.nodeToContent<Hit>({node});
 	} // get
 
 	// TODO getAttachments()
@@ -424,14 +494,16 @@ export class ContentConnection {
 		});
 		// this.log.debug('ContentConnection modifiedNode(%s)', modifiedNode);
 
-		const modifiedContent = this.nodeToContent({node: modifiedNode}) as Content<Data, Type>;
+		// @ts-expect-error Typing too complex to waste time on making perfect!
+		const modifiedContent = this.nodeToContent({node: modifiedNode});
 		// this.log.debug('ContentConnection modifiedContent(%s)', modifiedContent);
 
-		return modifiedContent;
+		return modifiedContent as Content<Data, Type>;
 	} // modify
 
 	move<
-		Data = Record<string, unknown>, Type extends string = string
+		Data = Record<string, unknown>,
+		Type extends string = string
 	>(params: MoveContentParams): Content<Data, Type> {
 		// this.log.debug('ContentConnection move(%s)', params);
 
@@ -477,11 +549,13 @@ export class ContentConnection {
 		return modifiedContent as Content<Data, Type>;
 	} // move
 
-	nodeToContent({
+	nodeToContent<
+		C extends Partial<AllContentProperties> = Partial<AllContentProperties>
+	>({
 		node
 	}: {
-		node: RepoNodeWithData
-	}): Content {
+		node: ContentToNode<C>
+	}): C {
 		// this.log.debug('nodeToContent(%s)', {node});
 		const {
 			_childOrder, // on Content as ChildOrder
@@ -495,7 +569,7 @@ export class ContentConnection {
 			// _state, // not on Content
 			// _ts, // not on Content
 			// _versionKey, // not on Content
-			components, // Different on Content
+			components, // Hierarchical on Content, flattened on Node
 			creator,
 			createdTime,
 			data,
@@ -507,21 +581,9 @@ export class ContentConnection {
 			type,
 			valid = true, // TODO Hardcoded
 			x = {}
-		} = node as Node<{
-			components: NodeComponent[];
-			creator: Content['creator'];
-			createdTime: Content['createdTime'];
-			data: Content['data'];
-			displayName: Content['displayName'];
-			language: Content['language'];
-			modifier: Content['modifier'];
-			modifiedTime: Content['modifiedTime'];
-			owner: Content['owner'];
-			type: Content['type'];
-			valid: Content['valid'];
-			x: Content['x'];
-		}>;
-		const content: Content = {
+		} = node;
+		// const content: Content<C['data'],C['type']> = {
+		const content: Partial<AllContentProperties> = {
 			_id,
 			_name,
 			_path: _path.replace(/^\/content/, ''),
@@ -656,7 +718,7 @@ export class ContentConnection {
 			} // for components
 		}
 
-		return content;
+		return content as C;
 	} // nodeToContent
 
 	// This function publishes content to the master branch
@@ -719,7 +781,7 @@ export class ContentConnection {
 				pathParts.pop();
 				nodeOnDraft['_parentPath'] = pathParts.join('/');
 				// deleteIn(nodeOnDraft as unknown as NestedRecord, '_path'); // Causes problems
-				const createdNode = masterBranch._createNodeInternal(nodeOnDraft); // This can throw, but not return falsy
+				const createdNode = masterBranch._createNodeInternal(nodeOnDraft as unknown); // This can throw, but not return falsy
 				if (createdNode) {
 					this.log.debug("ContentConnection publish: Created content with key %s on the master branch!", contentKey);
 					res.pushedContents.push(contentKey);
