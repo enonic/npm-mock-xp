@@ -8,6 +8,8 @@ import {
 	LibContext,
 	Server
 } from '../../../src';
+import {LEA_JPG_BYTE_SIZE} from '../../constants';
+import { create } from 'domain';
 
 
 const PROJECT_NAME = 'myproject';
@@ -38,28 +40,27 @@ const libContext = new LibContext({
 describe('content', () => {
 	describe('createMedia', () => {
 		it('is able to create a folder content', () => {
-			const fn = () => {
-				return libContext.run({
-					branch: 'draft',
-					repository: REPO,
-				},() => {
-					return libContent.createMedia({
-						data: DATA,
-						name: 'Lea-Seydoux.jpg',
-						parentPath: '/',
-						mimeType: 'image/jpeg',
-						focalX: 0.5,
-						focalY: 0.5,
-					});
+			const media = libContext.run({
+				branch: 'draft',
+				repository: REPO,
+			},() => {
+				return libContent.createMedia({
+					data: DATA,
+					name: 'Lea-Seydoux.jpg',
+					parentPath: '/',
+					mimeType: 'image/jpeg',
+					focalX: 0.5,
+					focalY: 0.5,
 				});
-			}
-			expect(fn()).toEqual({
+			});
+			expect(media).toEqual({
 				_id: '00000000-0000-4000-8000-000000000004',
 				_name: 'Lea-Seydoux.jpg',
 				_path: '/Lea-Seydoux.jpg',
 				attachments: {},
 				childOrder: 'displayname ASC',
-				createdTime: expect.any(String) as unknown as string,
+				// createdTime: expect.any(String) as unknown as string, // bun test doesn't support expect.any
+				createdTime: media.createdTime,
 				creator: 'user:system:su',
 				data: {
 					artist: "",
@@ -83,7 +84,7 @@ describe('content', () => {
 				x: {
 					media: {
 						imageInfo: {
-							byteSize: 528238,
+							byteSize: LEA_JPG_BYTE_SIZE,
 							contentType: 'image/jpeg',
 							imageHeight: 1080,
 							imageWidth: 1920,

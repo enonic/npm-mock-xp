@@ -7,6 +7,7 @@ import {
 } from 'fs';
 import { join } from 'path';
 import {Server} from '../../../src';
+import {THUR_BYTE_SIZE} from '../../constants';
 
 
 const server = new Server({
@@ -68,7 +69,7 @@ describe('mock', () => {
 							x: {
 								media: {
 									imageInfo: {
-										byteSize: 187348,
+										byteSize: THUR_BYTE_SIZE,
 										contentType: 'text/plain',
 										imageHeight: 600,
 										imageWidth: 480,

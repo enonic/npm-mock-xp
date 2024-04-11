@@ -9,6 +9,8 @@ import {
 	LibIo,
 	ResourceKey,
 } from '../../src';
+import {LEA_JPG_BYTE_SIZE} from '../constants';
+
 
 const APP_KEY = 'com.enonic.app.myapp';
 const FILENAME = 'Lea-Seydoux.jpg'
@@ -67,14 +69,14 @@ describe('LibIo', () => {
 			expect(resource).toBeDefined();
 			expect(resource.path).toBe(ASSET_PATH);
 			expect(resource.exists()).toBe(true);
-			expect(resource.getSize()).toBe(528238);
+			expect(resource.getSize()).toBe(LEA_JPG_BYTE_SIZE);
 			expect(resource.getTimestamp()).toBeGreaterThan(0);
 		});
 	}); // describe getResource
 
 	describe('getSize', () => {
 		it('should return the size of the stream', () => {
-			expect(libIo.getSize(stream)).toBe(528238);
+			expect(libIo.getSize(stream)).toBe(LEA_JPG_BYTE_SIZE);
 		});
 	}); // describe getSize
 

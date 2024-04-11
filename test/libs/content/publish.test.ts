@@ -74,13 +74,15 @@ describe('content', () => {
 				branch: 'master',
 				repository: REPO_ID,
 			}, () => {
-				expect(libContent.get({ key: folderContent._id })).toEqual({
+				const node = libContent.get({ key: folderContent._id });
+				expect(node).toEqual({
 					_id: '00000000-0000-4000-8000-000000000004',
 					_name: 'folder',
 					_path: '/folder',
 					attachments: {},
 					childOrder: undefined,
-					createdTime: expect.any(String) as unknown as string,
+					// createdTime: expect.any(String) as unknown as string, // bun test doesn't support expect.any
+					createdTime: node.createdTime,
 					creator: 'user:system:su',
 					data: {},
 					displayName: 'folder',

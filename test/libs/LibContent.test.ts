@@ -11,6 +11,7 @@ import {
 	LibContext,
 	Server
 } from '../../src';
+import {LEA_JPG_BYTE_SIZE} from '../constants';
 
 // const APP_KEY = 'com.example.myapp';
 const PROJECT_NAME = 'myproject';
@@ -42,6 +43,7 @@ const libContext = new LibContext({
 	server
 });
 
+
 describe('LibContent', () => {
 	describe('create, exists, get, modify, move, publish and delete', () => {
 		it('should do those things', () => {
@@ -65,7 +67,8 @@ describe('LibContent', () => {
 				_path: createdContent._path,
 				attachments: {},
 				childOrder: undefined,
-				createdTime: expect.any(String),
+				// createdTime: expect.any(String), // bun test doesn't support expect.any
+				createdTime: createdContent.createdTime,
 				creator: "user:system:su",
 				data: {
 					key: "value",
@@ -79,6 +82,7 @@ describe('LibContent', () => {
 				x: {},
 			};
 			expect(createdContent).toStrictEqual(expectedContent);
+			expect(createdContent.createdTime).toBeDefined();
 			expect(libContent.exists({key: createdContent._id})).toBe(true);
 			expect(libContent.exists({key: createdContent._path})).toBe(true);
 			expect(libContent.get({key: createdContent._id})).toStrictEqual(expectedContent);
@@ -120,15 +124,6 @@ describe('LibContent', () => {
 				expect(libContent.get({key: createdContent._id})).toStrictEqual(expectedContent);
 				expect(libContent.get({key: createdContent._path})).toStrictEqual(expectedContent);
 			});
-
-			const expectedModifiedContent = {
-				...expectedContent,
-				data: {
-					key: 'changed value',
-				},
-				modifiedTime: expect.any(String),
-				modifier: 'user:system:su',
-			};
 			const modifiedContent = libContent.modify({
 				key: createdContent._path,
 				editor: (content) => {
@@ -136,7 +131,18 @@ describe('LibContent', () => {
 					return content;
 				},
 			});
+			const expectedModifiedContent = {
+				...expectedContent,
+				data: {
+					key: 'changed value',
+				},
+				// modifiedTime: expect.any(String), // bun test doesn't support expect.any
+				modifiedTime: modifiedContent.modifiedTime,
+				modifier: 'user:system:su',
+			};
+
 			expect(modifiedContent).toStrictEqual(expectedModifiedContent);
+			expect(modifiedContent.modifiedTime).toBeDefined();
 
 			// Master is unaffected by modify on draft
 			libContext.run({
@@ -172,15 +178,16 @@ describe('LibContent', () => {
 				expect(libContent.get({key: modifiedContent._path})).toStrictEqual(expectedModifiedContent);
 			});
 
-			const expectedMovedContent = {
-				...expectedModifiedContent,
-				_name: 'renamed',
-				_path: '/renamed',
-			};
 			const movedContent = libContent.move({
 				source: createdContent._path,
 				target: '/renamed',
 			});
+			const expectedMovedContent = {
+				...expectedModifiedContent,
+				_name: 'renamed',
+				_path: '/renamed',
+				modifiedTime: movedContent.modifiedTime,
+			};
 			expect(movedContent).toStrictEqual(expectedMovedContent);
 
 			// Master is unaffected by move on draft
@@ -284,7 +291,8 @@ describe('LibContent', () => {
 				_path: createdMedia._path,
 				attachments: {},
 				childOrder: 'displayname ASC',
-				createdTime: expect.any(String),
+				// createdTime: expect.any(String), // bun test doesn't support expect.any
+				createdTime: createdMedia.createdTime,
 				creator: "user:system:su",
 				data: {
 					artist: "",
@@ -308,7 +316,7 @@ describe('LibContent', () => {
 				x: {
 					media: {
 						imageInfo: {
-							byteSize: 528238,
+							byteSize: LEA_JPG_BYTE_SIZE,
 							contentType: "image/jpeg",
 							imageHeight: 1080,
 							imageWidth: 1920,
@@ -318,6 +326,7 @@ describe('LibContent', () => {
 				},
 			};
 			expect(createdMedia).toStrictEqual(expectedMediaContent);
+			expect(createdMedia.createdTime).toBeDefined();
 			const attachmentStream = libContent.getAttachmentStream({
 				// key: createdMedia._id,
 				key: createdMedia._path,
@@ -328,7 +337,7 @@ describe('LibContent', () => {
 			const {
 				size
 			} = vol.statSync(createdMedia._path);
-			expect(size).toBe(528238);
+			expect(size).toBe(LEA_JPG_BYTE_SIZE);
 
 			libContext.run({
 				branch: 'master',
@@ -379,7 +388,7 @@ describe('LibContent', () => {
 				const {
 					size
 				} = vol.statSync(createdMedia._path);
-				expect(size).toBe(528238);
+				expect(size).toBe(LEA_JPG_BYTE_SIZE);
 			});
 
 			expect(libContent.delete({key: createdMedia._id})).toBe(true);
@@ -412,7 +421,7 @@ describe('LibContent', () => {
 				const {
 					size
 				} = vol.statSync(createdMedia._path);
-				expect(size).toBe(528238);
+				expect(size).toBe(LEA_JPG_BYTE_SIZE);
 			});
 
 			expect(libContent.publish({keys: [

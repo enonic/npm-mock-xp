@@ -3,38 +3,45 @@ import {
 	Server
 } from '../../src';
 
-const server = new Server({
-	// loglevel: 'debug'
-	// loglevel: 'error'
-	loglevel: 'silent'
-});
 
-const libAuth = new LibAuth({
-	server
-});
-
-const group = libAuth.createGroup({
-	name: 'groupName',
-	displayName: 'Group Name',
-	description: 'Group Description',
-	idProvider: 'system'
-});
-
-const role = libAuth.createRole({
-	name: 'roleName',
-	displayName: 'Role Name',
-	description: 'Role Description'
-});
-
-const user = libAuth.createUser({
-	name: 'userName',
-	displayName: 'User Name',
-	email: 'user@example.com',
-	idProvider: 'system',
-});
+let server, libAuth, group, role, user;
 
 
 describe('LibAuth', () => {
+
+	beforeAll(done => {
+		server = new Server({
+			// loglevel: 'debug'
+			// loglevel: 'error'
+			loglevel: 'silent'
+		});
+
+		libAuth = new LibAuth({
+			server
+		});
+
+		group = libAuth.createGroup({
+			name: 'groupName',
+			displayName: 'Group Name',
+			description: 'Group Description',
+			idProvider: 'system'
+		});
+
+		role = libAuth.createRole({
+			name: 'roleName',
+			displayName: 'Role Name',
+			description: 'Role Description'
+		});
+
+		user = libAuth.createUser({
+			name: 'userName',
+			displayName: 'User Name',
+			email: 'user@example.com',
+			idProvider: 'system',
+		});
+		done();
+	}); // beforeAll
+
 	describe('createGroup', () => {
 		it('should create a group', () => {
 			expect(group).toBeDefined();
@@ -157,7 +164,14 @@ describe('LibAuth', () => {
 	}); // describe getProfile
 
 	describe('getUser', () => {
-		beforeAll(() => {
+		// In bun test beforeAll means before all tests, not all tests under current DESCRIBE!
+		// beforeAll(done => {
+		// 	done();
+		// });
+
+		it('should return null when logged out', () => {
+
+			// With bun test this can't be moved to the above beforeAll, yet.
 			libAuth.modifyProfile({
 				key: user.key,
 				editor: (profile) => {
@@ -165,9 +179,7 @@ describe('LibAuth', () => {
 					return profile;
 				}
 			});
-		});
 
-		it('should return null when logged out', () => {
 			libAuth.logout();
 			const userWithProfile = libAuth.getUser();
 			expect(userWithProfile).toBe(null);

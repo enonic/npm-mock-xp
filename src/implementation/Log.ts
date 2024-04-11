@@ -1,18 +1,21 @@
 import type {Log as LogType} from '../types';
 
+// Not using named imports to avoid:
+// bun test failing with: SyntaxError: Import named 'white' not found in module
+import colors from 'colors/safe';
 
-import {
-	// @ts-expect-error 'colors/safe' has no exported member 'brightRed'.
+// @ts-ignore
+import {stringify} from 'q-i';
+
+const {
+	// @ts-expect-error Property 'brightRed' does not exist on type
 	brightRed,
-	// @ts-expect-error 'colors/safe' has no exported member 'brightYellow'.
+	// @ts-expect-error Property 'brightYellow' does not exist on type
 	brightYellow,
 	grey,
 	reset,
 	white,
-} from 'colors/safe';
-
-// @ts-ignore
-import {stringify} from 'q-i';
+} = colors;
 
 
 export type LogLevel =

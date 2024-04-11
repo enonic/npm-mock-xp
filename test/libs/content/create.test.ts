@@ -30,26 +30,25 @@ const libContext = new LibContext({
 describe('content', () => {
 	describe('create', () => {
 		it('is able to create a folder content', () => {
-			const fn = () => {
-				return libContext.run({
-					branch: 'draft',
-					repository: REPO_ID,
-				},() => {
-					return libContent.create({
-						contentType: 'base:folder',
-						data: {},
-						name: 'folder',
-						parentPath: '/',
-					});
+			const node = libContext.run({
+				branch: 'draft',
+				repository: REPO_ID,
+			},() => {
+				return libContent.create({
+					contentType: 'base:folder',
+					data: {},
+					name: 'folder',
+					parentPath: '/',
 				});
-			}
-			expect(fn()).toEqual({
+			});
+			expect(node).toEqual({
 				_id: '00000000-0000-4000-8000-000000000004',
 				_name: 'folder',
 				_path: '/folder',
 				attachments: {},
 				childOrder: undefined,
-				createdTime: expect.any(String) as unknown as string,
+				// createdTime: expect.any(String) as unknown as string, // bun test doesn't support expect.any
+				createdTime: node.createdTime,
 				creator: 'user:system:su',
 				data: {},
 				displayName: 'folder',

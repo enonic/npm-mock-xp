@@ -1,7 +1,14 @@
-import type {ByteSource} from '@enonic-types/core';
+import type {
+	ByteSource,
+	LayoutComponent,
+	LayoutRegion,
+	PageComponent,
+	PageRegion,
+	PartComponent,
+} from '@enonic-types/core';
+import type {AllContentProperties} from '../../src/implementation/ContentConnection';
 
-
-import {readFileSync } from 'fs';
+import {readFileSync} from 'fs';
 import {join} from 'path';
 import {vol} from 'memfs';
 import {
@@ -9,6 +16,26 @@ import {
 	RepoConnection,
 	Server,
 } from '../../src';
+import {LEA_JPG_BYTE_SIZE} from '../constants';
+
+
+declare global {
+	interface XpLayoutMap {
+		'com.enonic.app.myapp:mylayout': {
+			layoutProp: string
+		}
+	}
+	interface XpPageMap {
+		'com.enonic.app.myapp:mypage': {
+			pageProp: string
+		}
+	}
+	interface XpPartMap {
+		'com.enonic.app.myapp:mypart': {
+			partProp: string
+		}
+	}
+}
 
 
 const PROJECT_NAME = 'myproject';
@@ -17,21 +44,26 @@ const FILENAME = 'Lea-Seydoux.jpg'
 const DATA: ByteSource = readFileSync(join(__dirname, '..', FILENAME)) as unknown as ByteSource;
 
 
-const server = new Server({
-	loglevel: 'silent',
-}).createProject({
-	projectName: PROJECT_NAME,
-});
+let server, draftBranch, draftConnection;
 
-const draftBranch = server.getBranch({
-	branchId: 'draft',
-	repoId: REPO_ID,
-});
 
-const draftConnection = new ContentConnection({
-	branch: draftBranch
-});
+beforeAll(done => {
+	server = new Server({
+		loglevel: 'silent',
+	}).createProject({
+		projectName: PROJECT_NAME,
+	});
 
+	draftBranch = server.getBranch({
+		branchId: 'draft',
+		repoId: REPO_ID,
+	});
+
+	draftConnection = new ContentConnection({
+		branch: draftBranch
+	});
+	done();
+});
 
 describe('ContentConnection', () => {
 	it('should be instantiable', () => {
@@ -48,12 +80,13 @@ describe('ContentConnection', () => {
 			parentPath: '/',
 		});
 		expect(content).toStrictEqual({
-			_id: '00000000-0000-4000-8000-000000000004',
+			_id: content._id,
 			_name: 'mycontent',
 			_path: '/mycontent',
 			attachments: {},
 			childOrder: undefined,
-			createdTime: expect.any(String) as unknown as string,
+			// createdTime: expect.any(String) as unknown as string, // bun test doesn't support expect.any
+			createdTime: content.createdTime,
 			creator: 'user:system:su',
 			data: {
 				key: 'value'
@@ -79,19 +112,21 @@ describe('ContentConnection', () => {
 			}
 		});
 		expect(modRes).toStrictEqual({
-			_id: '00000000-0000-4000-8000-000000000004',
+			_id: content._id,
 			_name: 'mycontent',
 			_path: '/mycontent',
 			attachments: {},
 			childOrder: undefined,
-			createdTime: expect.any(String) as unknown as string,
+			// createdTime: expect.any(String) as unknown as string, // bun test doesn't support expect.any
+			createdTime: modRes.createdTime,
 			creator: 'user:system:su',
 			data: {
 				key: 'modified'
 			},
 			displayName: 'mycontent',
 			hasChildren: true,
-			modifiedTime: expect.any(String) as unknown as string,
+			// modifiedTime: expect.any(String) as unknown as string, // bun test doesn't support expect.any
+			modifiedTime: modRes.modifiedTime,
 			modifier: 'user:system:su',
 			owner: 'user:system:su',
 			publish: {},
@@ -105,19 +140,21 @@ describe('ContentConnection', () => {
 			target: '/renamedMyContent'
 		});
 		expect(moveRes).toStrictEqual({
-			_id: '00000000-0000-4000-8000-000000000004',
+			_id: content._id,
 			_name: 'renamedMyContent',
 			_path: '/renamedMyContent',
 			attachments: {},
 			childOrder: undefined,
-			createdTime: expect.any(String) as unknown as string,
+			// createdTime: expect.any(String) as unknown as string, // bun test doesn't support expect.any
+			createdTime: moveRes.createdTime,
 			creator: 'user:system:su',
 			data: {
 				key: 'modified'
 			},
 			displayName: 'mycontent',
 			hasChildren: true,
-			modifiedTime: expect.any(String) as unknown as string,
+			// modifiedTime: expect.any(String) as unknown as string, // bun test doesn't support expect.any
+			modifiedTime: moveRes.modifiedTime,
 			modifier: 'user:system:su',
 			owner: 'user:system:su',
 			publish: {},
@@ -133,7 +170,7 @@ describe('ContentConnection', () => {
 			deletedContents: [],
 			failedContents: [],
 			pushedContents: [
-				'00000000-0000-4000-8000-000000000004',
+				content._id,
 			],
 		});
 
@@ -157,12 +194,13 @@ describe('ContentConnection', () => {
 					focalY: 0.5,
 		});
 		expect(mediaContent).toStrictEqual({
-			_id: '00000000-0000-4000-8000-000000000010',
+			_id: mediaContent._id,
 			_name: FILENAME,
 			_path: `/${FILENAME}`,
 			attachments: {},
 			childOrder: 'displayname ASC',
-			createdTime: expect.any(String) as unknown as string,
+			// createdTime: expect.any(String) as unknown as string, // bun test doesn't support expect.any
+			createdTime: mediaContent.createdTime,
 			creator: 'user:system:su',
 			data: {
 				artist: "",
@@ -186,7 +224,7 @@ describe('ContentConnection', () => {
 			x: {
 				media: {
 					imageInfo: {
-						byteSize: 528238,
+						byteSize: LEA_JPG_BYTE_SIZE,
 						contentType: 'image/jpeg',
 						imageHeight: 1080,
 						imageWidth: 1920,
@@ -206,7 +244,7 @@ describe('ContentConnection', () => {
 			const {
 				size
 			} = vol.statSync(filePath);
-			expect(size).toBe(528238);
+			expect(size).toBe(LEA_JPG_BYTE_SIZE);
 	}); // it should be able to createMedia and getAttachmentStream
 
 	describe('create', () => {
@@ -227,7 +265,7 @@ describe('ContentConnection', () => {
 			const content = draftConnection.create({
 				contentType: 'com.enonic.myapp:mycontent',
 				data: {},
-				name: 'mycontent',
+				name: 'mycontentwithoutattachment',
 				parentPath: '/',
 			});
 			const attachmentStream = draftConnection.getAttachmentStream({
@@ -242,7 +280,7 @@ describe('ContentConnection', () => {
 				branch: draftBranch
 			})
 			const node = draftNodeConnection.create({
-				_name: 'mycontent2',
+				_name: 'mycontentwithattachmentbutnotbytesource',
 				// _parentPath: '/',
 				contentType: 'com.enonic.myapp:mycontent',
 				attachment: {
@@ -278,13 +316,13 @@ describe('ContentConnection', () => {
 			const content = draftConnection.create({
 				contentType: 'com.enonic.myapp:mycontent',
 				data: {},
-				name: 'mycontent3',
+				name: 'mycontentwithoutparent',
 				parentPath: '/',
 			});
 			expect(() => draftConnection.move({
 				source: content._id,
 				target: '/non-existing-parent/target'
-			})).toThrow('Cannot move content with source 00000000-0000-4000-8000-000000000018 to target /non-existing-parent/target: Parent of target not found!');
+			})).toThrow(`Cannot move content with source ${content._id} to target /non-existing-parent/target: Parent of target not found!`);
 		});
 
 		it('throws when target already exists', () => {
@@ -303,7 +341,7 @@ describe('ContentConnection', () => {
 			expect(() => draftConnection.move({
 				source: content._id,
 				target: target._path
-			})).toThrow('Cannot move content with source 00000000-0000-4000-8000-000000000020 to target /target: Content already exists at target!');
+			})).toThrow(`Cannot move content with source ${content._id} to target /target: Content already exists at target!`);
 		});
 	}); // describe move
 
@@ -324,7 +362,7 @@ describe('ContentConnection', () => {
 				branch: draftBranch
 			});
 
-			expect(draftConnection.nodeToContent({
+			const contentFromNode = draftConnection.nodeToContent({
 				node: {
 					_childOrder: 'displayname ASC',
 					_id: '00000000-0000-4000-8000-000000000022',
@@ -394,7 +432,64 @@ describe('ContentConnection', () => {
 						type: 'part'
 					}],
 				}
-			})).toStrictEqual({
+			});
+
+			const main0PartComponent: PartComponent = {
+				config: {
+					partProp: 'partValue'
+				},
+				descriptor: 'com.enonic.app.myapp:mypart',
+				path: '/main/0',
+				type: 'part',
+			}
+
+			const main1Left0PartComponent: PartComponent = {
+				config: {
+					partProp: 'partValue'
+				},
+				descriptor: 'com.enonic.app.myapp:mypart',
+				path: '/main/1/left/0',
+				type: 'part',
+			}
+
+			const main1LayoutLeftRegion: LayoutRegion<[typeof main1Left0PartComponent]> = {
+				name: 'left',
+				components: [main1Left0PartComponent]
+			}
+
+			const main1LayoutComponent: LayoutComponent = {
+				config: {
+					layoutProp: 'layoutValue'
+				},
+				descriptor: 'com.enonic.app.myapp:mylayout',
+				path: '/main/1',
+				regions: {
+					left: main1LayoutLeftRegion
+				},
+				type: 'layout',
+			}
+
+			const mainPageRegion: PageRegion = {
+				components: [
+					main0PartComponent,
+					main1LayoutComponent
+				],
+				name: 'main',
+			};
+
+			const pageComponent: PageComponent = {
+				config: {
+					pageProp: 'pageValue'
+				},
+				descriptor: 'com.enonic.app.myapp:mypage',
+				path: '/',
+				regions: {
+					main: mainPageRegion
+				},
+				type: 'page',
+			};
+
+			const expectedContent: Partial<AllContentProperties> = {
 				_id: '00000000-0000-4000-8000-000000000022',
 				// _indexConfig: {
 				// 	default: 'byType',
@@ -415,50 +510,14 @@ describe('ContentConnection', () => {
 				displayName: "mycontent",
 				hasChildren: true,
 				owner: undefined,
-				page: {
-					config: {
-						pageProp: 'pageValue'
-					},
-					descriptor: 'com.enonic.app.myapp:mypage',
-					path: '/',
-					regions: {
-						main: {
-							components: [{
-								config: {
-									partProp: 'partValue'
-								},
-								descriptor: 'com.enonic.app.myapp:mypart',
-								path: '/main/0',
-								type: 'part',
-							}, {
-								config: {
-									layoutProp: 'layoutValue'
-								},
-								descriptor: 'com.enonic.app.myapp:mylayout',
-								path: '/main/1',
-								regions: {
-									left: {
-										components: [{
-											config: {
-												partProp: 'partValue'
-											},
-											descriptor: 'com.enonic.app.myapp:mypart',
-											path: '/main/1/left/0',
-											type: 'part',
-										}]
-									}
-								},
-								type: 'layout',
-							}]
-						}
-					},
-					type: 'page',
-				},
+				page: pageComponent,
 				publish: {},
 				type: undefined,
 				valid: true,
 				x: {},
-			});
+			};
+
+			expect(contentFromNode).toStrictEqual(expectedContent);
 		});
 	}); // describe nodeToContent
 

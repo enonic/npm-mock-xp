@@ -6,6 +6,7 @@ import { readFileSync } from 'fs';
 import { vol } from 'memfs';
 import { join } from 'path';
 import {Server} from '../../../src';
+import {THUR_BYTE_SIZE} from '../../constants';
 
 
 const APP_NAME = 'com.enonic.app.test';
@@ -49,7 +50,7 @@ describe('mock', () => {
 						const {
 							size
 						} = vol.statSync(filePath);
-						expect(size).toBe(187348);
+						expect(size).toBe(THUR_BYTE_SIZE);
 					});
 				});
 			});
