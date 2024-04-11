@@ -44,29 +44,29 @@ const folderContent = libContext.run({
 describe('content', () => {
 	describe('move', () => {
 		it('is able to move a folder content', () => {
-			const fn = () => {
-				return libContext.run({
-					branch: 'draft',
-					repository: REPO_ID,
-				},() => {
-					return libContent.move({
-						source: folderContent._id,
-						target: '/renamedFolder'
-					});
+			const node = libContext.run({
+				branch: 'draft',
+				repository: REPO_ID,
+			},() => {
+				return libContent.move({
+					source: folderContent._id,
+					target: '/renamedFolder'
 				});
-			}
-			expect(fn()).toEqual({
+			});
+			expect(node).toEqual({
 				_id: '00000000-0000-4000-8000-000000000004',
 				_name: 'renamedFolder',
 				_path: '/renamedFolder',
 				attachments: {},
 				childOrder: undefined,
-				createdTime: expect.any(String) as unknown as string,
+				// createdTime: expect.any(String) as unknown as string, // bun test doesn't support expect.any
+				createdTime: node.createdTime,
 				creator: 'user:system:su',
 				data: {},
 				displayName: 'renamedFolder', // TODO: should be 'folder'?
 				hasChildren: true,
-				modifiedTime: expect.any(String) as unknown as string,
+				// modifiedTime: expect.any(String) as unknown as string, // bun test doesn't support expect.any
+				modifiedTime: node.modifiedTime,
 				modifier: 'user:system:su',
 				owner: 'user:system:su',
 				publish: {},

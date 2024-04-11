@@ -36,7 +36,7 @@ const NODE = {
 	_nodeType: 'default',
 	_path: `/${NODE_ID}`,
 	_state: 'DEFAULT',
-	_ts: expect.any(String) as unknown as string,
+	//_ts: expect.any(String) as unknown as string, // bun test doesn't support expect.any
 	_versionKey: NODE_VERSION_KEY
 };
 
@@ -151,36 +151,47 @@ describe('Server', () => {
 		expect(connection.get(NODE_ID)).toBeUndefined();
 
 		const node = connection.create({});
-		expect(node).toStrictEqual(NODE);
+		expect(node).toStrictEqual({
+			...NODE,
+			_ts: node._ts
+		});
 		expect(connection.exists(NODE_ID)).toBe(true);
-		expect(connection.get(NODE_ID)).toStrictEqual(NODE);
+		expect(connection.get(NODE_ID)).toStrictEqual({
+			...NODE,
+			_ts: node._ts
+		});
 		expect(connection.getActiveVersion({key:NODE_ID})).toStrictEqual({
 			nodeId: NODE_ID,
 			nodePath: `/${NODE_ID}`,
-			timestamp: expect.any(String) as unknown as string,
+			// timestamp: expect.any(String) as unknown as string, // bun test doesn't support expect.any
+			timestamp: node._ts,
 			versionId: NODE_VERSION_KEY
 		});
 
-		expect(connection.modify({
+		const modifiedNode = connection.modify({
 			editor: (node) => {
 				node.key = 'value';
 				return node;
 			},
 			key: NODE_ID
-		})).toStrictEqual({
+		});
+		expect(modifiedNode).toStrictEqual({
 			...NODE,
+			_ts: modifiedNode._ts,
 			_versionKey: NODE_VERSION_KEY_MODIFIED,
 			key: 'value'
 		});
 		expect(connection.get(NODE_ID)).toStrictEqual({
 			...NODE,
+			_ts: modifiedNode._ts,
 			_versionKey: NODE_VERSION_KEY_MODIFIED,
 			key: 'value'
 		});
 		expect(connection.getActiveVersion({key:NODE_ID})).toStrictEqual({
 			nodeId: NODE_ID,
 			nodePath: `/${NODE_ID}`,
-			timestamp: expect.any(String) as unknown as string,
+			// timestamp: expect.any(String) as unknown as string, // bun test doesn't support expect.any
+			timestamp: modifiedNode._ts,
 			versionId: NODE_VERSION_KEY_MODIFIED
 		});
 

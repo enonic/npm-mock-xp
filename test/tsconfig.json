@@ -20,6 +20,7 @@
 		"sourceMap": true, // Needed to get correct Uncovered Line numbers
 		"target": "ES2022",
 		"types": [
+			"bun",
 			"jest",
 			"node"
 		]

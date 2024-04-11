@@ -9,6 +9,7 @@ import {
 	LibContext,
 	Server
 } from '../../../src';
+import {LEA_JPG_BYTE_SIZE} from '../../constants';
 
 
 const PROJECT_NAME = 'myproject';
@@ -70,7 +71,7 @@ describe('content', () => {
 			const {
 				size
 			} = vol.statSync(filePath);
-			expect(size).toBe(528238);
+			expect(size).toBe(LEA_JPG_BYTE_SIZE);
 		});
 	}); // describe getAttachmentStream
 }); // describe content
