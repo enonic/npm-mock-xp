@@ -95,7 +95,7 @@ declare interface ContentProperties<Data, Type> {
 
 // Whether a property is required or optional depends on create vs get, etc...
 // So here they are all required, but on can wrap with Partial<>
-declare interface AllContentProperties {
+export declare interface AllContentProperties {
 	_id: string
 	_name: string
 	_path: string
@@ -655,7 +655,8 @@ export class ContentConnection {
 					const pageRegionName = pathParts[0];
 					if (!getIn(fragmentOrPage.regions, pageRegionName)) {
 						setIn(fragmentOrPage.regions, pageRegionName, {
-							components: []
+							components: [],
+							name: pageRegionName,
 						});
 					}
 
@@ -708,7 +709,8 @@ export class ContentConnection {
 
 							if (!layoutComponent.regions[layoutRegionName]) {
 								layoutComponent.regions[layoutRegionName] = {
-									components: []
+									components: [],
+									name: layoutRegionName,
 								}
 							};
 							layoutComponent.regions[layoutRegionName].components.push(part);
