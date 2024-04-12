@@ -1,3 +1,5 @@
+export {mockResolve} from './globals/mockResolve';
+
 export {App} from './implementation/App';
 
 export {Asset} from './implementation/app/Asset';

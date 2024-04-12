@@ -5,6 +5,7 @@ import type {
 
 
 import {vol} from 'memfs';
+import {dirname} from 'path';
 import {Asset} from './app/Asset';
 import {Controller} from './app/Controller';
 import {Resource} from './app/Resource';
@@ -21,6 +22,7 @@ export declare interface AppConstructorParams {
 	minSystemVersion?: Application['minSystemVersion']
 	version?: Application['version']
 }
+
 
 export class App {
 	readonly displayName: Application['displayName'];
@@ -71,6 +73,12 @@ export class App {
 		path: string
 	}) {
 		const absPath = path.startsWith('/') ? path : `/${path}`;
+
+		const parent = dirname(absPath);
+		if (!this.vol.existsSync(parent)) {
+			this.vol.mkdirSync(parent, {recursive: true});
+		}
+
 		new Controller({ // Will throw if path is invalid
 			app: this,
 			path: absPath,
@@ -87,7 +95,13 @@ export class App {
 		path: string
 	}) {
 		const absPath = path.startsWith('/') ? path : `/${path}`;
-		this.vol.writeFileSync(absPath, data.toString())
+
+		const parent = dirname(absPath);
+		if (!this.vol.existsSync(parent)) {
+			this.vol.mkdirSync(parent, {recursive: true});
+		}
+
+		this.vol.writeFileSync(absPath, data.toString());
 		return this; // Chainable
 	}
 
