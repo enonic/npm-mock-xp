@@ -2,6 +2,6 @@
 /coverage/
 /dist/
 /node_modules/
-/enonic-mock-xp-v*.tgz
+/enonic-mock-xp-*.tgz
 /yarn-error.log
 .idea
