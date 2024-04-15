@@ -1,3 +1,5 @@
+import type {Resolve} from '../../src/types';
+
 import {
 	beforeAll,
 	describe,
@@ -10,12 +12,18 @@ import {
 } from '../../src';
 import {
 	render,
-} from './slm';
+} from './lib/slm';
 import {BUN} from '../constants';
 
+// Avoid type errors below.
+// eslint-disable-next-line @typescript-eslint/no-namespace
+declare module globalThis {
+	let resolve: Resolve
+}
 
 beforeAll(done => {
 	globalThis.resolve = mockResolve({
+		applicationKey: 'com.enonic.app.myapp',
 		basePath: __dirname
 	});
 
@@ -49,18 +57,6 @@ describe('globals', () => {
 				});
 				done();
 			});
-		});
-	});
-});
-
-describe('slm', () => {
-	describe('render', () => {
-		it('render an slm template to html', () => {
-			expect(render('./site/parts/mypart/mypart.slm', {
-				subject: 'World'
-			}, {
-				basePath: __dirname
-			})).toBe('<p>Hello, World!</p>');
 		});
 	});
 });

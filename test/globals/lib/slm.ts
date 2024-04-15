@@ -1,3 +1,5 @@
+import type {ResourceKey} from '../../../src';
+
 import {readFileSync} from 'fs';
 import {join} from 'path';
 import {
@@ -27,7 +29,7 @@ interface CompileOptions {
 // }
 
 export function render(
-	path: string,
+	resourceKey: ResourceKey,
 	model: Record<string, any> = {},
 	compileOptions: CompileOptions = {
 		// filename
@@ -36,6 +38,7 @@ export function render(
 	const {
 		basePath// = __dirname
 	} = compileOptions;
+	const path = resourceKey.getPath();
 	const fullPath = basePath ? join(basePath, path) : path;
 	const template = readFileSync(fullPath, 'utf8');
 	return compile(template, compileOptions)(model, compileOptions);

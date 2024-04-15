@@ -10,6 +10,9 @@ export type {
 	MockContextLib,
 	MockContextParams,
 } from './Context.d';
+export type {
+	Resolve
+} from './Globals.d';
 export { Log } from './Log.d';
 export {
 	GetActiveVersionParamObject,
