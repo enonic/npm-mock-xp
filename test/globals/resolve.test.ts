@@ -39,10 +39,12 @@ beforeAll(done => {
 describe('globals', () => {
 	describe('resolve', () => {
 		it('resolves a resource', (done) => {
-			import('./mypart').then(({get}) => {
+			import('./site/parts/mypart/mypart').then(({get}) => {
 				expect(get()).toStrictEqual({
-					body: `<p>Hello, World!</p>
-<p>Hello, Norway!</p>`,
+					body: `<p>Hello, Absolute!</p>
+<p>Hello, No Path!</p>
+<p>Hello, Dot Path!</p>
+<p>Goodbye, Dotdot Path!</p>`,
 					contentType: 'text/html',
 				});
 				done();
@@ -54,7 +56,7 @@ describe('globals', () => {
 describe('slm', () => {
 	describe('render', () => {
 		it('render an slm template to html', () => {
-			expect(render('mypart.slm', {
+			expect(render('./site/parts/mypart/mypart.slm', {
 				subject: 'World'
 			}, {
 				basePath: __dirname
