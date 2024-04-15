@@ -3,22 +3,33 @@ import {
 	join
 } from 'path';
 
+interface V8_StackItem {
+	getFileName: () => string
+}
+
+
 function _getCallerFile() {
-	var originalFunc = Error.prepareStackTrace;
+	const originalFunc = Error.prepareStackTrace;
 
-	var callerfile;
+	let callerfile;
 	try {
-		var err = new Error();
-		var currentfile;
+		const err = new Error();
 
-		Error.prepareStackTrace = function (err, stack) { return stack; };
+		Error.prepareStackTrace = function (_err, stack) { return stack; };
 
-		// @ts-ignore
-		currentfile = err.stack.shift().getFileName();
+		// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error/stack
+		// Because the stack property is non-standard, implementations differ
+		//
+		// https://v8.dev/docs/stack-trace-api
+		// The API described here is specific to V8 and is not supported by any
+		// other JavaScript implementations. Most implementations do provide an
+		// error.stack property but the format of the stack trace is likely to
+		// be different from the format described here.
+		const v8StackArray = err.stack as unknown as V8_StackItem[];
+		const currentfile = v8StackArray.shift().getFileName();
 
-		while (err.stack.length) {
-			// @ts-ignore
-			callerfile = err.stack.shift().getFileName();
+		while (v8StackArray.length) {
+			callerfile = v8StackArray.shift().getFileName();
 
 			if(currentfile !== callerfile) break;
 		}
