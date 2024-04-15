@@ -46,8 +46,4 @@ export class ResourceKey implements ResourceKeyInterface {
 		const pos = this.path.lastIndexOf( '.' );
 		return pos > 0 ? this.path.substring( pos + 1 ) : null;
 	}
-
-	public toString(): string {
-		return this.getPath();
-	}
 }
