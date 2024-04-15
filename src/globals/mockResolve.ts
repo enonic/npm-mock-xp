@@ -1,7 +1,11 @@
+import type { Resolve } from '../types/Globals.d';
+
 import {
 	dirname,
 	join
 } from 'path';
+import { ResourceKey } from '../implementation/app/ResourceKey';
+
 
 interface V8_StackItem {
 	getFileName: () => string
@@ -49,16 +53,28 @@ function _getCallerFile() {
 // different path, the resolve function should resolve the path relative to each
 // file, not just the first file.
 export function mockResolve({
+	applicationKey,
 	basePath
 }: {
+	applicationKey: string
 	basePath: string
-}) {
-	return (path: string) => {
+}): Resolve {
+	return (path: string): ResourceKey => {
+
 		if (path.startsWith('/')) {
-			return join(basePath, `.${path}`)
+			return new ResourceKey({
+				applicationKey,
+				path: join(basePath, `.${path}`)
+			});
 		}
+
 		const callerFile = _getCallerFile();
 		const dir = dirname(callerFile);
-		return join(dir, path); // TODO: Perhaps path.resolve instead of join
-	}
-}
+		// return join(dir, path); // TODO: Perhaps path.resolve instead of join
+		return new ResourceKey({
+			applicationKey,
+			path: join(dir, path)
+		});
+
+	} // return () => {}
+} // mockResolve
