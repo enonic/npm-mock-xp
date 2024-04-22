@@ -320,9 +320,9 @@
   integrity sha512-Yt0qtcLUNtSae9e2X/0NQ0kzEWbgnYwZu8La7IbIooD5rv2A1LnbZmsIdpqfl8y7Qqxxk3ZLdCJAq8l5Qchz8Q==
 
 "@enonic-types/lib-admin@^7.13.0":
-  version "7.14.0"
-  resolved "https://registry.npmjs.org/@enonic-types/lib-admin/-/lib-admin-7.14.0.tgz"
-  integrity sha512-LaUjTkV/XRLiTUh2as7vE41w6IxVYicpb6pk0AhLaffM5dhgVEREaI/Mzfu29EOl8Rkm5C9baBnHx4vtTVM7+w==
+  version "7.14.1"
+  resolved "https://registry.yarnpkg.com/@enonic-types/lib-admin/-/lib-admin-7.14.1.tgz#ec452769f453c7f775a9cdf84920283757c7ce0f"
+  integrity sha512-pdySytaKOHPxuRyuPzFGxiK0vMDJrL8vZT9OoeAyY4Atr+ECiJ0tmDzHVfq+RuikEEvhsSlwSyv68ap4JHqSeA==
 
 "@enonic-types/lib-app@^7.13.0":
   version "7.14.1"
