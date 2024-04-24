@@ -6,6 +6,15 @@ import type { vol } from 'memfs';
 
 export type { App } from './App.d';
 export type {
+	CreateUserNodeParams,
+	GroupNode,
+	GroupNodeData,
+	RoleNode,
+	RoleNodeData,
+	UserData,
+	UserNode,
+} from './Auth.d';
+export type {
 	MockContext,
 	MockContextLib,
 	MockContextParams,

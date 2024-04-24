@@ -29,8 +29,33 @@ export class LibAuth {
 		this.server = server;
 	}
 
+	public addMembers(
+		principalKey: GroupKey | RoleKey,
+		members: (UserKey | GroupKey)[]
+	): void {
+		this.server.auth.addMembers({
+			members,
+			principalKey,
+		});
+		return;
+	}
+
 	public createGroup(params: CreateGroupParams): Group {
 		return this.server.auth.createGroup(params);
+	}
+
+	public getMembers(principalKey: GroupKey | RoleKey): (User | Group)[] {
+		return this.server.auth.getMembers({principalKey});
+	}
+
+	public getMemberships(
+		principalKey: UserKey | GroupKey,
+		transitive?: boolean
+	): (Group | Role)[] {
+		return this.server.auth.getMemberships({
+			principalKey,
+			transitive
+		});
 	}
 
 	public createRole(params: CreateRoleParams): Role {
@@ -76,5 +101,16 @@ export class LibAuth {
 		Profile extends Record<string, unknown> = Record<string, unknown>
 	>(params: ModifyProfileParams<Profile>): Profile | null {
 		return this.server.auth.modifyProfile(params);
+	}
+
+	public removeMembers(
+		principalKey: GroupKey | RoleKey,
+		members: (UserKey | GroupKey)[]
+	): void {
+		this.server.auth.removeMembers({
+			members,
+			principalKey,
+		});
+		return;
 	}
 } // class LibAuth
