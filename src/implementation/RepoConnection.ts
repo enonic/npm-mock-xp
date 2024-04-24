@@ -1,5 +1,7 @@
 import type {
 	CreateNodeParams,
+	FindChildrenParams,
+	FindNodesByParentResult,
 	MoveNodeParams,
 	Node,
 	// RepoConnection as RepoConnectionInterface // TODO Doesn't match currently
@@ -7,7 +9,7 @@ import type {
 import type {
 	GetActiveVersionParamObject,
 	GetActiveVersionResponse,
-	// Log,
+	Log,
 	NodeModifyParams,
 	NodeQueryParams,
 	NodeQueryResponse,
@@ -17,25 +19,19 @@ import type {
 	RepoNodeWithData
 } from '../types'
 import type { Branch } from './Branch';
-// import type { JavaBridge } from './JavaBridge';
 
 
 export class RepoConnection implements RepoConnectionInterface {
 	private branch: Branch;
-	// private _javaBridge: JavaBridge;
-	// readonly log: Log;
+	readonly log: Log;
 
 	constructor({
 		branch,
-		// javaBridge
 	}: {
 		branch: Branch,
-		// javaBridge: JavaBridge
 	}) {
-		// console.debug('javaBridge.constructor.name', javaBridge.constructor.name);
 		this.branch = branch;
-		// this._javaBridge = javaBridge;
-		// this.log = this._branch.log;
+		this.log = this.branch.log;
 		// this.log.debug('in Connection constructor');
 	}
 
@@ -57,7 +53,51 @@ export class RepoConnection implements RepoConnectionInterface {
 		return this.branch.existsNode(key);
 	}
 
-	// TODO findChildren()
+	public findChildren({
+		count = 10,
+		// countOnly = false, // Optimize for count children only - default is false
+		// childOrder, // How to order the children - default is value stored on parent
+		parentKey,
+		// recursive = false, // Do recursive fetching of all children of children - default is false
+		start = 0,
+	}: FindChildrenParams): FindNodesByParentResult {
+		// this.log.debug('findChildren(%s)', { parentKey, start, count, childOrder, countOnly, recursive });
+
+		const parentNode = this.getSingle<Node>(parentKey);
+		// this.log.debug('findChildren(): parentNode:%s', parentNode);
+
+		const {
+			_path
+		} = parentNode;
+
+		const childrenRes = this.query({
+			count,
+			query: {
+				boolean: {
+					must: {
+						term: {
+							field: '_parentPath',
+							value: _path,
+						}
+					}
+				}
+			},
+			//sort,
+			start,
+		});
+		// this.log.debug('findChildren(): childrenRes:%s', childrenRes);
+
+		return {
+			count: childrenRes.count,
+			hits: childrenRes.hits.map(({
+				id
+				// score,
+			}) => ({
+				id
+			})),
+			total: childrenRes.total,
+		}
+	} // findChildren
 
 	// TODO findVersion()
 

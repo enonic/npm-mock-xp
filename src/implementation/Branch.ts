@@ -90,8 +90,6 @@ const SEARCH_INDEX_BLACKLIST = [
 	'_id',
 	'_indexConfig',
 	'_inheritsPermissions',
-	'_name',
-	'_path',
 	'_permissions',
 	'_state',
 	'_ts',
@@ -146,8 +144,17 @@ export class Branch {
 		'/': '00000000-0000-0000-0000-000000000000'
 	};
 	readonly searchIndex: SearchIndex = {
+		_name: {
+			'': ['00000000-0000-0000-0000-000000000000']
+		},
 		_nodeType: {
 			default: ['00000000-0000-0000-0000-000000000000']
+		},
+		_parentPath: {
+			// '/': ['00000000-0000-0000-0000-000000000000'] // Root node doesn't have a parent
+		},
+		_path: {
+			'/': ['00000000-0000-0000-0000-000000000000']
 		}
 	};
 	readonly repo: Repo;
@@ -225,6 +232,30 @@ export class Branch {
 		} as unknown as Node<NodeData>;
 		this.nodes[_id] = node as RepoNodeWithData;
 		this.pathIndex[_path] = _id;
+
+		if (this.searchIndex['_name'][_name]) {
+			this.searchIndex['_name'][_name].push(_id);
+		} else {
+			this.searchIndex['_name'][_name] = [_id];
+		}
+
+		const strippedParentPath = _parentPath === '/'
+			? '/'
+			: _parentPath.endsWith('/')
+				? _parentPath.substring(0, _parentPath.length - 1)
+				: _parentPath;
+
+		if (this.searchIndex['_parentPath'][strippedParentPath]) {
+			this.searchIndex['_parentPath'][strippedParentPath].push(_id);
+		} else {
+			this.searchIndex['_parentPath'][strippedParentPath] = [_id];
+		}
+
+		if (this.searchIndex['_path'][_path]) {
+			this.searchIndex['_path'][_path].push(_id);
+		} else {
+			this.searchIndex['_path'][_path] = [_id];
+		}
 
 		const restKeys = Object.keys(rest).filter(k => !SEARCH_INDEX_BLACKLIST.includes(k));
 		// this.log.debug('_createNodeInternal restKeys:%s', restKeys);
@@ -650,7 +681,7 @@ export class Branch {
 		}
 
 		if (isQueryDsl(query)) {
-			this.log.info('query:%s Search Index: %s', query, this.searchIndex);
+			this.log.debug('query:%s Search Index: %s', query, this.searchIndex);
 			const mustSets: string[][] = [];
 			const mustNotSets: string[][] = [];
 

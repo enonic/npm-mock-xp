@@ -171,19 +171,20 @@ export class LibPortal {
 		let site;
 		try {
 			site = this.getSite<Config>();
+			// this.log.debug('site', site);
 		} catch (e) {
 			throw new Error('mock-xp: Portal.getSiteConfig(): Unable to find site content!');
 		}
-		this.log.debug('site', site);
+
 		if (!site.data.siteConfig) {
 			return null;
 		}
 
 		const siteConfigsObj = forceArray(site.data.siteConfig);
-		this.log.debug('siteConfigsObj', siteConfigsObj);
+		// this.log.debug('siteConfigsObj', siteConfigsObj);
 
 		const filteredSiteConfigs = siteConfigsObj.filter((siteConfig) => siteConfig.applicationKey === this.app.key);
-		this.log.debug('filteredSiteConfigs', filteredSiteConfigs);
+		// this.log.debug('filteredSiteConfigs', filteredSiteConfigs);
 
 		if (filteredSiteConfigs.length === 0) {
 			return null;

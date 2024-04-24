@@ -1,6 +1,9 @@
 export {mockResolve} from './globals/mockResolve';
 
 export {App} from './implementation/App';
+export {Group} from './implementation/auth/Group';
+export {Role} from './implementation/auth/Role';
+export {User} from './implementation/auth/User';
 
 export {Asset} from './implementation/app/Asset';
 export {Controller} from './implementation/app/Controller';

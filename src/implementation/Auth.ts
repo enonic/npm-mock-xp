@@ -8,16 +8,22 @@ import type {
 	LoginResult,
 	ModifyProfileParams,
 	PrincipalKey,
-	// RoleKey,
+	RoleKey,
 	UserKey,
 } from '@enonic-types/lib-auth';
-import type {
-	CreateNodeParams,
-	Node,
-} from '@enonic-types/lib-node';
 import type {UserConstructorParams} from './auth/User';
 import type {UserWithProfileConstructorParams} from './auth/UserWithProfile';
-import type {RepoNodeWithData} from '../types';
+import type {
+	CreateUserNodeParams,
+	Log,
+	GroupNode,
+	GroupNodeData,
+	RepoNodeWithData,
+	RoleNode,
+	RoleNodeData,
+	UserData,
+	UserNode,
+} from '../types';
 
 
 import hash from 'fnv1a';
@@ -29,44 +35,21 @@ import {User} from './auth/User';
 import type {RepoConnection} from './RepoConnection';
 import {Server} from './Server';
 import { UserWithProfile } from './auth/UserWithProfile';
+import { isGroupKey } from './auth/isGroupKey';
+import { isRoleKey } from './auth/isRoleKey';
+import { isUserKey } from './auth/isUserKey';
 
 
-export declare interface GroupNodeData {
-	description?: string
-	displayName: string
-	principalType: 'GROUP'
-	userStoreKey: string
-	member?: GroupKey | UserKey | (GroupKey | UserKey)[]
+// Backwards compatibility
+export type {
+	CreateUserNodeParams,
+	GroupNode,
+	GroupNodeData,
+	RoleNode,
+	RoleNodeData,
+	UserData,
+	UserNode,
 }
-
-export declare type GroupNode = Node<GroupNodeData>
-
-export declare interface RoleNodeData {
-	description?: string
-	displayName: string
-	principalType: 'ROLE'
-	member?: GroupKey | UserKey | (GroupKey | UserKey)[]
-}
-
-export declare type RoleNode = Node<RoleNodeData>
-
-export declare interface UserData<
-	Profile extends Record<string, unknown> = Record<string, unknown>
-> {
-	authenticationHash?: string
-	displayName: string
-	email?: string
-	login: string
-	principalType: 'USER'
-	profile?: Profile
-	userStoreKey: string
-}
-
-export declare type CreateUserNodeParams = CreateNodeParams<UserData>
-
-export declare type UserNode<
-	Profile extends Record<string, unknown> = Record<string, unknown>
-> = Node<UserData<Profile>>
 
 
 // In the real world groups and users can be stored outside Enonic.
@@ -76,6 +59,7 @@ export declare type UserNode<
 //
 // In addition we assume only the 'system' id provider.
 export class Auth {
+	readonly log: Log;
 	readonly server: Server;
 	readonly systemRepoConnection: RepoConnection;
 
@@ -88,6 +72,7 @@ export class Auth {
 	}: {
 		server: Server
 	}) {
+		this.log = server.log;
 		this.server = server;
 		this.systemRepoConnection = server.systemRepoConnection;
 	}
@@ -102,46 +87,92 @@ export class Auth {
 		return this.systemRepoConnection.getSingle<UserNode>(`/identity/${idProvider}/users/${name}`);
 	}
 
+	public addMembers({
+		members,
+		principalKey,
+	}: {
+		members: (UserKey | GroupKey)[]
+		principalKey: GroupKey | RoleKey
+	}): Group | Role {
+		if (isGroupKey(principalKey)) {
+			const [_type, idProvider, name] = principalKey.split(':');
+			const groupNode = this.systemRepoConnection.modify({
+				key: `/identity/${idProvider}/groups/${name}`,
+				editor: (groupNode) => {
+					const currentMembersArray = groupNode['member']
+						? Array.isArray(groupNode['member'])
+							? groupNode['member']
+							: [groupNode['member']]
+						: [];
+					groupNode['member'] = [...currentMembersArray, ...members];
+					return groupNode;
+				}
+			}) as unknown as GroupNode;
+			return Group.fromNode(groupNode);
+		} // if groupKey
+
+		if (isRoleKey(principalKey)) {
+			const [_type, name] = principalKey.split(':');
+			const RoleNode = this.systemRepoConnection.modify({
+				key: `/identity/roles/${name}`,
+				editor: (roleNode) => {
+					const currentMembersArray = roleNode['member']
+						? Array.isArray(roleNode['member'])
+							? roleNode['member']
+							: [roleNode['member']]
+						: [];
+					roleNode['member'] = [...currentMembersArray, ...members];
+					return roleNode;
+				}
+			}) as unknown as RoleNode;
+			return Role.fromNode(RoleNode);
+		} // if roleKey
+
+		if (isUserKey(principalKey)) {
+			throw new Error(`addMembers(): Cannot add members to users! UserKey: ${principalKey}`);
+		}
+
+		throw new Error(`addMembers(): Principal key ${principalKey} is neither GroupKey nor RoleKey!`);
+	} // addMembers
+
 	public createGroup({
 		description,
 		displayName,
 		idProvider,
+		members = [],
 		name,
-	}: CreateGroupParams): Group {
+	}: CreateGroupParams & {
+		members?: (GroupKey | UserKey)[]
+	}): Group {
 		const groupNode = this.systemRepoConnection.create<GroupNodeData>({
 			_name: name,
 			_parentPath: `/identity/${idProvider}/groups`,
 			description: description,
 			displayName: displayName,
+			member: members,
 			principalType: 'GROUP',
 			userStoreKey: idProvider,
 		}) as GroupNode;
-		return new Group({
-			description: description,
-			displayName: displayName,
-			key: `group:${idProvider}:${name}`,
-			modifiedTime: groupNode._ts
-		});
+		return Group.fromNode(groupNode);
 	}
 
 	public createRole({
 		name,
 		displayName,
-		description
-	}: CreateRoleParams): Role {
+		description,
+		members = [],
+	}: CreateRoleParams & {
+		members?: (GroupKey | UserKey)[]
+	}): Role {
 		const roleNode = this.systemRepoConnection.create<RoleNodeData>({
 			_name: name,
 			_parentPath: '/identity/roles',
 			description,
 			displayName,
+			member: members,
 			principalType: 'ROLE',
 		});
-		return new Role({
-			displayName,
-			key: `role:${name}`,
-			description,
-			modifiedTime: roleNode._ts
-		});
+		return Role.fromNode(roleNode);
 	}
 
 	public createUser({
@@ -178,6 +209,102 @@ export class Auth {
 		});
 	}
 
+	public getGroupByName({
+		name,
+		idProvider = 'system',
+	}: {
+		name: string
+		idProvider?: string
+	}): Group {
+		const groupNode = this.systemRepoConnection.getSingle<GroupNode>(`/identity/${idProvider}/groups/${name}`);
+		if (!groupNode) {
+			throw new Error(`Group with name:${name} not found!`);
+		}
+		return Group.fromNode(groupNode);
+	};
+
+	public getMembers({
+		principalKey
+	}: {
+		principalKey: GroupKey | RoleKey
+	}): (Group | User)[] {
+		if (isGroupKey(principalKey)) {
+			const [_type, idProvider, name] = principalKey.split(':');
+			const group = this.getGroupByName({
+				name,
+				idProvider
+			});
+			const memberKeys = group.getMemberKeys();
+			return memberKeys.map((memberKey) => this.getPrincipal(memberKey)).filter(x => x) as (Group | User)[];
+		}
+
+		if (isRoleKey(principalKey)) {
+			const [_type, name] = principalKey.split(':');
+			const role = this.getRoleByName({
+				name
+			});
+			const memberKeys = role.getMemberKeys();
+			return memberKeys.map((memberKey) => this.getPrincipal(memberKey)).filter(x => x) as (Group | User)[];
+		}
+
+		if (isUserKey(principalKey)) {
+			throw new Error(`getMembers(): Users doesn't have members! UserKey: ${principalKey}`);
+		}
+
+		throw new Error(`getMembers(): Principal key ${principalKey} is neither GroupKey nor RoleKey!`);
+	} // getMembers
+
+
+	public getMemberships({
+		principalKey,
+		// transitive = false
+	}: {
+		principalKey: UserKey | GroupKey,
+		transitive?: boolean
+	}): (Group | Role)[] {
+		if (isGroupKey(principalKey) || isUserKey(principalKey)) {
+			const allGroupsAndRolesRes = this.systemRepoConnection.query({
+				count: -1,
+				query: {
+					boolean: {
+						must: [{
+							in: {
+								field: 'principalType',
+								values: ['GROUP', 'ROLE']
+							},
+						},
+						{
+							in: {
+								field: 'member',
+								values: [principalKey]
+							}
+						}]
+					}
+				}
+			});
+			// this.log.debug('getMemberships(): allGroupsAndRolesRes:%s', allGroupsAndRolesRes);
+
+			return allGroupsAndRolesRes.hits.map(({id}) => {
+				const groupOrRoleNode = this.systemRepoConnection.getSingle<GroupNode|RoleNode>(id);
+				if (groupOrRoleNode['principalType'] === 'GROUP') {
+					return Group.fromNode(groupOrRoleNode as unknown as GroupNode);
+				}
+				if (groupOrRoleNode['principalType'] === 'ROLE') {
+					return Role.fromNode(groupOrRoleNode as unknown as RoleNode);
+				}
+				// throw new Error(`getMemberships(): Query for all groups and roles returned unexpected principalType: ${hit}!`);
+			});
+		}
+
+		if (isRoleKey(principalKey)) {
+			throw new Error(`getMemberships(): Roles aren't members! RoleKey: ${principalKey}`);
+		}
+
+		throw new Error(`getMemberships(): Principal key ${principalKey} is neither GroupKey nor UserKey!`);
+
+	} // getMemberships
+
+
 	public getPrincipal(principalKey: PrincipalKey): User | Group | Role | null {
 		const [type, two, three] = principalKey.split(':');
 		if (type === 'user') {
@@ -199,25 +326,6 @@ export class Auth {
 		}
 		throw new Error(`Principal type ${type} unsupported!`);
 	}
-
-	public getGroupByName({
-		name,
-		idProvider = 'system',
-	}: {
-		name: string
-		idProvider?: string
-	}) {
-		const groupNode = this.systemRepoConnection.getSingle<GroupNode>(`/identity/${idProvider}/groups/${name}`);
-		if (!groupNode) {
-			throw new Error(`Group with name:${name} not found!`);
-		}
-		return new Group({
-			description: groupNode.description || '',
-			displayName: groupNode.displayName,
-			key: `group:${idProvider}:${name}`,
-			modifiedTime: groupNode._ts
-		});
-	};
 
 	public getProfile<
 		Profile extends Record<string, unknown> = Record<string, unknown>
@@ -256,19 +364,14 @@ export class Auth {
 		if (!roleNode) {
 			throw new Error(`Role with name:${name} not found!`);
 		}
-		return new Role({
-			displayName: roleNode.displayName,
-			key: `role:${name}`,
-			description: roleNode.description || '',
-			modifiedTime: roleNode._ts
-		});
+		return Role.fromNode(roleNode);
 	}
 
 	public getUser({
 		includeProfile = false
 	}: {
 		includeProfile?: boolean;
-	} = {}) {
+	} = {}): User | UserWithProfile | null {
 		if (this.server.userKey) {
 			return this.getUserByUserKey({
 				includeProfile,
@@ -286,7 +389,7 @@ export class Auth {
 		name: string
 		idProvider?: string
 		includeProfile?: boolean
-	}) {
+	}): User | UserWithProfile {
 		const userNode = this._getUserNodeByName({idProvider, name});
 		if (!userNode) {
 			throw new Error(`User not found: user:${idProvider}:${name}!`);
@@ -312,7 +415,7 @@ export class Auth {
 	}: {
 		userKey: UserKey,
 		includeProfile?: boolean
-	}) {
+	}): User | UserWithProfile {
 		const [_type, idProvider, name] = userKey.split(':');
 		return this.getUserByName({
 			name,
@@ -403,5 +506,57 @@ export class Auth {
 		});
 
 		return profile;
+	}
+
+	public removeMembers({
+		members,
+		principalKey
+	}: {
+		principalKey: GroupKey | RoleKey,
+		members: (UserKey | GroupKey)[]
+	}): Group | Role {
+		if (isGroupKey(principalKey)) {
+			const [_type, idProvider, name] = principalKey.split(':');
+			const groupNode = this.systemRepoConnection.modify({
+				key: `/identity/${idProvider}/groups/${name}`,
+				editor: (groupNode) => {
+					const currentMembersArray = groupNode['member']
+						? Array.isArray(groupNode['member'])
+							? groupNode['member']
+							: [groupNode['member']]
+						: [];
+					groupNode['member'] = currentMembersArray.filter((member) => {
+						return !members.includes(member);
+					});
+					return groupNode;
+				}
+			}) as unknown as GroupNode;
+			return Group.fromNode(groupNode);
+		}
+
+		if (isRoleKey(principalKey)) {
+			const [_type, name] = principalKey.split(':');
+			const roleNode = this.systemRepoConnection.modify({
+				key: `/identity/roles/${name}`,
+				editor: (roleNode) => {
+					const currentMembersArray = roleNode['member']
+						? Array.isArray(roleNode['member'])
+							? roleNode['member']
+							: [roleNode['member']]
+						: [];
+						roleNode['member'] = currentMembersArray.filter((member) => {
+						return !members.includes(member);
+					});
+					return roleNode;
+				}
+			}) as unknown as RoleNode;
+			return Role.fromNode(roleNode);
+		}
+
+		if (isUserKey(principalKey)) {
+			throw new Error(`removeMembers(): Users doesn't have members! UserKey: ${principalKey}`);
+		}
+
+		throw new Error(`removeMembers(): Principal key ${principalKey} is neither GroupKey nor RoleKey!`);
 	}
 } // class Auth
