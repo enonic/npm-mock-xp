@@ -76,11 +76,12 @@
     "clean": "rm -r dist 2>/dev/null;true",
     "clean:test": "rm -r build 2>/dev/null;true",
     "copy": "mkdir dist && cp -r src/types dist/",
+    "cov": "jest --coverage --no-cache",
     "prebuild": "yarn copy",
     "precopy": "yarn clean",
     "prepack": "yarn test && yarn build",
     "prepublishOnly": "node setversion.cjs",
-    "test": "jest --coverage --no-cache"
+    "test": "jest --no-cache"
   },
   "version": "0.0.0"
 }
