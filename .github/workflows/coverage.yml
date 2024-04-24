@@ -25,7 +25,7 @@ jobs:
           cmd: install # will run `yarn install` command
 
       - name: Test
-        run: yarn test
+        run: yarn cov
 
       - uses: codecov/codecov-action@v4
         with:
