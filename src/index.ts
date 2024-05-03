@@ -10,6 +10,42 @@ export {Controller} from './implementation/app/Controller';
 export {Resource} from './implementation/app/Resource';
 export {ResourceKey} from './implementation/app/ResourceKey';
 
+export {
+	BASE_EXCEPTION_NAME,
+	BaseException,
+} from './implementation/exception/BaseException';
+export {
+	NOT_FOUND_EXCEPTION_NAME,
+	NotFoundException,
+} from './implementation/exception/NotFoundException';
+export {
+	RUNTIME_EXCEPTION_NAME,
+	RuntimeException,
+} from './implementation/exception/RuntimeException';
+export {
+	NODE_ALREADY_EXIST_AT_PATH_EXCEPTION_NAME,
+	NodeAlreadyExistAtPathException,
+} from './implementation/node/NodeAlreadyExistAtPathException';
+export {
+	NODE_NOT_FOUND_EXCEPTION_NAME,
+	NodeNotFoundException,
+} from './implementation/node/NodeNotFoundException';
+export {
+	BRANCH_ALREADY_EXIST_EXCEPTION_CODE,
+	BRANCH_ALREADY_EXIST_EXCEPTION_NAME,
+	BranchAlreadyExistException,
+} from './implementation/repo/BranchAlreadyExistException';
+export {
+	BRANCH_NOT_FOUND_EXCEPTION_CODE,
+	BRANCH_NOT_FOUND_EXCEPTION_NAME,
+	BranchNotFoundException,
+} from './implementation/repo/BranchNotFoundException';
+export {
+	REPOSITORY_NOT_FOUND_EXCEPTION_CODE,
+	REPOSITORY_NOT_FOUND_EXCEPTION_NAME,
+	RepositoryNotFoundException,
+} from './implementation/repo/RepositoryNotFoundException';
+
 export {Auth} from './implementation/Auth';
 export {Branch} from './implementation/Branch';
 export {ContentConnection} from './implementation/ContentConnection';

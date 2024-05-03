@@ -10,7 +10,8 @@ import type {
 } from '@enonic-types/lib-repo';
 
 
-import {Server} from '../implementation/Server';
+import { Server } from '../implementation/Server';
+import { RepositoryNotFoundException } from '../implementation/repo/RepositoryNotFoundException';
 
 
 export class LibRepo {
@@ -46,9 +47,20 @@ export class LibRepo {
 		};
 	}
 
-	// TODO public delete(id: string): boolean {
-
-	// }
+	public delete(id: string): boolean {
+		try {
+			this.server.deleteRepo({ // throws if not found
+				repoId: id
+			});
+		} catch (e) {
+			if (e instanceof RepositoryNotFoundException) {
+				return false;
+			}
+			// istanbul ignore next // Skip coverage for the next line
+			throw e; // Rethrow unknown error
+		}
+		return true;
+	}
 
 	public deleteBranch({
 		branchId,
