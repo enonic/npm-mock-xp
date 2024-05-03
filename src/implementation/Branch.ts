@@ -216,7 +216,7 @@ export class Branch {
 		}
 		const _path: string = `${_parentPath}${_name}`; // TODO use path.join?
 		if (this.pathIndex.hasOwnProperty(_path)) {
-			throw new NodeAlreadyExistAtPathException(`Node already exists at ${_path} repository: ${this.repo.id} branch: ${this.id}`);
+			throw new NodeAlreadyExistAtPathException(_path, this.repo.id, this);
 		}
 
 		const node: Node<NodeData> = {

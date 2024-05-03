@@ -2,7 +2,7 @@ import type {
 	BranchResult,
 	CreateBranchParams,
 	CreateRepositoryParams,
-	// DeleteBranchParams,
+	DeleteBranchParams,
 	// GetRepositoryBinaryParams,
 	// ModifyRepositoryParams,
 	RefreshParams,
@@ -50,9 +50,16 @@ export class LibRepo {
 
 	// }
 
-	// TODO public deleteBranch(params: DeleteBranchParams): BranchResult {
-
-	// }
+	public deleteBranch({
+		branchId,
+		repoId
+	}: DeleteBranchParams): BranchResult {
+		if (this.server.getRepo(repoId).deleteBranch(branchId)) {
+			return {
+				id: branchId
+			};
+		};
+	}
 
 	public get(id: string): Repository | null {
 		try {

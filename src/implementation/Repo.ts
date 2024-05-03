@@ -12,6 +12,7 @@ import type {Server} from './Server';
 import {lpad} from '@enonic/js-utils/string/lpad';
 import {Branch} from './Branch';
 import {BranchAlreadyExistException} from './repo/BranchAlreadyExistException';
+import {BranchNotFoundException} from './repo/BranchNotFoundException';
 
 
 interface Branches {
@@ -58,7 +59,7 @@ export class Repo {
 
 	public createBranch(branchId: string): Branch {
 		if (this.branches[branchId]) {
-			throw new BranchAlreadyExistException(`Branch [{${branchId}}] already exists`);
+			throw new BranchAlreadyExistException(this.branches[branchId]);
 		}
 		this.branches[branchId] = new Branch({
 			branchId,
@@ -70,7 +71,13 @@ export class Repo {
 
 	// TODO delete()
 
-	// TODO deleteBranch()
+	public deleteBranch(branchId: string): true {
+		if (!this.branches[branchId]) {
+			throw new BranchNotFoundException(branchId);
+		}
+		delete this.branches[branchId];
+		return true;
+	}
 
 	// public get id(): string { // jsc.target should be es5 or upper to use getter / setter
 	// public id(): string {

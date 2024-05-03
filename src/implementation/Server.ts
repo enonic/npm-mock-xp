@@ -246,7 +246,7 @@ export class Server {
 	public getRepo(repoId: string): Repo {
 		const repo = this.repos[repoId];
 		if (!repo) {
-			throw new RepositoryNotFoundException(`Repository with id [${repoId}] not found`);
+			throw new RepositoryNotFoundException(repoId);
 		}
 		return repo;
 	}
