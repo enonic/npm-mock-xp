@@ -171,7 +171,7 @@ export class Server {
 		branchId: string
 		node: CreateNodeParams
 		repoId: string
-	}) {
+	}): Server {
 		this.connect({
 			branchId,
 			repoId
@@ -184,7 +184,7 @@ export class Server {
 		// rootChildOrder,
 		// rootPermissions,
 		settings
-	}: CreateRepositoryParams) {
+	}: CreateRepositoryParams): Server {
 		const repo = new Repo({
 			id,
 			server: this,
@@ -202,7 +202,7 @@ export class Server {
 	}: {
 		projectName: string
 		settings?: RepositorySettings
-	}) {
+	}): Server {
 		if (!projectName) {
 			throw new Error('Server: createProject: No projectName provided!');
 		}
@@ -226,8 +226,21 @@ export class Server {
 		idProvider?: string
 		password?: string
 		profile?: Record<string, unknown>
-	}) {
+	}): Server {
 		this.auth.createUser(params);
+		return this; // Chainable
+	}
+
+	public deleteRepo({
+		repoId
+	}: {
+		repoId:string
+	}): Server {
+		// TODO throw new RepositoryExeption( "No allowed to delete repository [" + repositoryId + "]" );
+		if (!this.repos[repoId]) {
+			throw new RepositoryNotFoundException(repoId);
+		}
+		delete this.repos[repoId];
 		return this; // Chainable
 	}
 
@@ -261,7 +274,7 @@ export class Server {
 		return this.getRepo(repoId).getBranch(branchId);
 	}
 
-	install(app: App) {
+	install(app: App): Server {
 		const systemVersion = new Version(this.version);
 
 		if (app.minSystemVersion && systemVersion.lessThan(new Version(app.minSystemVersion))) {
@@ -289,12 +302,12 @@ export class Server {
 		return Object.values(this.repos);
 	}
 
-	public login(params: LoginParams) {
+	public login(params: LoginParams): Server {
 		this.auth.login(params);
 		return this; // Chainable
 	}
 
-	public logout() {
+	public logout(): Server {
 		this.auth.logout();
 		return this; // Chainable
 	}
@@ -319,7 +332,7 @@ export class Server {
 		projectName?: string
 		repository?: string
 		user?: ContextUserParams
-	}) {
+	}): Server {
 		if (!user) {
 			const currentUser = this.auth.getUser();
 			if (currentUser) {
@@ -340,7 +353,7 @@ export class Server {
 		return this; // Chainable
 	}
 
-	public su() {
+	public su(): Server {
 		this.login({
 			idProvider: 'system',
 			// password: '',

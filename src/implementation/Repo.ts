@@ -69,8 +69,6 @@ export class Repo {
 		return this.branches[branchId]
 	}
 
-	// TODO delete()
-
 	public deleteBranch(branchId: string): true {
 		if (!this.branches[branchId]) {
 			throw new BranchNotFoundException(branchId);
