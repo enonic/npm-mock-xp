@@ -1,5 +1,7 @@
 import * as assert from 'assert';
 import {deepStrictEqual} from 'assert';
+import {BRANCH_ALREADY_EXIST_EXCEPTION_NAME} from '../../../src/implementation/repo/BranchAlreadyExistException';
+import {REPOSITORY_NOT_FOUND_EXCEPTION_NAME} from '../../../src/implementation/repo/RepositoryNotFoundException';
 import {
 	LibRepo,
 	Server
@@ -29,22 +31,22 @@ describe('mock', () => {
 		}); // it
 		describe('createBranch()', () => {
 			describe('throws', () => {
-				it('com.enonic.xp.repository.RepositoryNotFoundException', () => {
+				it(REPOSITORY_NOT_FOUND_EXCEPTION_NAME, () => {
 					throws(() => libRepo.createBranch({
 						branchId: 'master',
 						repoId: 'non.existant'
 					}), {
-						name: 'com.enonic.xp.repository.RepositoryNotFoundException',
+						name: REPOSITORY_NOT_FOUND_EXCEPTION_NAME,
 						message: 'Repository with id [non.existant] not found'
 					});
 				}); // when branch already exists
-				it('com.enonic.xp.repo.impl.repository.BranchAlreadyExistException', () => {
+				it(BRANCH_ALREADY_EXIST_EXCEPTION_NAME, () => {
 					throws(() => libRepo.createBranch({
 						branchId: 'master',
 						repoId: 'myRepoId'
 					}), {
-						name: 'com.enonic.xp.repo.impl.repository.BranchAlreadyExistException',
-						message: 'Branch [{master}] already exists'
+						name: BRANCH_ALREADY_EXIST_EXCEPTION_NAME,
+						message: 'Branch [master] already exists'
 					});
 				}); // when branch already exists
 			}); // describe throws

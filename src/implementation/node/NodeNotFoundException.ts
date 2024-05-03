@@ -1,4 +1,10 @@
-export class NodeNotFoundException extends Error {
+import {NotFoundException} from '../exception/NotFoundException';
+
+
+export const NODE_NOT_FOUND_EXCEPTION_NAME = 'com.enonic.xp.node.NodeNotFoundException';
+
+
+export class NodeNotFoundException extends NotFoundException {
 	constructor(message: string) {
 		super(message);
 
@@ -7,6 +13,6 @@ export class NodeNotFoundException extends Error {
 			Error.captureStackTrace(this, NodeNotFoundException);
 		}
 
-		this.name = 'com.enonic.xp.node.NodeNotFoundException';
+		this.name = NODE_NOT_FOUND_EXCEPTION_NAME;
 	}
 }

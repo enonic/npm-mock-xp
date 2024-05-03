@@ -7,6 +7,7 @@ import {
 	//throws // For some reason this gets borked by swc
 } from 'assert';
 import * as assert from 'assert';
+import {NODE_ALREADY_EXIST_AT_PATH_EXCEPTION_NAME} from '../../../src/implementation/node/NodeAlreadyExistAtPathException';
 import {Server} from '../../../src';
 import {hasMethod} from '../../hasMethod';
 
@@ -57,7 +58,7 @@ describe('mock', () => {
 									_name: 'a'
 								});
 							}, {
-								name: 'com.enonic.xp.node.NodeAlreadyExistAtPathException',
+								name: NODE_ALREADY_EXIST_AT_PATH_EXCEPTION_NAME,
 								message: /^Node already exists at .* repository: .* branch: .*$/
 							});
 							connection.delete(node._id);
