@@ -5,6 +5,8 @@ import type {
 	MoveNodeParams,
 	Node,
 	// RepoConnection as RepoConnectionInterface // TODO Doesn't match currently
+	PushNodeParams,
+	PushNodesResult,
 } from '@enonic-types/lib-node';
 import type {
 	GetActiveVersionParamObject,
@@ -117,7 +119,7 @@ export class RepoConnection implements RepoConnectionInterface {
 		return this.branch.getNodeActiveVersion({key});
 	}
 
-	public getSingle<T>(key: string): T {
+	public getSingle<T = Node>(key: string): T {
 		return this.branch.getNode(key) as T;
 	}
 
@@ -148,7 +150,80 @@ export class RepoConnection implements RepoConnectionInterface {
 		return isMoved;
 	}
 
-	// TODO push()
+	public push({
+		key, // Id or path to a node
+		keys = [], // Array of ids or paths to the nodes
+		target, // Branch to push to
+		// includeChildren = false, // Also push children of given nodes. Default is false.
+		// resolve = true, // Resolve dependencies before pushing, meaning that references will also be pushed. Default is true
+		// exclude = [], // Optional array of ids or paths to nodes not to be pushed. If using this, be aware that nodes need to maintain data integrity (e.g parents must be present in target). If data integrity is not maintained with excluded nodes, they will be pushed anyway.
+	}: PushNodeParams): PushNodesResult {
+		if (target === this.branch.id) {
+			throw new Error('Target branch cannot be the same as source branch!')
+		}
+		const targetBranch: Branch = this.branch.repo.getBranch(target); // Throws if branch not found
+		const targetBranchRepoConnection = new RepoConnection({
+			branch: targetBranch,
+		});
+		if (key) {
+			keys.push(key);
+		}
+		if (!keys.length) {
+			throw new Error('No keys to push');
+		}
+		const pushNodesResult: PushNodesResult = {
+			success: [],
+			failed: [],
+			deleted: [],
+		};
+		nodeKeysLoop: for (let i = 0; i < keys.length; i++) {
+			const k = keys[i];
+			const existsOnSource = this.exists(k);
+			// const existsOnTarget = targetBranchRepoConnection.exists(k);
+			const existsOnTarget = targetBranch.existsNode(k)
+
+			if (existsOnSource) {
+				const nodeOnSource = this.getSingle<RepoNodeWithData>(k);
+				if (existsOnTarget) {
+					// TODO ALREADY_EXIST
+					targetBranch._overwriteNode({ node: nodeOnSource });
+					pushNodesResult.success.push(k); // TODO: Does this always return _id or is _path possible?
+					continue nodeKeysLoop;
+				}
+
+				const createdNode = targetBranch._createNodeInternal(nodeOnSource as unknown);
+				if (createdNode) {
+					pushNodesResult.success.push(k); // TODO: Does this always return _id or is _path possible?
+				} else {
+					// istanbul ignore next // Skip coverage for the next line // TODO
+					pushNodesResult.failed.push({
+						id: k,
+						reason: 'PARENT_NOT_FOUND' // TODO This is currently just a hardcode, there might be other reasons?
+					});
+				}
+				continue nodeKeysLoop;
+			}
+
+			if (existsOnTarget) {
+				if (targetBranchRepoConnection.delete(k)) {
+					pushNodesResult.deleted.push(k);
+				} else {
+					// istanbul ignore next // Skip coverage for the next line // TODO
+					pushNodesResult.failed.push({
+						id: k,
+						reason: 'ACCESS_DENIED' // TODO This is currently just a hardcode, there might be other reasons?
+					});
+				}
+				continue nodeKeysLoop;
+			}
+
+			pushNodesResult.failed.push({
+				id: k,
+				reason: 'NOT_FOUND_ON_SOURCE_NOR_TARGET' // TODO This doesn't exist com.enonic.xp.repo.impl.node.NodePushResult.Reason
+			});
+		} // for
+		return pushNodesResult;
+	} // push
 
 	query({
 		aggregations,
