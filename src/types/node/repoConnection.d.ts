@@ -1,7 +1,8 @@
 import type {
 	CreateNodeParams,
 	MoveNodeParams,
-	// RepoConnection as RepoConnectionOrig // TODO Doesn't match currently?
+	RepoConnection as RepoConnectionOrig, // TODO Doesn't match currently?
+	RefreshMode
 } from '@enonic-types/lib-node';
 
 import type { PrincipalKey } from '../auth';
@@ -45,12 +46,10 @@ export type NodeQueryResponse<
 }
 
 export type NodeRefreshParams = {
-	mode ?:'all' | 'search' | 'storage' // Index definition settings. Default is 'all'.
-	repo ?:string // Repository id: 'com.enonic.cms.default' | 'system-repo'. Default is the current repository set in portal.
-	branch ?:string // Branch. Default is 'master'.
+	mode?: RefreshMode
+	repo?: string // Repository id: 'com.enonic.cms.default' | 'system-repo'. Default is the current repository set in portal.
+	branch?: string // Branch. Default is 'master'.
 }
-
-export type NodeRefreshReturnType = void;
 
 export type RepoConnection = {
 	// Commits the active version of nodes.
@@ -110,12 +109,8 @@ export type RepoConnection = {
 	// ): NodeQueryResponse<AggregationKeys>;
 	query(params: NodeQueryParams) :NodeQueryResponse
 
-	// Refresh the index for the current repoConnection
-	refresh(params ?:NodeRefreshParams): NodeRefreshReturnType;
-
-	// This function modifies a node.
-	// modify<NodeData>(params: NodeModifyParams<NodeData>): NodeData & RepoNode;
-	modify(params: NodeModifyParams): RepoNodeWithData;
+	refresh: RepoConnectionOrig['refresh']
+	modify: RepoConnectionOrig['modify']
 
 	move(params: MoveNodeParams): boolean;
 

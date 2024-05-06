@@ -244,6 +244,31 @@ export class Server {
 		return this; // Chainable
 	}
 
+	public getBranch({
+		branchId,
+		repoId,
+	}: {
+		branchId: string
+		repoId: string
+	}): Branch {
+		return this.getRepo(repoId).getBranch(branchId);
+	}
+
+	public getNode<T = Node>({
+		branchId,
+		key,
+		repoId,
+	}: {
+		branchId: string
+		key: string
+		repoId: string
+	}) {
+		return this.connect({
+			branchId,
+			repoId
+		})._getSingle<T>(key);
+	}
+
 	public getProject(projectName: string): Project {
 		if (!projectName) {
 			throw new Error('Server: getProject: No projectName provided!');
@@ -262,16 +287,6 @@ export class Server {
 			throw new RepositoryNotFoundException(repoId);
 		}
 		return repo;
-	}
-
-	public getBranch({
-		branchId,
-		repoId,
-	}: {
-		branchId: string
-		repoId: string
-	}): Branch {
-		return this.getRepo(repoId).getBranch(branchId);
 	}
 
 	install(app: App): Server {

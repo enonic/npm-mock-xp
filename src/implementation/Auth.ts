@@ -11,6 +11,7 @@ import type {
 	RoleKey,
 	UserKey,
 } from '@enonic-types/lib-auth';
+import type {Node} from '@enonic-types/lib-node';
 import type {UserConstructorParams} from './auth/User';
 import type {UserWithProfileConstructorParams} from './auth/UserWithProfile';
 import type {
@@ -18,7 +19,7 @@ import type {
 	Log,
 	GroupNode,
 	GroupNodeData,
-	RepoNodeWithData,
+	// RepoNodeWithData,
 	RoleNode,
 	RoleNodeData,
 	UserData,
@@ -84,7 +85,7 @@ export class Auth {
 		name: string
 		idProvider?: string
 	}): UserNode | undefined {
-		return this.systemRepoConnection.getSingle<UserNode>(`/identity/${idProvider}/users/${name}`);
+		return this.systemRepoConnection._getSingle<UserNode>(`/identity/${idProvider}/users/${name}`);
 	}
 
 	public addMembers({
@@ -216,7 +217,7 @@ export class Auth {
 		name: string
 		idProvider?: string
 	}): Group {
-		const groupNode = this.systemRepoConnection.getSingle<GroupNode>(`/identity/${idProvider}/groups/${name}`);
+		const groupNode = this.systemRepoConnection._getSingle<GroupNode>(`/identity/${idProvider}/groups/${name}`);
 		if (!groupNode) {
 			throw new Error(`Group with name:${name} not found!`);
 		}
@@ -285,7 +286,7 @@ export class Auth {
 			// this.log.debug('getMemberships(): allGroupsAndRolesRes:%s', allGroupsAndRolesRes);
 
 			return allGroupsAndRolesRes.hits.map(({id}) => {
-				const groupOrRoleNode = this.systemRepoConnection.getSingle<GroupNode|RoleNode>(id);
+				const groupOrRoleNode = this.systemRepoConnection._getSingle<GroupNode|RoleNode>(id);
 				if (groupOrRoleNode['principalType'] === 'GROUP') {
 					return Group.fromNode(groupOrRoleNode as unknown as GroupNode);
 				}
@@ -360,7 +361,7 @@ export class Auth {
 	}: {
 		name: string
 	}): Role {
-		const roleNode = this.systemRepoConnection.getSingle<RoleNode>(`/identity/roles/${name}`);
+		const roleNode = this.systemRepoConnection._getSingle<RoleNode>(`/identity/roles/${name}`);
 		if (!roleNode) {
 			throw new Error(`Role with name:${name} not found!`);
 		}
@@ -498,10 +499,10 @@ export class Auth {
 		}
 
 		// TODO Does this have side-effects?
-		this.systemRepoConnection.modify({
+		this.systemRepoConnection.modify<Profile>({
 			key: `/identity/${idProvider}/users/${name}`,
 			editor: (_node) => {
-				return userNode as unknown as RepoNodeWithData;
+				return userNode as unknown as Node<Profile>;
 			}
 		});
 
