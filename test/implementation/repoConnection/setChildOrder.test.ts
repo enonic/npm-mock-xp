@@ -14,7 +14,7 @@ describe('RepoConnection()', () => {
 		it('should set the child order', () => {
 			const currentChildOrder = server.systemRepoConnection.get('/')['_childOrder'];
 			expect(currentChildOrder).toBe('_ts DESC');
-			const newChildOrder =server.systemRepoConnection.setChildOrder({
+			const newChildOrder = server.systemRepoConnection.setChildOrder({
 				childOrder: '_ts ASC',
 				key: '/'
 			})['_childOrder'];

@@ -11,6 +11,7 @@ import type {
 	PushNodesResult,
 	RefreshMode,
 	SetChildOrderParams,
+	SetRootPermissionsParams,
 } from '@enonic-types/lib-node';
 import type {
 	GetActiveVersionParamObject,
@@ -270,6 +271,18 @@ export class RepoConnection implements RepoConnectionInterface {
 		});
 	}
 
-	// TODO public setRootPermission<NodeData = Record<string, unknown>>(params: SetRootPermissionsParams): Node<NodeData> {}
+	public setRootPermission<NodeData = Record<string, unknown>>({
+		_permissions,
+		_inheritsPermissions,
+	}: SetRootPermissionsParams): Node<NodeData> {
+		return this.modify<NodeData>({
+			key: '/',
+			editor: (node) => {
+				node._inheritsPermissions = _inheritsPermissions;
+				node._permissions = _permissions;
+				return node;
+			}
+		});
+	}
 
 } // class Connection
