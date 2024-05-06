@@ -62,12 +62,12 @@ export {Request} from './implementation/Request';
 export {Server} from './implementation/Server';
 export {Version} from './implementation/Version';
 
-export {GeoPoint} from './libs/value/GeoPoint';
-export {Instant} from './libs/value/Instant';
-export {LocalDate} from './libs/value/LocalDate';
-export {LocalDateTime} from './libs/value/LocalDateTime';
-export {LocalTime} from './libs/value/LocalTime';
-export {Reference} from './libs/value/Reference';
+export {GeoPoint} from './implementation/util/GeoPoint';
+export {Instant} from './java/time/Instant';
+export {LocalDate} from './java/time/LocalDate';
+export {LocalDateTime} from './java/time/LocalDateTime';
+export {LocalTime} from './java/time/LocalTime';
+export {Reference} from './implementation/util/Reference';
 
 export {LibAuth} from './libs/LibAuth';
 export {LibContent} from './libs/LibContent';
