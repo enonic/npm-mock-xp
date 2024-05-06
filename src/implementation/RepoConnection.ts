@@ -1,5 +1,6 @@
 import type {
 	CreateNodeParams,
+	DuplicateParams,
 	FindChildrenParams,
 	FindNodesByParentResult,
 	ModifyNodeParams,
@@ -24,6 +25,12 @@ import type {
 	RepoNodeWithData
 } from '../types'
 import type { Branch } from './Branch';
+
+
+import { UUID_NIL } from '../constants';
+import {parentFromPath} from '../util/parentFromPath';
+import {NodeAlreadyExistAtPathException} from './node/NodeAlreadyExistAtPathException';
+import {OperationNotPermittedException} from './node/OperationNotPermittedException';
 
 
 export class RepoConnection implements RepoConnectionInterface {
@@ -52,7 +59,69 @@ export class RepoConnection implements RepoConnectionInterface {
 
 	// TODO public diff(params: DiffBranchesParams): DiffBranchesResult {}
 
-	// TODO public duplicate<NodeData = Record<string, unknown>>(params: DuplicateParams<NodeData>): Node<NodeData> {}
+	public duplicate<NodeData = Record<string, unknown>>({
+		nodeId,
+		name,
+		parent,
+		// includeChildren, // TODO
+		dataProcessor = (node) => node,
+		refresh
+	}: DuplicateParams<NodeData>): Node<NodeData> {
+		if (nodeId === UUID_NIL) {
+			throw new OperationNotPermittedException('Not allowed to duplicate root-node');
+		}
+
+		const nodeToDuplicate = this._getSingle<NodeData>(nodeId) as Node<NodeData>; // Already dereffed
+		// this.log.debug('duplicate(): nodeToDuplicate:%s', nodeToDuplicate);
+		let newName = name || nodeToDuplicate._name;
+
+		const parentPath = parent ? parent : parentFromPath(nodeToDuplicate._path);
+		// this.log.debug('duplicate(): parentPath:%s', parentPath);
+
+		if (name || parent) {
+			// this.log.debug('duplicate(): name:%s', name);
+			const path = `${parentPath}/${newName}`.replace(/\/+/g, '/');
+			if (this.exists(path)) {
+				// this.log.debug('duplicate(): exists(1) path:%s', path);
+				throw new NodeAlreadyExistAtPathException(path, this.branch.repo.id, this.branch);
+			}
+			// this.log.debug('duplicate(): !exists(1) path:%s', path);
+		}
+
+		// If target exists append -copy or -copy-\d+ to the name
+		if (this.exists(`${parentPath}/${newName}`.replace(/\/+/g, '/'))) {
+			let exists = false;
+			do {
+				newName = /-copy(-\d+)?$/.test(newName)
+				? `${newName.replace(/-copy(-\d+)?$/, '')}-copy-${
+					(
+						(
+							parseInt(newName.replace(/.*-copy(-(\d+))$/, '$2'))
+							|| 1
+						)
+						+ 1
+					)
+				}`
+				: `${newName}-copy`;
+				const path = `${parentPath}/${newName}`.replace(/\/+/g, '/');
+				exists = this.exists(path);
+				// this.log.debug('duplicate(): exists(2) path:%s', path);
+			} while (exists);
+		} // if exists
+		// this.log.debug('duplicate(): newName:%s', newName);
+
+		const duplicatedNodeData = dataProcessor(nodeToDuplicate) as Node<NodeData>;
+		delete duplicatedNodeData._id;
+		delete duplicatedNodeData._ts;
+		delete duplicatedNodeData._versionKey;
+		duplicatedNodeData._name = newName;
+		(duplicatedNodeData as CreateNodeParams<NodeData>)._parentPath = parentPath;
+		const duplicatedNode = this.create(duplicatedNodeData);
+		if (refresh) {
+			this.refresh(refresh);
+		}
+		return duplicatedNode;
+	}
 
 	public exists(key: string): boolean {
 		return this.branch.existsNode(key);
@@ -124,7 +193,7 @@ export class RepoConnection implements RepoConnectionInterface {
 	}
 
 	_getSingle<T = Node>(key: string): T {
-		return this.branch.getNode(key) as T;
+		return this.branch.getNode(key) as T; // Returned nodes are dereffed :)
 	}
 
 	// TODO public getBinary(params: GetBinaryParams): ByteSource {}
