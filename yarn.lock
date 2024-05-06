@@ -901,11 +901,11 @@
     "@babel/types" "^7.20.7"
 
 "@types/bun@^1.0.12":
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/@types/bun/-/bun-1.1.0.tgz#227060a9b97a74213430f06ed1423aa943c75bca"
-  integrity sha512-QGK0yU4jh0OK1A7DyhPkQuKjHQCC5jSJa3dpWIEhHv/rPfb6zLfdArc4/uUUZBMTcjilsafRXnPWO+1owb572Q==
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/@types/bun/-/bun-1.1.1.tgz#f3ec72c7645a267cae5684b14a0d107c9dc96e89"
+  integrity sha512-lUe9rLMhgDCViciZtgDj5CMl2u7uTq/IP149kSZH/Si6FWkCioximABFf+baRQgbm8QlH4bzT0qJRteQFNqeGA==
   dependencies:
-    bun-types "1.1.0"
+    bun-types "1.1.6"
 
 "@types/cacheable-request@^6.0.1":
   version "6.0.3"
@@ -1242,10 +1242,10 @@ buffer-from@^1.0.0:
   resolved "https://registry.npmjs.org/buffer-from/-/buffer-from-1.1.2.tgz"
   integrity sha512-E+XQCRwSbaaiChtv6k6Dwgc+bx+Bs6vuKJHHl5kox/BaKbhiXzqQOwK4cO22yElGp2OCmjwVhT3HmxgyPGnJfQ==
 
-bun-types@1.1.0:
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/bun-types/-/bun-types-1.1.0.tgz#2a0bcabda1e7e6f7be94f622be5fc9e3bd279796"
-  integrity sha512-GhMDD7TosdJzQPGUOcQD5PZshvXVxDfwGAZs2dq+eSaPsRn3iUCzvpFlsg7Q51bXVzLAUs+FWHlnmpgZ5UggIg==
+bun-types@1.1.6:
+  version "1.1.6"
+  resolved "https://registry.yarnpkg.com/bun-types/-/bun-types-1.1.6.tgz#6d053b5d580ae3c4dcfc3a4870ceb19fcdc84333"
+  integrity sha512-LK2aaJdBBTUkDyN+kRiJHLF3VGrAcdkEHrbBvbmTkccShPw6ZalxxKjWSBJwn4UkikhZdrdA87bZWmfUgkRUYg==
   dependencies:
     "@types/node" "~20.11.3"
     "@types/ws" "~8.5.10"
