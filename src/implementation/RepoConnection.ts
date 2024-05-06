@@ -2,21 +2,23 @@ import type {
 	CreateNodeParams,
 	FindChildrenParams,
 	FindNodesByParentResult,
+	ModifyNodeParams,
 	MoveNodeParams,
 	Node,
+	NodeVersion,
 	// RepoConnection as RepoConnectionInterface // TODO Doesn't match currently
 	PushNodeParams,
 	PushNodesResult,
+	RefreshMode,
+	SetChildOrderParams,
 } from '@enonic-types/lib-node';
 import type {
 	GetActiveVersionParamObject,
-	GetActiveVersionResponse,
+	// GetActiveVersionResponse,
 	Log,
 	NodeModifyParams,
 	NodeQueryParams,
 	NodeQueryResponse,
-	NodeRefreshParams,
-	NodeRefreshReturnType,
 	RepoConnection as RepoConnectionInterface,
 	RepoNodeWithData
 } from '../types'
@@ -37,21 +39,21 @@ export class RepoConnection implements RepoConnectionInterface {
 		// this.log.debug('in Connection constructor');
 	}
 
-	// TODO: commit()
+	// TODO: public commit(params: CommitParams): NodeCommit {}
 
-	create<NodeData = unknown>(param: CreateNodeParams<NodeData>): Node<NodeData> {
+	public create<NodeData = unknown>(param: CreateNodeParams<NodeData>): Node<NodeData> {
 		return this.branch.createNode<NodeData>(param);
 	}
 
-	delete(keys: string | Array<string>): Array<string> {
+	public delete(keys: string | string[]): string[] {
 		return this.branch.deleteNode(keys);
 	}
 
-	// TODO diff()
+	// TODO public diff(params: DiffBranchesParams): DiffBranchesResult {}
 
-	// TODO duplicate()
+	// TODO public duplicate<NodeData = Record<string, unknown>>(params: DuplicateParams<NodeData>): Node<NodeData> {}
 
-	exists(key: string): boolean {
+	public exists(key: string): boolean {
 		return this.branch.existsNode(key);
 	}
 
@@ -65,7 +67,7 @@ export class RepoConnection implements RepoConnectionInterface {
 	}: FindChildrenParams): FindNodesByParentResult {
 		// this.log.debug('findChildren(%s)', { parentKey, start, count, childOrder, countOnly, recursive });
 
-		const parentNode = this.getSingle<Node>(parentKey);
+		const parentNode = this._getSingle<Node>(parentKey);
 		// this.log.debug('findChildren(): parentNode:%s', parentNode);
 
 		const {
@@ -101,7 +103,7 @@ export class RepoConnection implements RepoConnectionInterface {
 		}
 	} // findChildren
 
-	// TODO findVersion()
+	// TODO public findVersions(params: FindVersionsParams): NodeVersionsQueryResult {}
 
 	// get(key: string): RepoNodeWithData {
 	// 	return this._branch.getNode(key);
@@ -109,35 +111,36 @@ export class RepoConnection implements RepoConnectionInterface {
 	// get(keys: string[]): RepoNodeWithData | RepoNodeWithData[] {
 	// 	return this._branch.getNode(keys);
 	// }
-	get(...keys: string[]): RepoNodeWithData | RepoNodeWithData[] {
+	// TODO use types from @enonic-types/lib-node
+	public get(...keys: string[]): RepoNodeWithData | RepoNodeWithData[] {
 		return this.branch.getNode(...keys);
 	}
 
-	getActiveVersion({
+	public getActiveVersion({
 		key
-	}: GetActiveVersionParamObject): GetActiveVersionResponse {
+	}: GetActiveVersionParamObject): NodeVersion | null {
 		return this.branch.getNodeActiveVersion({key});
 	}
 
-	public getSingle<T = Node>(key: string): T {
+	_getSingle<T = Node>(key: string): T {
 		return this.branch.getNode(key) as T;
 	}
 
-	// TODO getBinary()
+	// TODO public getBinary(params: GetBinaryParams): ByteSource {}
 
-	// TODO getCommit()
+	// TODO public getCommit(params: GetCommitParams): NodeCommit | null {}
 
-	modify({
+	public modify<NodeData = Record<string, unknown>>({
 		key,
 		editor
-	}: NodeModifyParams): RepoNodeWithData {
+	}: ModifyNodeParams<NodeData>): Node<NodeData> {
 		return this.branch.modifyNode({
 			key,
-			editor
-		});
+			editor: (editor as unknown as NodeModifyParams['editor'])
+		}) as Node<NodeData>;
 	}
 
-	move({
+	public move({
 		source,
 		target
 	}: MoveNodeParams): boolean {
@@ -183,7 +186,7 @@ export class RepoConnection implements RepoConnectionInterface {
 			const existsOnTarget = targetBranch.existsNode(k)
 
 			if (existsOnSource) {
-				const nodeOnSource = this.getSingle<RepoNodeWithData>(k);
+				const nodeOnSource = this._getSingle<RepoNodeWithData>(k);
 				if (existsOnTarget) {
 					// TODO ALREADY_EXIST
 					targetBranch._overwriteNode({ node: nodeOnSource });
@@ -225,7 +228,8 @@ export class RepoConnection implements RepoConnectionInterface {
 		return pushNodesResult;
 	} // push
 
-	query({
+	// TODO <AggregationInput extends Aggregations = never>(params: QueryNodeParams<AggregationInput>): NodeQueryResult<AggregationsToAggregationResults<AggregationInput>>;
+	public query({
 		aggregations,
 		count,
 		explain,
@@ -247,14 +251,25 @@ export class RepoConnection implements RepoConnectionInterface {
 		});
 	}
 
-	refresh(params: NodeRefreshParams): NodeRefreshReturnType {
-		return this.branch.refresh(params);
+	public refresh(mode?: RefreshMode): void {
+		return this.branch.refresh({mode});
 	}
 
-	// TODO setActiveVersion()
+	// TODO public setActiveVersion(params: SetActiveVersionParams): boolean {}
 
-	// TODO setChildOrder()
+	public setChildOrder<NodeData = Record<string, unknown>>({
+		childOrder,
+		key,
+	}: SetChildOrderParams): Node<NodeData> {
+		return this.modify<NodeData>({
+			key,
+			editor: (node) => {
+				node._childOrder = childOrder;
+				return node;
+			}
+		});
+	}
 
-	// TODO setRootPermission()
+	// TODO public setRootPermission<NodeData = Record<string, unknown>>(params: SetRootPermissionsParams): Node<NodeData> {}
 
 } // class Connection

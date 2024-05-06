@@ -18,7 +18,6 @@ import type {
 	NodeModifyParams,
 	NodeQueryResponse,
 	NodeRefreshParams,
-	NodeRefreshReturnType,
 	RepoNodeWithData
 } from '../types'
 import type { Repo } from './Repo';
@@ -869,11 +868,13 @@ export class Branch {
 		throw new Error(`query: unhandeled query dsl: ${query}!`);
 	} // query
 
+	// TODO Allowing repo and branch to be passed in as params, seems wrong,
+	// is this in use anywhere? RepoConnection.refresh only takes mode.
 	refresh({
-		mode = 'all',
+		mode = 'ALL',
 		repo = this.repo.id,
 		branch = this.id
-	}: NodeRefreshParams = {}): NodeRefreshReturnType {
+	}: NodeRefreshParams = {}): void {
 		this.log.debug(`refresh({ mode:${mode} repo:${repo} branch:${branch} })`);
 		return;
 	}

@@ -33,7 +33,6 @@ export { NodeQueryParams } from './node/query/index.d';
 export {
 	NodeQueryResponse,
 	NodeRefreshParams,
-	NodeRefreshReturnType,
 	RepoConnection,
 	Source
 } from './node/repoConnection.d';
