@@ -1,12 +1,20 @@
-import {GeoPoint} from './value/GeoPoint';
-import {Instant} from './value/Instant';
-import {LocalDate} from './value/LocalDate';
-import {LocalDateTime} from './value/LocalDateTime';
-import {LocalTime} from './value/LocalTime';
-import {Reference} from './value/Reference';
+import type {ByteSource} from '@enonic-types/lib-value';
+
+
+import {BinaryAttachment} from '../implementation/util/BinaryAttachment';
+import {GeoPoint} from '../implementation/util/GeoPoint';
+import {Instant} from '../java/time/Instant';
+import {LocalDate} from '../java/time/LocalDate';
+import {LocalDateTime} from '../java/time/LocalDateTime';
+import {LocalTime} from '../java/time/LocalTime';
+import {Reference} from '../implementation/util/Reference';
 
 
 export class LibValue {
+	static binary(name: string, stream: ByteSource): BinaryAttachment {
+		return new BinaryAttachment(name, stream);
+	}
+
 	static geoPoint(lat: number, lon: number): GeoPoint {
 		return new GeoPoint({lat, lon});
 	}
