@@ -45,6 +45,7 @@ import intersect from 'intersect';
 import {NodeAlreadyExistAtPathException} from './node/NodeAlreadyExistAtPathException';
 import {NodeNotFoundException} from './node/NodeNotFoundException';
 import deref from '../util/deref';
+import {UUID_NIL} from '../constants';
 
 
 interface Nodes {
@@ -113,9 +114,9 @@ export class Branch {
 
 	readonly id: string;
 	readonly nodes: Nodes = {
-		'00000000-0000-0000-0000-000000000000': {
+		[UUID_NIL]: {
 			_childOrder: '_ts DESC',
-			_id: '00000000-0000-0000-0000-000000000000',
+			_id: UUID_NIL,
 			_indexConfig: DEFAULT_INDEX_CONFIG,
 			_inheritsPermissions: false,
 			_name: '',
@@ -140,20 +141,20 @@ export class Branch {
 		}
 	};
 	readonly pathIndex: PathIndex = {
-		'/': '00000000-0000-0000-0000-000000000000'
+		'/': UUID_NIL
 	};
 	readonly searchIndex: SearchIndex = {
 		_name: {
-			'': ['00000000-0000-0000-0000-000000000000']
+			'': [UUID_NIL]
 		},
 		_nodeType: {
-			default: ['00000000-0000-0000-0000-000000000000']
+			default: [UUID_NIL]
 		},
 		_parentPath: {
-			// '/': ['00000000-0000-0000-0000-000000000000'] // Root node doesn't have a parent
+			// '/': [UUID_NIL] // Root node doesn't have a parent
 		},
 		_path: {
-			'/': ['00000000-0000-0000-0000-000000000000']
+			'/': [UUID_NIL]
 		}
 	};
 	readonly repo: Repo;
@@ -311,7 +312,7 @@ export class Branch {
 				return undefined;
 			}
 		}
-		if (isUuidV4String(maybeId) || maybeId === '00000000-0000-0000-0000-000000000000') {
+		if (isUuidV4String(maybeId) || maybeId === UUID_NIL) {
 			return maybeId;
 		}
 		this.log.debug(`key not an id! key:${key}`);

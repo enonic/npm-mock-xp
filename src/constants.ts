@@ -6,3 +6,5 @@ export const ROLE_SYSTEM_ADMIN = 'role:system.admin';
 export const ROLE_SYSTEM_AUTHENTICATED = 'role:system.authenticated';
 export const ROLE_SYSTEM_EVERYONE = 'role:system.everyone';
 export const USER_SYSTEM_ANONYMOUS = 'user:system:anonymous';
+
+export const UUID_NIL = '00000000-0000-0000-0000-000000000000';

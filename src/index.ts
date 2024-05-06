@@ -23,6 +23,10 @@ export {
 	RuntimeException,
 } from './implementation/exception/RuntimeException';
 export {
+	OPERATION_NOT_PERMITTED_EXCEPTION_NAME,
+	OperationNotPermittedException,
+} from './implementation/node/OperationNotPermittedException';
+export {
 	NODE_ALREADY_EXIST_AT_PATH_EXCEPTION_NAME,
 	NodeAlreadyExistAtPathException,
 } from './implementation/node/NodeAlreadyExistAtPathException';
