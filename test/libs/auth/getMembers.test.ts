@@ -24,7 +24,8 @@ let user: UserInterface;
 
 beforeAll(done => {
 	server = new Server({
-		loglevel: 'silent'
+		loglevel: 'debug',
+		// loglevel: 'error',
 	});
 
 	libAuth = new LibAuth({
@@ -55,6 +56,7 @@ beforeAll(done => {
 			user.key,
 		]
 	});
+	// server.log.debug('groupWithMembers: %s', groupWithMembers);
 
 	roleWithMembers = server.auth.createRole({
 		name: 'roleName',
@@ -72,7 +74,9 @@ beforeAll(done => {
 
 describe('getMembers', () => {
 	it('should get members of a group', () => {
-		expect(libAuth.getMembers(groupWithMembers.key)).toEqual([
+		const principalKey = groupWithMembers.key;
+		// server.log.debug('principalKey: %s', principalKey);
+		expect(libAuth.getMembers(principalKey)).toEqual([
 			groupWithoutMembers,
 			user,
 		]);

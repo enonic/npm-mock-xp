@@ -27,16 +27,19 @@ import {
 	isBooleanFilter,
 	isFilter,
 	isHasValueFilter,
+	isObject,
 	isQueryDsl,
 	toStr
 } from '@enonic/js-utils';
 import {flatten} from '@enonic/js-utils/array/flatten';
 import {forceArray} from '@enonic/js-utils/array/forceArray';
 import {enonify} from '@enonic/js-utils/storage/indexing/enonify';
+import {setIn} from '@enonic/js-utils/object/setIn';
 import {sortKeys} from '@enonic/js-utils/object/sortKeys';
 // import { isBoolean } from '@enonic/js-utils/value/isBoolean'; // Not exported in package.json yet
 import {isUuidV4String} from '@enonic/js-utils/value/isUuidV4String';
 import { isString } from '@enonic/js-utils/value/isString';
+import { sha512 } from 'node-forge';
 // import { isFilter } from '@enonic/js-utils/storage/query/filter/isBooleanFilter'; // Not exported in package.json yet
 // import { isHasValueFilter } from '@enonic/js-utils/storage/query/filter/isHasValueFilter'; // Not exported in package.json yet
 // @ts-ignore TS7016: Could not find a declaration file for module 'uniqs'
@@ -46,6 +49,8 @@ import {NodeAlreadyExistAtPathException} from './node/NodeAlreadyExistAtPathExce
 import {NodeNotFoundException} from './node/NodeNotFoundException';
 import deref from '../util/deref';
 import {UUID_NIL} from '../constants';
+import {BinaryAttachment} from './util/BinaryAttachment';
+import {processNestedData} from './branch/processNestedData';
 
 
 interface Nodes {
@@ -112,6 +117,11 @@ export class Branch {
 		return new Date().toISOString();
 	}
 
+	readonly binaryReferences: Record<string, Record<string, string>> = {
+		// 'nodeId': {
+		// 	'binaryReferenceName': 'sha512'
+		// }
+	};
 	readonly id: string;
 	readonly nodes: Nodes = {
 		[UUID_NIL]: {
@@ -174,6 +184,7 @@ export class Branch {
 		// this.log.debug('in Branch constructor');
 	}
 
+	// TODO: I can't store binaryReferences directly on the Node, so I need another "store" for it.
 	_createNodeInternal<NodeData = unknown>({
 		// _childOrder,
 		_id = this.repo.generateId(),
@@ -219,7 +230,14 @@ export class Branch {
 			throw new NodeAlreadyExistAtPathException(_path, this.repo.id, this);
 		}
 
-		const node: Node<NodeData> = {
+		const cleanedData = processNestedData({
+			branch: this,
+			data: rest,
+			nodeId: _id
+		});
+		// this.log.debug('cleanedData: %s', cleanedData);
+
+		const createdNode: Node<NodeData> = {
 			_id,
 			_indexConfig,
 			_name,
@@ -228,9 +246,11 @@ export class Branch {
 			_state: 'DEFAULT',
 			_ts,
 			_versionKey,
-			...(enonify(rest) as Object)
+			...(enonify(cleanedData) as Object)
 		} as unknown as Node<NodeData>;
-		this.nodes[_id] = node as RepoNodeWithData;
+		// this.log.debug('createdNode: %s', createdNode);
+
+		this.nodes[_id] = createdNode as RepoNodeWithData;
 		this.pathIndex[_path] = _id;
 
 		if (this.searchIndex['_name'][_name]) {
@@ -257,11 +277,11 @@ export class Branch {
 			this.searchIndex['_path'][_path] = [_id];
 		}
 
-		const restKeys = Object.keys(rest).filter(k => !SEARCH_INDEX_BLACKLIST.includes(k));
+		const restKeys = Object.keys(cleanedData).filter(k => !SEARCH_INDEX_BLACKLIST.includes(k));
 		// this.log.debug('_createNodeInternal restKeys:%s', restKeys);
 
 		RestKeys: for (const rootProp of restKeys) {
-			const rootPropValue = rest[rootProp];
+			const rootPropValue = cleanedData[rootProp];
 			if (!(
 				supportedValueType(rootPropValue)
 				|| (
@@ -291,7 +311,7 @@ export class Branch {
 		} // for RestKeys
 		// this.log.error('this._searchIndex:%s', this._searchIndex);
 		// this.log.debug('this._pathIndex:%s', this._pathIndex);
-		return deref(node);
+		return deref(createdNode);
 	} // _createNodeInternal
 
 	createNode<NodeData = unknown>(params: CreateNodeParams<NodeData>): Node<NodeData> {
@@ -443,12 +463,40 @@ export class Branch {
 		if (!node) {
 			throw new Error(`modify: Node with key:${key} not found!`);
 		}
+
 		const dereffedNode = deref(node);
 		const _id = dereffedNode._id;
 		const _name = dereffedNode._name;
 		const _path = dereffedNode._path;
+
+		const editedNode = editor(dereffedNode);
+
+		const foundBinaryReferenceNames: string[] = [];
+		const cleanedData = processNestedData({
+			branch: this,
+			data: editedNode,
+			foundBinaryReferenceNames,
+			nodeId: _id
+		});
+		// this.log.debug('foundBinaryReferenceNames: %s', foundBinaryReferenceNames);
+
+		if (this.binaryReferences[_id]) {
+			Object.keys(this.binaryReferences[_id]).forEach(binaryReferenceName => {
+				if (!foundBinaryReferenceNames.includes(binaryReferenceName)) {
+					this.log.debug(
+						'%s:%s:%s Binary reference: %s no longer used, removing sha512: %s',
+						this.repo.id, this.id, _id,
+						binaryReferenceName, this.binaryReferences[_id][binaryReferenceName]
+					);
+					delete this.binaryReferences[_id][binaryReferenceName];
+					// TODO Also remove the binary file from the volume?
+					// Requires keeping track of all node changes.
+				}
+			});
+		}
+
 		const modifiedNode: RepoNodeWithData = sortKeys({
-			...editor(dereffedNode),
+			...cleanedData,
 			_id, // Not allowed to change _id
 			_name, // Not allowed to rename
 			_path, // Not allowed to move

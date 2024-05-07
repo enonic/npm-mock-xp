@@ -14,18 +14,19 @@ export function stringHashCode(str: string): number {
 }
 
 // JavaScript has it's own String class, so we should avoid using the same name
-export class JavaString {
-	private stringObject: String;
+export class JavaString extends String {
+	// private stringObject: String;
 
 	constructor(string: string|String) {
-		this.stringObject = isStringObject(string) ? string : new String(string);
+		super(string);
+		// this.stringObject = isStringObject(string) ? string : new String(string);
 	}
 
 	public equals(s: string|String): boolean {
-		return this.stringObject.toString() === s;
+		return this.toString() === s;
 	}
 
 	public hashCode(): number {
-		return stringHashCode(this.stringObject.toString());
+		return stringHashCode(this.toString());
 	}
 }
