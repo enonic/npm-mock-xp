@@ -229,18 +229,20 @@ export class Auth {
 	}: {
 		principalKey: GroupKey | RoleKey
 	}): (Group | User)[] {
+		// this.log.debug('getMembers(): principalKey:%s', principalKey);
 		if (isGroupKey(principalKey)) {
-			const [_type, idProvider, name] = principalKey.split(':');
+			const [_type, idProvider, name] = (principalKey as string).split(':');
 			const group = this.getGroupByName({
 				name,
 				idProvider
 			});
 			const memberKeys = group.getMemberKeys();
+			// this.log.debug('getMembers(): memberKeys:%s', memberKeys);
 			return memberKeys.map((memberKey) => this.getPrincipal(memberKey)).filter(x => x) as (Group | User)[];
 		}
 
 		if (isRoleKey(principalKey)) {
-			const [_type, name] = principalKey.split(':');
+			const [_type, name] = (principalKey as string).split(':');
 			const role = this.getRoleByName({
 				name
 			});
@@ -307,7 +309,10 @@ export class Auth {
 
 
 	public getPrincipal(principalKey: PrincipalKey): User | Group | Role | null {
-		const [type, two, three] = principalKey.split(':');
+		// this.log.debug('getPrincipal(): principalKey:%s', principalKey);
+		const principalKeyParts = principalKey.split(':');
+		// this.log.debug('getPrincipal(): principalKeyParts:%s', principalKeyParts);
+		const [type, two, three] = principalKeyParts;
 		if (type === 'user') {
 			return this.getUserByName({
 				name: three,

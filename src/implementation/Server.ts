@@ -11,6 +11,7 @@ import type {
 import type {
 	ConnectParams,
 	CreateNodeParams,
+	ModifyNodeParams,
 } from '@enonic-types/lib-node';
 import type {
 	CreateRepositoryParams,
@@ -163,20 +164,21 @@ export class Server {
 		return this.getRepo(repoId).createBranch(branchId);
 	}
 
-	public createNode({
+	// This can't be chainable or there is no way to get the created node,
+	// since we need to know the createdNode._id to get it later.
+	public createNode<NodeData = unknown>({
 		branchId,
 		repoId,
 		node
 	}: {
 		branchId: string
-		node: CreateNodeParams
+		node: CreateNodeParams<NodeData>
 		repoId: string
-	}): Server {
-		this.connect({
+	}) {
+		return this.connect({
 			branchId,
 			repoId
-		}).create(node);
-		return this; // Chainable
+		}).create<NodeData>(node);
 	}
 
 	public createRepo({
@@ -325,6 +327,27 @@ export class Server {
 	public logout(): Server {
 		this.auth.logout();
 		return this; // Chainable
+	}
+
+	public modifyNode<NodeData = Record<string, unknown>>({
+		branchId,
+		editor,
+		key,
+		repoId,
+	}: {
+		branchId: string
+		editor: ModifyNodeParams<NodeData>['editor']
+		key: string
+		repoId: string
+	}) {
+		return this.connect({
+			branchId,
+			repoId
+		}).modify<NodeData>({
+			editor,
+			key,
+		});
+		return this; // Can be chainable, since key is known
 	}
 
 	public setContext({

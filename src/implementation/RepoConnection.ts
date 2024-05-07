@@ -1,8 +1,10 @@
 import type {
+	ByteSource,
 	CreateNodeParams,
 	DuplicateParams,
 	FindChildrenParams,
 	FindNodesByParentResult,
+	GetBinaryParams,
 	ModifyNodeParams,
 	MoveNodeParams,
 	Node,
@@ -29,7 +31,10 @@ import type { Branch } from './Branch';
 
 import { UUID_NIL } from '../constants';
 import {parentFromPath} from '../util/parentFromPath';
+import {castBufferToByteSource} from '../util/castBufferToByteSource';
+import {castTDataOutToByteSource} from '../util/castTDataOutToByteSource';
 import {NodeAlreadyExistAtPathException} from './node/NodeAlreadyExistAtPathException';
+import {NodeNotFoundException} from './node/NodeNotFoundException';
 import {OperationNotPermittedException} from './node/OperationNotPermittedException';
 
 
@@ -196,7 +201,48 @@ export class RepoConnection implements RepoConnectionInterface {
 		return this.branch.getNode(key) as T; // Returned nodes are dereffed :)
 	}
 
-	// TODO public getBinary(params: GetBinaryParams): ByteSource {}
+	public getBinary({
+		binaryReference,
+		key, // Path or ID of the node
+	}: GetBinaryParams): ByteSource {
+		const node = this._getSingle<Node>(key);
+		// this.log.debug('getBinary(): key: %s node:%s', key, node);
+
+		if (!node) {
+			throw new NodeNotFoundException(
+				`Cannot get binary reference, node with id: ${key} not found`
+			);
+		}
+
+		const sha512 = this.branch.binaryReferences?.[node._id]?.[binaryReference];
+		// this.log.debug('getBinary(): binaryReference:%s sha512:%s', binaryReference, sha512);
+
+		if (!sha512) {
+			const emptyBuffer = Buffer.alloc(0);
+			return castBufferToByteSource(emptyBuffer);
+		}
+
+		const tDataOut = this.branch.repo.server.vol.readFileSync(`/${sha512}`);
+		if (!tDataOut) {
+			// If this happens there is an inconsistency in the state between
+			// the binaryReferences and the vol. Some function has affected one,
+			// but not the other.
+			this.log.error(
+				`File with sha512: ${
+					sha512
+				} not found in vol! Repo: ${
+					this.branch.repo.id
+				} Branch: ${
+					this.branch.id
+				} NodeId: ${
+					node._id
+				} NodeBinaryReferences: ${
+					JSON.stringify(this.branch.binaryReferences?.[node._id])
+				}`
+			);
+		}
+		return castTDataOutToByteSource(tDataOut);
+	}
 
 	// TODO public getCommit(params: GetCommitParams): NodeCommit | null {}
 
