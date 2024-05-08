@@ -223,6 +223,7 @@ export class RepoConnection implements RepoConnectionInterface {
 		}
 
 		const tDataOut = this.branch.repo.server.vol.readFileSync(`/${sha512}`);
+		// istanbul ignore next // Skip coverage for the next line
 		if (!tDataOut) {
 			// If this happens there is an inconsistency in the state between
 			// the binaryReferences and the vol. Some function has affected one,

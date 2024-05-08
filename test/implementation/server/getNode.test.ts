@@ -11,7 +11,7 @@ const server = new Server({
 
 describe('Server', () => {
 	describe('getNode()', () => {
-		it('should set the child order', () => {
+		it('should return a node', () => {
 			const node = server.getNode({
 				branchId: 'master',
 				key: '/',

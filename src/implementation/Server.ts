@@ -340,7 +340,7 @@ export class Server {
 		key: string
 		repoId: string
 	}) {
-		return this.connect({
+		this.connect({
 			branchId,
 			repoId
 		}).modify<NodeData>({
