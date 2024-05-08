@@ -8,6 +8,7 @@ import {
 	App,
 	LibIo,
 	LibValue,
+	NodeNotFoundException,
 	Server
 } from '../../../src';
 import {LEA_JPG_BYTE_SIZE} from '../../constants';
@@ -65,6 +66,16 @@ describe('RepoConnection', () => {
 			});
 			expect(byteSource).toBeTruthy();
 			expect(libIo.getSize(byteSource)).toBe(LEA_JPG_BYTE_SIZE);
+		}); // it
+
+		it('should throw when there is no node with key', () => {
+			const key = 'non-existing-key';
+			expect(() => connection.getBinary({
+				binaryReference: BINARY_NAME,
+				key,
+			})).toThrow(new NodeNotFoundException(
+				`Cannot get binary reference, node with id: ${key} not found`
+			));
 		}); // it
 	}); // describe _createNodeInternal
 }); // describe Branch

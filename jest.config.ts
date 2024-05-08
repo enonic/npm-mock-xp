@@ -2,6 +2,7 @@ export default {
 	collectCoverageFrom: [
 		'src/**/*.ts',
 		'!src/**/*.d.ts',
+		'!src/java/util/Objects.ts',
 	],
 
 	coveragePathIgnorePatterns: [
