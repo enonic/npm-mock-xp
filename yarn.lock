@@ -403,11 +403,11 @@
     "@enonic-types/core" "7.14.1"
 
 "@enonic-types/lib-value@^7.13.0":
-  version "7.14.1"
-  resolved "https://registry.yarnpkg.com/@enonic-types/lib-value/-/lib-value-7.14.1.tgz#cdb3460bea1a73e580bb8d4b8b0d40c768de9cc3"
-  integrity sha512-KMsIAP0i5pf4kCkqgh07ACrrq24LIW8GQ3+pyqm7DzoUBP8VkzVH6EPbkj9buuyEhPfsv/sTCNayvM/42kuckw==
+  version "7.14.2"
+  resolved "https://registry.yarnpkg.com/@enonic-types/lib-value/-/lib-value-7.14.2.tgz#a08b47c5362c125408324a0da3f0505fc320a442"
+  integrity sha512-nSLNuGM8tepzrKb9Rk2a52+iDf++JpZ3nW2KdwSe3rpnsCbS2OTCNqPSTIdauixJyiOMYpSUPYrbir4XGw3f8w==
   dependencies:
-    "@enonic-types/core" "7.14.1"
+    "@enonic-types/core" "7.14.2"
 
 "@enonic/js-utils@^1.4.1":
   version "1.7.1"
