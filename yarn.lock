@@ -309,6 +309,11 @@
   resolved "https://registry.yarnpkg.com/@enonic-types/core/-/core-7.14.1.tgz#47af2161da03b3b18b3b3f7211830ac4f75bdbe4"
   integrity sha512-KHohZGwfpEEN1s/8fBAmD7qSAG9sX2B1/pGA9BWv6cxsvi+NNwh0VM3JAgLAC96yYpjFggliZF7187Lj4XcQ0A==
 
+"@enonic-types/core@7.14.2":
+  version "7.14.2"
+  resolved "https://registry.yarnpkg.com/@enonic-types/core/-/core-7.14.2.tgz#668d2dcd62a67e280046304c4305f0d54ce3d82c"
+  integrity sha512-eLGEDYIj4OPTLx0w6AhuJngb0iRtOA9KIjrGf931kgk9Y1XWXn9HiVQtfZXoI/J2qR87bgyYiRaeCD4v6EQUjQ==
+
 "@enonic-types/global@^7.13.0":
   version "7.14.1"
   resolved "https://registry.yarnpkg.com/@enonic-types/global/-/global-7.14.1.tgz#42996cef8cc0299010605b7ab3c1512f6c4cceeb"
@@ -372,11 +377,11 @@
     "@enonic-types/core" "7.14.1"
 
 "@enonic-types/lib-portal@^7.13.0":
-  version "7.14.1"
-  resolved "https://registry.yarnpkg.com/@enonic-types/lib-portal/-/lib-portal-7.14.1.tgz#9e4fd9ad8ee7317ff9d5df72aadb2597f23131bf"
-  integrity sha512-1dJTWL6V58YQFvSZxJr2jAtW5qg3wPOK0X+UrBSLLFy7Er3jHgaUDNP+7HpVV3lSkiNMGuLI0es+Z/6Z3oxJ2g==
+  version "7.14.2"
+  resolved "https://registry.yarnpkg.com/@enonic-types/lib-portal/-/lib-portal-7.14.2.tgz#ece42f9e4452d2f883a76bad2fca2fc66dbdc607"
+  integrity sha512-WB60Wf0Hnyr+CUM3fP7qTh2ay7s7NbPPvAvsliX9jC5Bjb8GgzbI5VMjKKr0XNyqUPzMgLy2iPAiDY/LCZmeeA==
   dependencies:
-    "@enonic-types/core" "7.14.1"
+    "@enonic-types/core" "7.14.2"
 
 "@enonic-types/lib-repo@^7.13.0":
   version "7.14.1"
@@ -980,14 +985,7 @@
   dependencies:
     "@types/node" "*"
 
-"@types/node@*", "@types/node@^20":
-  version "20.12.12"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-20.12.12.tgz#7cbecdf902085cec634fdb362172dfe12b8f2050"
-  integrity sha512-eWLDGF/FOSPtAvEqeRAQ4C8LSA7M1I7i0ky1I8U7kD1J5ITyW3AsRhQrKVoWf5pFKZ2kILsEGJhsI9r93PYnOw==
-  dependencies:
-    undici-types "~5.26.4"
-
-"@types/node@~20.12.8":
+"@types/node@*", "@types/node@^20", "@types/node@~20.12.8":
   version "20.12.12"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-20.12.12.tgz#7cbecdf902085cec634fdb362172dfe12b8f2050"
   integrity sha512-eWLDGF/FOSPtAvEqeRAQ4C8LSA7M1I7i0ky1I8U7kD1J5ITyW3AsRhQrKVoWf5pFKZ2kILsEGJhsI9r93PYnOw==
