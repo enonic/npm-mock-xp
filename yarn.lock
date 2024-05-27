@@ -899,11 +899,11 @@
     "@babel/types" "^7.20.7"
 
 "@types/bun@^1.0.12":
-  version "1.1.2"
-  resolved "https://registry.yarnpkg.com/@types/bun/-/bun-1.1.2.tgz#586d342eb57693b602609f4e806eb3b80f6dae6a"
-  integrity sha512-pRBDD3EDqPf83qe95i3EpYu5G2J8bbb78a3736vnCm2K8YWtEE5cvJUq2jkKvJhW07YTfQtbImywIwRhWL8z3Q==
+  version "1.1.3"
+  resolved "https://registry.yarnpkg.com/@types/bun/-/bun-1.1.3.tgz#729b88160a0a9b89b950c935ba454f314aeefc14"
+  integrity sha512-i+mVz8C/lx+RprDR6Mr402iE1kmajgJPnmSfJ/NvU85sGGXSylYZ/6yc+XhVLr2E/t8o6HmjwV0evtnUOR0CFA==
   dependencies:
-    bun-types "1.1.8"
+    bun-types "1.1.9"
 
 "@types/cacheable-request@^6.0.1":
   version "6.0.3"
@@ -980,14 +980,7 @@
   dependencies:
     "@types/node" "*"
 
-"@types/node@*", "@types/node@^20":
-  version "20.12.12"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-20.12.12.tgz#7cbecdf902085cec634fdb362172dfe12b8f2050"
-  integrity sha512-eWLDGF/FOSPtAvEqeRAQ4C8LSA7M1I7i0ky1I8U7kD1J5ITyW3AsRhQrKVoWf5pFKZ2kILsEGJhsI9r93PYnOw==
-  dependencies:
-    undici-types "~5.26.4"
-
-"@types/node@~20.12.8":
+"@types/node@*", "@types/node@^20", "@types/node@~20.12.8":
   version "20.12.12"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-20.12.12.tgz#7cbecdf902085cec634fdb362172dfe12b8f2050"
   integrity sha512-eWLDGF/FOSPtAvEqeRAQ4C8LSA7M1I7i0ky1I8U7kD1J5ITyW3AsRhQrKVoWf5pFKZ2kILsEGJhsI9r93PYnOw==
@@ -1240,10 +1233,10 @@ buffer-from@^1.0.0:
   resolved "https://registry.npmjs.org/buffer-from/-/buffer-from-1.1.2.tgz"
   integrity sha512-E+XQCRwSbaaiChtv6k6Dwgc+bx+Bs6vuKJHHl5kox/BaKbhiXzqQOwK4cO22yElGp2OCmjwVhT3HmxgyPGnJfQ==
 
-bun-types@1.1.8:
-  version "1.1.8"
-  resolved "https://registry.yarnpkg.com/bun-types/-/bun-types-1.1.8.tgz#33690cd1b5632ba4d0d9a1a75cb59e9b05fb5ff7"
-  integrity sha512-dwhfuUKSGK8hm5Llcvb5+ejRh+4mIt8ibObJVKhZBsi0ScpXmt+AlaS1eDW6uRXCHj084Qt0kIqAJ08/7ZGC9Q==
+bun-types@1.1.9:
+  version "1.1.9"
+  resolved "https://registry.yarnpkg.com/bun-types/-/bun-types-1.1.9.tgz#5a3728c91babe7d0a64283b07f03a58e4ea3b0ba"
+  integrity sha512-3YuLiH4Ne/ghk7K6mHiaqCqKOMrtB0Z5p1WAskHSVgi0iMZgsARV4yGkbfi565YsStvUq6GXTWB3ga7M8cznkA==
   dependencies:
     "@types/node" "~20.12.8"
     "@types/ws" "~8.5.10"
