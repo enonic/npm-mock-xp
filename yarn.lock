@@ -396,11 +396,11 @@
     "@enonic-types/core" "7.14.2"
 
 "@enonic-types/lib-task@^7.13.0":
-  version "7.14.1"
-  resolved "https://registry.yarnpkg.com/@enonic-types/lib-task/-/lib-task-7.14.1.tgz#f78e4b039816ea50310c2c97347c657f3a90180b"
-  integrity sha512-/f5ErEzqBXl1uFQlpuS3u6ZMwrYfu5qLaBCV8t64eT4P7+NHroJ/Rd04BqfDr4gRthxRVXja68OKyffN/bRKOA==
+  version "7.14.2"
+  resolved "https://registry.yarnpkg.com/@enonic-types/lib-task/-/lib-task-7.14.2.tgz#b0979679f41cf912354a293587079d71366f1437"
+  integrity sha512-tIwYEfZvBF5EowyRjBivLT7fjdat/krfNsK3kzw5oikDfKSslgGShHmB8Coyu+Bq49haIZ7aAA7Xvwx7GJaNFg==
   dependencies:
-    "@enonic-types/core" "7.14.1"
+    "@enonic-types/core" "7.14.2"
 
 "@enonic-types/lib-value@^7.13.0":
   version "7.14.2"
