@@ -384,9 +384,9 @@
     "@enonic-types/core" "7.14.2"
 
 "@enonic-types/lib-repo@^7.13.0":
-  version "7.14.1"
-  resolved "https://registry.yarnpkg.com/@enonic-types/lib-repo/-/lib-repo-7.14.1.tgz#192e847e657502246cf6b3e1bf1d92e204efad6b"
-  integrity sha512-3bvjA4S5cwguJpteADdjqQMxlys0IQsjy54SUahYRyL1m80AKcaXQCSqbGe4/w1yF3OcwWq5Qpra9d8raanitg==
+  version "7.14.2"
+  resolved "https://registry.yarnpkg.com/@enonic-types/lib-repo/-/lib-repo-7.14.2.tgz#a17451065268d14ca324a25d8dacd6e87a01c38c"
+  integrity sha512-dF1EShHR6GrDKkHpX8n/UTlDF+Rzq/Vy8JCGCRx934FmfBTFgm73yQePjjDoLnvCLf5wZGRIU9hCr4/KjwON4A==
 
 "@enonic-types/lib-scheduler@^7.13.0":
   version "7.14.2"
