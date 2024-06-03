@@ -339,9 +339,9 @@
     "@enonic-types/core" "7.14.2"
 
 "@enonic-types/lib-common@^7.13.0":
-  version "7.14.1"
-  resolved "https://registry.yarnpkg.com/@enonic-types/lib-common/-/lib-common-7.14.1.tgz#7533b06a88f7a14eec83fe8220326e73dab0eb00"
-  integrity sha512-xkPbIsyDJkSM8Oo02DNFcpfRf6Ro+kB/refdq85E8Jbc9OmaC1YYhEMDrSwp9tW3smpoFGplampFgRpu+alUbg==
+  version "7.14.2"
+  resolved "https://registry.yarnpkg.com/@enonic-types/lib-common/-/lib-common-7.14.2.tgz#a2fd6d0a23e10f5a78b29bc251c5d551809f06a8"
+  integrity sha512-zOjy8cwT3C0VsCGmFXLh31W9HGKdMDPN6uWb1day6J21rxLXh1D0VvJ4t9bhC0i3qJKOVLN7TwakP7EvY034Lw==
 
 "@enonic-types/lib-content@^7.13.0":
   version "7.14.2"
