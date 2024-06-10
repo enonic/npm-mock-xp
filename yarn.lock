@@ -304,11 +304,6 @@
   dependencies:
     "@jridgewell/trace-mapping" "0.3.9"
 
-"@enonic-types/core@7.14.1":
-  version "7.14.1"
-  resolved "https://registry.yarnpkg.com/@enonic-types/core/-/core-7.14.1.tgz#47af2161da03b3b18b3b3f7211830ac4f75bdbe4"
-  integrity sha512-KHohZGwfpEEN1s/8fBAmD7qSAG9sX2B1/pGA9BWv6cxsvi+NNwh0VM3JAgLAC96yYpjFggliZF7187Lj4XcQ0A==
-
 "@enonic-types/core@7.14.2":
   version "7.14.2"
   resolved "https://registry.yarnpkg.com/@enonic-types/core/-/core-7.14.2.tgz#668d2dcd62a67e280046304c4305f0d54ce3d82c"
@@ -986,9 +981,9 @@
     "@types/node" "*"
 
 "@types/node@*", "@types/node@^20":
-  version "20.14.0"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-20.14.0.tgz#49ceec7b34f8621470cff44677fa9d461a477f17"
-  integrity sha512-5cHBxFGJx6L4s56Bubp4fglrEpmyJypsqI6RgzMfBHWUJQGWAAi8cWcgetEbZXHYXo9C2Fa4EEds/uSyS4cxmA==
+  version "20.14.2"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-20.14.2.tgz#a5f4d2bcb4b6a87bffcaa717718c5a0f208f4a18"
+  integrity sha512-xyu6WAMVwv6AKFLB+e/7ySZVr/0zLCzOa7rSpq6jNwpqOrUbcACDWC+53d4n2QHOnDou0fbIsg8wZu/sxrnI4Q==
   dependencies:
     undici-types "~5.26.4"
 
