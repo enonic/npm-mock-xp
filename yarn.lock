@@ -304,11 +304,6 @@
   dependencies:
     "@jridgewell/trace-mapping" "0.3.9"
 
-"@enonic-types/core@7.14.1":
-  version "7.14.1"
-  resolved "https://registry.yarnpkg.com/@enonic-types/core/-/core-7.14.1.tgz#47af2161da03b3b18b3b3f7211830ac4f75bdbe4"
-  integrity sha512-KHohZGwfpEEN1s/8fBAmD7qSAG9sX2B1/pGA9BWv6cxsvi+NNwh0VM3JAgLAC96yYpjFggliZF7187Lj4XcQ0A==
-
 "@enonic-types/core@7.14.2":
   version "7.14.2"
   resolved "https://registry.yarnpkg.com/@enonic-types/core/-/core-7.14.2.tgz#668d2dcd62a67e280046304c4305f0d54ce3d82c"
@@ -3214,9 +3209,9 @@ ts-node@^10.9.1:
     yn "3.1.1"
 
 tslib@^2, tslib@^2.0.0:
-  version "2.6.2"
-  resolved "https://registry.npmjs.org/tslib/-/tslib-2.6.2.tgz"
-  integrity sha512-AEYxH93jGFPn/a2iVAwW87VuUIkR1FVUKB77NwMF7nBTDkDrrT/Hpt/IrCJ0QXhW27jTBDcf5ZY7w6RiqTMw2Q==
+  version "2.6.3"
+  resolved "https://registry.yarnpkg.com/tslib/-/tslib-2.6.3.tgz#0438f810ad7a9edcde7a241c3d80db693c8cbfe0"
+  integrity sha512-xNvxJEOUiWPGhUuUdQgAJPKOOJfGnIyKySOc09XkKsgdUV/3E2zvwZYdejjmRgPCgcym1juLH3226yA7sEFJKQ==
 
 type-detect@4.0.8:
   version "4.0.8"
