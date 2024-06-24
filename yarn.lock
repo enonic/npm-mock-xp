@@ -1625,10 +1625,10 @@ fast-json-stable-stringify@2.x, fast-json-stable-stringify@^2.1.0:
   resolved "https://registry.npmjs.org/fast-json-stable-stringify/-/fast-json-stable-stringify-2.1.0.tgz"
   integrity sha512-lhd/wF+Lk98HZoTCtlVraHtfh5XYijIjalXck7saUtuanSDyLMxnHhSXEDJqHxD7msR8D0uCmqlkwjCV8xvwHw==
 
-fast-uri@^2.3.0:
-  version "2.4.0"
-  resolved "https://registry.yarnpkg.com/fast-uri/-/fast-uri-2.4.0.tgz#67eae6fbbe9f25339d5d3f4c4234787b65d7d55e"
-  integrity sha512-ypuAmmMKInk5q7XcepxlnUWDLWv4GFtaJqAzWKqn62IpQ3pejtr5dTVbt3vwqVaMKmkNR55sTT+CqUKIaT21BA==
+fast-uri@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/fast-uri/-/fast-uri-3.0.0.tgz#f5ba3f3b26a06d54ebccde911b432391c63be251"
+  integrity sha512-zv72gAcgHJjkq7h2IHzRB1Hg+9QIy9+IHmy2wBlmZnG1T7CfdfSjLXotI0vhq4T4Fqg31zkg+Dp2Dj8iFM6ULw==
 
 fastq@^1.6.0:
   version "1.17.1"
