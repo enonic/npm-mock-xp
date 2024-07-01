@@ -1626,9 +1626,9 @@ fast-json-stable-stringify@2.x, fast-json-stable-stringify@^2.1.0:
   integrity sha512-lhd/wF+Lk98HZoTCtlVraHtfh5XYijIjalXck7saUtuanSDyLMxnHhSXEDJqHxD7msR8D0uCmqlkwjCV8xvwHw==
 
 fast-uri@^3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/fast-uri/-/fast-uri-3.0.0.tgz#f5ba3f3b26a06d54ebccde911b432391c63be251"
-  integrity sha512-zv72gAcgHJjkq7h2IHzRB1Hg+9QIy9+IHmy2wBlmZnG1T7CfdfSjLXotI0vhq4T4Fqg31zkg+Dp2Dj8iFM6ULw==
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/fast-uri/-/fast-uri-3.0.1.tgz#cddd2eecfc83a71c1be2cc2ef2061331be8a7134"
+  integrity sha512-MWipKbbYiYI0UC7cl8m/i/IWTqfC8YXsqjzybjddLsFjStroQzsHXkc73JutMvBiXmOvapk+axIl79ig5t55Bw==
 
 fastq@^1.6.0:
   version "1.17.1"
