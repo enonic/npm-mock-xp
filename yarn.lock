@@ -325,11 +325,11 @@
   integrity sha512-j0cAqptTY+cKrWL+JNOAkQW8E5bqxHmMMH9KmVDKZ7EQL5s8MmBI92vy3YDgSreKCEmRyWsxs54dXD5yQ54bmg==
 
 "@enonic-types/lib-app@^7.13.0":
-  version "7.14.2"
-  resolved "https://registry.yarnpkg.com/@enonic-types/lib-app/-/lib-app-7.14.2.tgz#0e8280ca7c835428f4713578ee8aa823a65e3f4b"
-  integrity sha512-hXEoGCaxBHX4MXkJo+b3kEUbXNDi+BT3QV/6ImWPOS6RkZe8k8mkRvniqiqE9ZfLLknm8zEF5oOe02BpT2LZ0w==
+  version "7.14.3"
+  resolved "https://registry.yarnpkg.com/@enonic-types/lib-app/-/lib-app-7.14.3.tgz#970724179fa09ac5665c48a74e9a2df62c1d6816"
+  integrity sha512-g9iB9Yw5GHQCTieEbRYRFkudbFGpN2n/J+GASHKjvDYq1Zs/6t0AUd/MpInVQcEzL/jsydHKh+4fdplzy6M8Pw==
   dependencies:
-    "@enonic-types/core" "7.14.2"
+    "@enonic-types/core" "7.14.3"
 
 "@enonic-types/lib-auth@^7.13.0":
   version "7.14.2"
