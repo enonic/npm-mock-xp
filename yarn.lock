@@ -315,9 +315,9 @@
   integrity sha512-2DXzS4QQmyXF2UsZLh6piq4mcmUElwScMStLIVXn2NuIyzzUYowBbfosIkAiX+xhF4eMY8gTkjCQ85NXB8Y0TQ==
 
 "@enonic-types/lib-admin@^7.13.0":
-  version "7.14.3"
-  resolved "https://registry.yarnpkg.com/@enonic-types/lib-admin/-/lib-admin-7.14.3.tgz#996a5c21c4e5951677028c135f8d7d211806efc5"
-  integrity sha512-j0cAqptTY+cKrWL+JNOAkQW8E5bqxHmMMH9KmVDKZ7EQL5s8MmBI92vy3YDgSreKCEmRyWsxs54dXD5yQ54bmg==
+  version "7.14.4"
+  resolved "https://registry.yarnpkg.com/@enonic-types/lib-admin/-/lib-admin-7.14.4.tgz#404336eea942aa931287139c652d85c0551d3525"
+  integrity sha512-BEkXHb9mQZaAmdO/dWlPzkm9ubYQz2QXklezgsR5WyBQb/Z5uxulz2fQmAhmfsHT299M/+dSJyMa2fCi/SrfAw==
 
 "@enonic-types/lib-app@^7.13.0":
   version "7.14.3"
