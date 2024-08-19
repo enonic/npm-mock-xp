@@ -309,6 +309,11 @@
   resolved "https://registry.yarnpkg.com/@enonic-types/core/-/core-7.14.3.tgz#87fa5407c065a9d1548b00e4f1e301e223026b1f"
   integrity sha512-w1WiJhgGKjadky6sZa/QikMy9rRy31LKs52FyNjY8i33xvKiG+ofYF33JPU53PTiR3RZyDoTiSlewF3ppGPMfA==
 
+"@enonic-types/core@7.14.4":
+  version "7.14.4"
+  resolved "https://registry.yarnpkg.com/@enonic-types/core/-/core-7.14.4.tgz#f9f8ca6ea2127c373289637205ad47c4da0303e7"
+  integrity sha512-AzMe/DixiaNH8X3OEvy0AREwr3GcmmcQ5lQ3k8AQWK4rQVKmSVatuNslkQFvzakjc7BOcTHGSBxr5lhN9+qD8g==
+
 "@enonic-types/global@^7.13.0":
   version "7.14.3"
   resolved "https://registry.yarnpkg.com/@enonic-types/global/-/global-7.14.3.tgz#b63be0fd8c2c1c4b4d73e8df6e571aec848f5db2"
@@ -384,11 +389,11 @@
   integrity sha512-bQsqHu2oKPEg1T82b3Ak8MA6Io3fFdNEdbD8UTsSs/EWbhOIzJMao6zXpt9Lvb/xHZUpElKd2k7udLBjsDZDpg==
 
 "@enonic-types/lib-scheduler@^7.13.0":
-  version "7.14.3"
-  resolved "https://registry.yarnpkg.com/@enonic-types/lib-scheduler/-/lib-scheduler-7.14.3.tgz#bc2bd3353c6ddfdf339624d101ad05d4e283f862"
-  integrity sha512-wt1fBbYP/6Lh4EU0UFX2/3ZFSccmmlEiIdefy0rgWZnNY8piPzwwnXWJOzgYoznpt7cxfbjF4PaQ2oRCKCE+vA==
+  version "7.14.4"
+  resolved "https://registry.yarnpkg.com/@enonic-types/lib-scheduler/-/lib-scheduler-7.14.4.tgz#c7ddf25285d93d9e61292bf765d0bc208b7b0acb"
+  integrity sha512-lQqlbTsQRQqEZpOLHItKj1RwHyX1hhqE8cn27iTKvkeL5UcPvp7OQ8BIXbTPUmE3RJluuSfMP7QaOOGl/ZIFUA==
   dependencies:
-    "@enonic-types/core" "7.14.3"
+    "@enonic-types/core" "7.14.4"
 
 "@enonic-types/lib-task@^7.13.0":
   version "7.14.3"
