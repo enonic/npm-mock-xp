@@ -351,11 +351,11 @@
     "@enonic-types/core" "7.14.3"
 
 "@enonic-types/lib-context@^7.13.0":
-  version "7.14.3"
-  resolved "https://registry.yarnpkg.com/@enonic-types/lib-context/-/lib-context-7.14.3.tgz#7827c21e705c12be8aa57d52abee1a9d18e385ba"
-  integrity sha512-BP1+2ccVTCkmt69yoWMt3UTc+13S+nQ6/zHnw5gGwRkrPCYuIqVcvsZo++UmakH/zoRjR4fXw2xbYyDWeB/j9Q==
+  version "7.14.4"
+  resolved "https://registry.yarnpkg.com/@enonic-types/lib-context/-/lib-context-7.14.4.tgz#fe717a96fa6bddfd3ee413f19475ce9c778f4fed"
+  integrity sha512-cInG8JL+LE2Ot28VGEVNxL2WYK1cWvnEpRPW4jwIeb/2f4fYlksni6aRxrxTtcdSL69qiYUDyF+vrwLsWfDfRQ==
   dependencies:
-    "@enonic-types/core" "7.14.3"
+    "@enonic-types/core" "7.14.4"
 
 "@enonic-types/lib-event@^7.13.0":
   version "7.14.3"
