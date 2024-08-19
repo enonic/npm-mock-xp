@@ -309,6 +309,11 @@
   resolved "https://registry.yarnpkg.com/@enonic-types/core/-/core-7.14.3.tgz#87fa5407c065a9d1548b00e4f1e301e223026b1f"
   integrity sha512-w1WiJhgGKjadky6sZa/QikMy9rRy31LKs52FyNjY8i33xvKiG+ofYF33JPU53PTiR3RZyDoTiSlewF3ppGPMfA==
 
+"@enonic-types/core@7.14.4":
+  version "7.14.4"
+  resolved "https://registry.yarnpkg.com/@enonic-types/core/-/core-7.14.4.tgz#f9f8ca6ea2127c373289637205ad47c4da0303e7"
+  integrity sha512-AzMe/DixiaNH8X3OEvy0AREwr3GcmmcQ5lQ3k8AQWK4rQVKmSVatuNslkQFvzakjc7BOcTHGSBxr5lhN9+qD8g==
+
 "@enonic-types/global@^7.13.0":
   version "7.14.3"
   resolved "https://registry.yarnpkg.com/@enonic-types/global/-/global-7.14.3.tgz#b63be0fd8c2c1c4b4d73e8df6e571aec848f5db2"
@@ -365,11 +370,11 @@
     "@enonic-types/core" "7.14.3"
 
 "@enonic-types/lib-node@^7.13.0":
-  version "7.14.3"
-  resolved "https://registry.yarnpkg.com/@enonic-types/lib-node/-/lib-node-7.14.3.tgz#8bd9fca63b8d6ff8b99d714d97c8047a2a24c473"
-  integrity sha512-5vcsN7GzWm2c3nxK6vPQSdp/pB+UfM0V3/X+C6uhAXwwCtVfOjOyI5xZb6S+GFrOGRn7qgrN7TTMihGtUsbRVA==
+  version "7.14.4"
+  resolved "https://registry.yarnpkg.com/@enonic-types/lib-node/-/lib-node-7.14.4.tgz#7667abad391cdf1a792ec5139b741939f850072d"
+  integrity sha512-sEOzJu0zZN7SKY3sez8DqgVTLRsSzYI2G/DSLSg1GSzh+SI2uDSwtLwiu+jK1gj5LbQRTrUkIp3Edixtjee/Mw==
   dependencies:
-    "@enonic-types/core" "7.14.3"
+    "@enonic-types/core" "7.14.4"
 
 "@enonic-types/lib-portal@^7.13.0":
   version "7.14.3"
