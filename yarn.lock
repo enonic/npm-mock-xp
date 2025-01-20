@@ -405,9 +405,9 @@
     "@enonic-types/core" "7.14.4"
 
 "@enonic/js-utils@^1.4.1":
-  version "1.8.1"
-  resolved "https://registry.yarnpkg.com/@enonic/js-utils/-/js-utils-1.8.1.tgz#2af4b2f22cb142e5f5e5781d89c4cd8326928cc8"
-  integrity sha512-kVZeph1YSAxhmc077+GRrBOrU2ikDahByOk6FugTi2A25hBjUoEjZNSkjA3jHG1WG5Z97qI5tqcGaAyV/hdCYA==
+  version "1.9.0"
+  resolved "https://registry.yarnpkg.com/@enonic/js-utils/-/js-utils-1.9.0.tgz#3b1947cddc26e98f80f0c0ae7a437fcf29ff9c8e"
+  integrity sha512-bohP40o5Fv6JtR69wOvZDJJl11Ze8ur9WxQgA9gFGE6/UW7Wlo68U99+3mDU9XtCpITg2ZUxlwcqlY0gIULr9g==
 
 "@enonic/test-data@^1.2.0":
   version "1.2.0"
