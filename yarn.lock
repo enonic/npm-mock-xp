@@ -899,11 +899,11 @@
     "@babel/types" "^7.20.7"
 
 "@types/bun@^1.0.12":
-  version "1.1.17"
-  resolved "https://registry.yarnpkg.com/@types/bun/-/bun-1.1.17.tgz#1150849aab25437f0a205847d27e68f9c4211f77"
-  integrity sha512-zZt0Kao/8hAwNOXh4bmt8nKbMEd4QD8n7PeTGF+NZTVY5ouXhU/TX7jUj4He1p7mgY+WdplnU1B6MB1j17vdzg==
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/@types/bun/-/bun-1.2.0.tgz#c321a6cedaf58f5c889d64ac5e7021636e1f8f39"
+  integrity sha512-5N1JqdahfpBlAv4wy6svEYcd/YfO2GNrbL95JOmFx8nkE6dbK4R0oSE5SpBA4vBRqgrOUAXF8Dpiz+gi7r80SA==
   dependencies:
-    bun-types "1.1.44"
+    bun-types "1.2.0"
 
 "@types/cacheable-request@^6.0.1":
   version "6.0.3"
@@ -986,13 +986,6 @@
   integrity sha512-V09KvXxFiutGp6B7XkpaDXlNadZxrzajcY50EuoLIpQ6WWYCSvf19lVIazzfIzQvhUN2HjX12spLojTnhuKlGg==
   dependencies:
     undici-types "~6.20.0"
-
-"@types/node@~20.12.8":
-  version "20.12.12"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-20.12.12.tgz#7cbecdf902085cec634fdb362172dfe12b8f2050"
-  integrity sha512-eWLDGF/FOSPtAvEqeRAQ4C8LSA7M1I7i0ky1I8U7kD1J5ITyW3AsRhQrKVoWf5pFKZ2kILsEGJhsI9r93PYnOw==
-  dependencies:
-    undici-types "~5.26.4"
 
 "@types/probe-image-size@^7.2.0":
   version "7.2.5"
@@ -1245,12 +1238,12 @@ buffer-from@^1.0.0:
   resolved "https://registry.npmjs.org/buffer-from/-/buffer-from-1.1.2.tgz"
   integrity sha512-E+XQCRwSbaaiChtv6k6Dwgc+bx+Bs6vuKJHHl5kox/BaKbhiXzqQOwK4cO22yElGp2OCmjwVhT3HmxgyPGnJfQ==
 
-bun-types@1.1.44:
-  version "1.1.44"
-  resolved "https://registry.yarnpkg.com/bun-types/-/bun-types-1.1.44.tgz#7826a4368641d52f30ae76685bb5e6a60338176f"
-  integrity sha512-jtcekoZeSINgEcHSISzhR13w/cyE+Fankw2Cpl4c0fN3lRmKVAX0i9ay4FyK4lOxUK1HG4HkuIlrPvXKz4Y7sw==
+bun-types@1.2.0:
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/bun-types/-/bun-types-1.2.0.tgz#9eea34d993fec33f1e67737228e7d5620480a19d"
+  integrity sha512-KEaJxyZfbV/c4eyG0vyehDpYmBGreNiQbZIqvVHJwZ4BmeuWlNZ7EAzMN2Zcd7ailmS/tGVW0BgYbGf+lGEpWw==
   dependencies:
-    "@types/node" "~20.12.8"
+    "@types/node" "*"
     "@types/ws" "~8.5.10"
 
 cacheable-lookup@^5.0.3:
@@ -3255,11 +3248,6 @@ typescript@^5:
   version "5.7.3"
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-5.7.3.tgz#919b44a7dbb8583a9b856d162be24a54bf80073e"
   integrity sha512-84MVSjMEHP+FQRPy3pX9sTVV/INIex71s9TL2Gm5FG/WG1SqXeKyZ0k7/blY/4FdOzI12CBy1vGc4og/eus0fw==
-
-undici-types@~5.26.4:
-  version "5.26.5"
-  resolved "https://registry.npmjs.org/undici-types/-/undici-types-5.26.5.tgz"
-  integrity sha512-JlCMO+ehdEIKqlFxk6IfVoAUVmgz7cU7zD/h9XZ0qzeosSHmUJVOzSQvvYSYWXkFXC+IfLKSIffhv0sVZup6pA==
 
 undici-types@~6.20.0:
   version "6.20.0"
