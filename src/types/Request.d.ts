@@ -54,6 +54,7 @@ export declare type Request<
 > = {
 	branch: 'draft'|'master' // string
 	host: string
+	getHeader: (headerName: string) => string | null
 	method: 'GET'|'POST'|'PUT'|'DELETE'|'HEAD'|'OPTIONS'|'PATCH'
 	mode: 'edit'|'inline'|'live'|'preview'
 	path: string

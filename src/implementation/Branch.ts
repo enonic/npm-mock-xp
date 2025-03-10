@@ -27,19 +27,16 @@ import {
 	isBooleanFilter,
 	isFilter,
 	isHasValueFilter,
-	isObject,
 	isQueryDsl,
 	toStr
 } from '@enonic/js-utils';
 import {flatten} from '@enonic/js-utils/array/flatten';
 import {forceArray} from '@enonic/js-utils/array/forceArray';
 import {enonify} from '@enonic/js-utils/storage/indexing/enonify';
-import {setIn} from '@enonic/js-utils/object/setIn';
 import {sortKeys} from '@enonic/js-utils/object/sortKeys';
 // import { isBoolean } from '@enonic/js-utils/value/isBoolean'; // Not exported in package.json yet
 import {isUuidV4String} from '@enonic/js-utils/value/isUuidV4String';
 import { isString } from '@enonic/js-utils/value/isString';
-import { sha512 } from 'node-forge';
 // import { isFilter } from '@enonic/js-utils/storage/query/filter/isBooleanFilter'; // Not exported in package.json yet
 // import { isHasValueFilter } from '@enonic/js-utils/storage/query/filter/isHasValueFilter'; // Not exported in package.json yet
 // @ts-ignore TS7016: Could not find a declaration file for module 'uniqs'
@@ -49,7 +46,6 @@ import {NodeAlreadyExistAtPathException} from './node/NodeAlreadyExistAtPathExce
 import {NodeNotFoundException} from './node/NodeNotFoundException';
 import deref from '../util/deref';
 import {UUID_NIL} from '../constants';
-import {BinaryAttachment} from './util/BinaryAttachment';
 import {processNestedData} from './branch/processNestedData';
 
 

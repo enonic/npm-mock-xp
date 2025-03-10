@@ -56,7 +56,8 @@ describe('mock', () => {
 					{
 						id: 'myRepoId',
 						branches: ['master'],
-						settings: {}
+						settings: {},
+						transient: false
 					},
 					createdRepo
 				);
@@ -102,7 +103,8 @@ describe('mock', () => {
 					{
 						id: 'myRepoId',
 						branches: ['master', 'myBranchId'],
-						settings: {}
+						settings: {},
+						transient: false
 					},
 					libRepo.get('myRepoId')
 				);
@@ -124,15 +126,18 @@ describe('mock', () => {
 					[{
 						id: SYSTEM_REPO,
 						branches: ['master'],
-						settings: {}
+						settings: {},
+						transient: false
 					},{
 						id: 'myRepoId',
 						branches: ['master', 'myBranchId'],
-						settings: {}
+						settings: {},
+						transient: false
 					},{
 						id: 'myRepoId2',
 						branches: ['master'],
-						settings: {}
+						settings: {},
+						transient: false
 					}],
 					libRepo.list()
 				);

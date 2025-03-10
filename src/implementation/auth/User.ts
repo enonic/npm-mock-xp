@@ -27,6 +27,7 @@ export class User extends Principal implements UserInterface {
 	// Optional
 	readonly disabled: UserInterface['disabled'] = false;
 	readonly email?: UserInterface['email'];
+	readonly hasPassword: boolean = false;
 
 	constructor({
 		// Principal
