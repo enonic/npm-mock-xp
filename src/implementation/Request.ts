@@ -1,6 +1,6 @@
 import {sortKeys} from '@enonic/js-utils/object/sortKeys';
 import {parse, serialize} from 'fast-uri';
-
+import type {RequestGetHeaderFunction} from "@enonic-types/core";
 
 const SCHEME_DEFAULT = 'http';
 const HOST_DEFAULT = 'localhost';
@@ -14,7 +14,7 @@ export declare type Params = Record<string, string|string[]>
 export class Request {
 	readonly scheme: string
 	readonly host: string
-	readonly port: number|string
+	readonly port: number
 	readonly path: string // TODO: Ending slash removed, perhaps not on root?
 	readonly url: string // TODO: Ending slash removed, perhaps not on root?
 
@@ -25,14 +25,14 @@ export class Request {
 	readonly body?: string = '';
 	readonly contextPath?: string = '';
 	readonly contentType?: string = '';
-	readonly cookies?: Record<string, string> = {};
+	readonly cookies: Record<string, string>;
 	readonly followRedirects?: boolean = true;
-	readonly headers?: Record<string, string> = {};
-	readonly params?: Params = {};
+	readonly headers: Record<string, string>;
+	readonly params: Params;
 	readonly pathParams?: Record<string, string> = {};
 	readonly rawPath?: string = ''; // TODO: Contains ending slash
 	readonly repositoryId?: string = '';
-	readonly remoteAddress?: string = '';
+	readonly remoteAddress: string;
 	readonly webSocket?: boolean = false;
 
 	static queryToParams(query: string): Params {
@@ -100,6 +100,10 @@ export class Request {
 			} // if query
 		} // if url
 
+		if (!this.params) {
+			this.params = constructorParams.params ?? {};
+		}
+
 		if (this.params) {
 			this.params = sortKeys(this.params);
 		}
@@ -109,6 +113,9 @@ export class Request {
 		this.port = port || PORT_DEFAULT;
 		this.path = path || PATH_DEFAULT;
 		this.url = this.serialize();
+		this.cookies = constructorParams.cookies ?? {};
+		this.headers = constructorParams.headers ?? {};
+		this.remoteAddress = constructorParams.remoteAddress ?? '';
 	}
 
 	// "path": "/admin/site/preview/intro/draft/persons/lea-seydoux",
@@ -146,4 +153,7 @@ export class Request {
 		}).replace(/\?$/, '');
 	}
 
+	getHeader: RequestGetHeaderFunction = (headerName) => {
+		return this.headers?.[headerName] ?? null;
+	};
 } // class Request

@@ -91,7 +91,8 @@ export class Repo {
 		return {
 			id: this.id,
 			branches: Object.keys(this.branches),
-			settings: this.settings
+			settings: this.settings,
+			transient: false
 		};
 	}
 
