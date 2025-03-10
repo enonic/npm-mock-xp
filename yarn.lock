@@ -405,11 +405,11 @@
     "@enonic-types/core" "7.15.0"
 
 "@enonic-types/lib-value@^7.13.0":
-  version "7.14.4"
-  resolved "https://registry.yarnpkg.com/@enonic-types/lib-value/-/lib-value-7.14.4.tgz#ebdad64fa197fab379a96c6d4334322b68e90eb0"
-  integrity sha512-ZPi/bIIakM/qH2lJFm1kMSCUhFT5xja/SlZzwH8SsEyrRwinfNLhnePXlLnGnzwccJlLoe6gHRTshPbk9zRlhw==
+  version "7.15.0"
+  resolved "https://registry.yarnpkg.com/@enonic-types/lib-value/-/lib-value-7.15.0.tgz#eb1d6f724d391607dccc00fd3041d504358c2e02"
+  integrity sha512-Yx0XXwD7kK3/ZrPd46xScGb5xy+zxxvNBuwGyuAf0GMVcW7UAIQdRsJx0IqSSAOc3/0Q+FdLriFosQnT/tNiRA==
   dependencies:
-    "@enonic-types/core" "7.14.4"
+    "@enonic-types/core" "7.15.0"
 
 "@enonic/js-utils@^1.4.1":
   version "1.9.0"
