@@ -1,6 +1,6 @@
 import {sortKeys} from '@enonic/js-utils/object/sortKeys';
 import {parse, serialize} from 'fast-uri';
-import type {RequestGetHeaderFunction} from "@enonic-types/core";
+import type {DefaultRequest, RequestGetHeaderFunction} from "@enonic-types/core";
 
 const SCHEME_DEFAULT = 'http';
 const HOST_DEFAULT = 'localhost';
@@ -11,7 +11,7 @@ const PATH_DEFAULT = '';
 export declare type Params = Record<string, string|string[]>
 
 
-export class Request {
+export class Request implements DefaultRequest {
 	readonly scheme: string
 	readonly host: string
 	readonly port: number
@@ -30,10 +30,10 @@ export class Request {
 	readonly headers: Record<string, string>;
 	readonly params: Params;
 	readonly pathParams?: Record<string, string> = {};
-	readonly rawPath?: string = ''; // TODO: Contains ending slash
+	readonly rawPath: string = ''; // TODO: Contains ending slash
 	readonly repositoryId?: string = '';
 	readonly remoteAddress: string;
-	readonly webSocket?: boolean = false;
+	readonly webSocket: boolean = false;
 
 	static queryToParams(query: string): Params {
 		const queryParams: Params = {};
