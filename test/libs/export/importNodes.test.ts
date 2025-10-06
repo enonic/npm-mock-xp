@@ -5,9 +5,11 @@ import {
 	LibRepo,
 	Server
 } from '../../../src';
+import { resolve } from 'path';
 
-const SANDBOX_NAME = 'mysandbox';
+// const SANDBOX_NAME = 'mysandbox';
 const SOURCE = 'myexport';
+const ABS_PATH_SOURCE_ZIP = resolve(__dirname,'export.zip');
 const PROJECT_NAME = 'myproject';
 const REPO_ID = `com.enonic.cms.${PROJECT_NAME}`;
 const ADDED_COUNT = 98;
@@ -49,14 +51,15 @@ describe('LibExport', () => {
 		// console.debug(connection.query({}));
 
 		libExport = new LibExport({
-			sandboxName: SANDBOX_NAME,
+			// sandboxName: SANDBOX_NAME,
 			server
 		});
 		done();
 	}); // beforeAll
 
 	describe('importNodes', () => {
-		it(`source: ${SOURCE}`, () => {
+		// This test must be skipped because it depends on a local sandbox...
+		it.skip(`source: ${SOURCE}`, () => {
 			const ImportNodesResult = libExport.importNodes({
 				includeNodeIds: true,
 				includePermissions: true,
@@ -80,7 +83,32 @@ describe('LibExport', () => {
 				}]);
 		});
 
-		it('source: non-existant', () => {
+		it(`source: ${ABS_PATH_SOURCE_ZIP}`, () => {
+			const ImportNodesResult = libExport.importNodes({
+				includeNodeIds: true,
+				includePermissions: true,
+				source: ABS_PATH_SOURCE_ZIP,
+				// NOTE: Commenting in these will log some warnings:
+				// targetNodePath: '/',
+				// xslt: 'xslt',
+				// xsltParams: 'xsltParams',
+				// nodeImported: () => {},
+				// nodeResolved: () => {},
+			});
+			expect(ImportNodesResult.addedNodes.length).toBe(ADDED_COUNT);
+			expect(ImportNodesResult.updatedNodes).toStrictEqual([
+				'00000000-0000-0000-0000-000000000000'
+			]);
+			expect(ImportNodesResult.importedBinaries).toStrictEqual([]);
+			expect(ImportNodesResult.importErrors).toStrictEqual([{
+					exception: '',
+					message: '',
+					stacktrace: [],
+				}]);
+		});
+
+		// This test must be skipped since it depends on a local sandbox.
+		it.skip('source: non-existant', () => {
 			function fn() {
 				return libExport.importNodes({
 					source: 'non-existant',
