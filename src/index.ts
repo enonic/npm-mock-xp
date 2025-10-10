@@ -73,6 +73,7 @@ export {LibAuth} from './libs/LibAuth';
 export {LibContent} from './libs/LibContent';
 export {LibContext} from './libs/LibContext';
 export {LibEvent} from './libs/LibEvent';
+export {LibExport} from './libs/LibExport';
 export {LibIo} from './libs/LibIo';
 export {LibNode} from './libs/LibNode';
 export {LibPortal} from './libs/LibPortal';
