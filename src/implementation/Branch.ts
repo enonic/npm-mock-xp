@@ -28,7 +28,6 @@ import {
 	isFilter,
 	isHasValueFilter,
 	isQueryDsl,
-	toStr
 } from '@enonic/js-utils';
 import {flatten} from '@enonic/js-utils/array/flatten';
 import {forceArray} from '@enonic/js-utils/array/forceArray';
@@ -286,7 +285,7 @@ export class Branch {
 				)
 			)) {
 				if (this.repo.server.indexWarnings) {
-					this.log.warning('mock-xp is only able to (index for quering) boolean and string properties, skipping rootProp:%s with value:%s', rootProp, toStr(rootPropValue));
+					this.log.warning('mock-xp is only able to (index for quering) boolean and string properties, skipping rootProp:%s with value:%s', rootProp, rootPropValue);
 				}
 				continue RestKeys;
 			}
@@ -377,7 +376,7 @@ export class Branch {
 
 					if (!isString(rootPropValue)) {
 						if (this.repo.server.indexWarnings) {
-							this.log.warning('mock-xp is not able to handle non-string properties yet, skipping rootProp:%s with value:%s', rootPropKey, toStr(rootPropValue));
+							this.log.warning('mock-xp is not able to handle non-string properties yet, skipping rootProp:%s with value:%s', rootPropKey, rootPropValue);
 						}
 						continue RootProps;
 					}
@@ -588,7 +587,7 @@ export class Branch {
 		) {
 			for (const value of values) {
 				if (!supportedValueType(value)) {
-					this.log.error('query: Unsupported value type:%s', toStr(value));
+					this.log.error('query: Unsupported value type:%s', value);
 				} else {
 					if (
 						// @ts-ignore Object is possibly 'undefined'.ts(2532)
