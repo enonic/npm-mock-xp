@@ -5,3 +5,4 @@
 /enonic-mock-xp-*.tgz
 /yarn-error.log
 .idea
+.DS_store
