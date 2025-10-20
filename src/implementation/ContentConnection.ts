@@ -42,7 +42,7 @@ import {
 	getIn,
 	// deleteIn,
 	setIn,
-	// toStr // log mock does not support need toStr, but throwing Errors does.
+	toStr // log mock does not support need toStr, but throwing Errors does.
 } from '@enonic/js-utils';
 import { sha512 } from 'node-forge';
 import { sync as probeSync } from 'probe-image-size';
@@ -50,17 +50,25 @@ import {
 	INDEX_CONFIG_DEFAULT,
 	PERMISSIONS_DEFAULT,
 } from './node/constants';
-import {NodeAlreadyExistAtPathException} from './node/NodeAlreadyExistAtPathException';
-import {NodeNotFoundException} from './node/NodeNotFoundException';
+import { NodeAlreadyExistAtPathException } from './node/NodeAlreadyExistAtPathException';
+import { NodeNotFoundException } from './node/NodeNotFoundException';
 
+
+declare interface NodeComponenFragment {
+	fragment: {
+		id: string;
+	};
+	path: string;
+	type: 'fragment';
+}
 
 declare interface NodeComponentLayout {
 	layout: {
 		config?: NestedRecord
 		descriptor: ComponentDescriptor
 	}
-	path: string
-	type: 'layout'
+	path: string;
+	type: 'layout';
 }
 
 declare interface NodeComponentPage {
@@ -69,8 +77,8 @@ declare interface NodeComponentPage {
 		customized: boolean
 		descriptor: ComponentDescriptor
 	}
-	path: string
-	type: 'page'
+	path: string;
+	type: 'page';
 }
 
 declare interface NodeComponentPart {
@@ -78,11 +86,24 @@ declare interface NodeComponentPart {
 		config?: NestedRecord
 		descriptor: ComponentDescriptor
 	}
-	path: string
-	type: 'part'
+	path: string;
+	type: 'part';
 }
 
-declare type NodeComponent = NodeComponentLayout | NodeComponentPage | NodeComponentPart;
+declare interface NodeComponentText {
+	path: string;
+	text: {
+		value: string;
+	};
+	type: 'text';
+}
+
+declare type NodeComponent =
+	| NodeComponenFragment
+	| NodeComponentLayout
+	| NodeComponentPage
+	| NodeComponentPart
+	| NodeComponentText;
 
 declare interface ContentProperties<Data, Type> {
 	createdTime: string
@@ -136,6 +157,14 @@ declare type ContentToNode<
 
 const CHILD_ORDER_DEFAULT = 'displayname ASC'; // NOTE: With small n is actually what Content Studio does.
 const USER_DEFAULT: UserKey = 'user:system:su';
+
+const COMPONENT_TYPE = {
+	FRAGMENT: 'fragment',
+	LAYOUT: 'layout',
+	PAGE: 'page',
+	PART: 'part',
+	TEXT: 'text',
+} as const;
 
 
 export class ContentConnection {
@@ -626,8 +655,6 @@ export class ContentConnection {
 				const {
 					path,
 					type,
-					// part,
-					// layout
 				} = component;
 				if (type === 'page' && path === '/') {
 					const {
@@ -660,65 +687,87 @@ export class ContentConnection {
 						});
 					}
 
-					const pageRegion = fragmentOrPage.regions[pageRegionName]
-					// this.log.debug('pageRegion: %s', pageRegion)
+					const pageRegion = fragmentOrPage.regions[pageRegionName];
+					// this.log.debug('pageRegion: %s', pageRegion);
 
-					if (type === 'layout') {
+					if (type === COMPONENT_TYPE.LAYOUT) {
 						const {
 							layout: {
 								config,
-								descriptor
+								descriptor,
 							}
 						} = component;
-						const [app, componentName] = descriptor.split(':');
+						const [ app, componentName ] = descriptor.split(':');
 						const dashedApp = app.replace(/\./g, '-');
 						const layout = {
 							config: config?.[dashedApp]?.[componentName],
 							descriptor,
 							path,
+							// NOTE: component contains no information about which regions it has.
 							regions: {},
-							type
+							type,
 						};
 						pageRegion.components.push(layout);
-					} else if (type === 'part') {
-						const {
-							part: {
-								config,
-								descriptor
-							}
-						} = component;
-						const [app, componentName] = descriptor.split(':');
-						const dashedApp = app.replace(/\./g, '-');
-						const part = {
-							config: config?.[dashedApp]?.[componentName],
-							descriptor,
-							path,
-							type
-						};
+					} else { // fragment, part, text
+						let components;
 						if (pathParts.length === 2) {
-							pageRegion.components.push(part);
+							components = pageRegion.components;
 						} else if (pathParts.length === 4) {
+							// this.log.debug('component: %s', component);
 							const pageComponentRegionIndex = pathParts[1];
-							// this.log.debug('pageComponentRegionIndex: %s', pageComponentRegionIndex)
-
+							// this.log.debug('pageComponentRegionIndex: %s', pageComponentRegionIndex);
+							// this.log.debug('pageRegion: %s', pageRegion);
 							const layoutComponent = pageRegion.components[pageComponentRegionIndex];
-							// this.log.debug('layoutComponent: %s', layoutComponent)
-
+							// this.log.debug('layoutComponent1: %s', layoutComponent);
 							const layoutRegionName = pathParts[2];
-							// this.log.debug('layoutRegionName: %s', layoutRegionName)
-
+							// this.log.debug('layoutRegionName: %s', layoutRegionName);
 							if (!layoutComponent.regions[layoutRegionName]) {
 								layoutComponent.regions[layoutRegionName] = {
 									components: [],
 									name: layoutRegionName,
-								}
-							};
-							layoutComponent.regions[layoutRegionName].components.push(part);
+								};
+							}
+							// this.log.debug('layoutComponent2: %s', layoutComponent);
+							components = layoutComponent.regions[layoutRegionName].components;
+						} else {
+							throw new Error(`pathParts.length !== 2 or 4 component:${toStr(component)}`);
 						}
-					}
+						if (type === COMPONENT_TYPE.PART) {
+							const {
+								part: {
+									config,
+									descriptor
+								}
+							} = component;
+							const [ app, componentName ] = descriptor.split(':');
+							const dashedApp = app.replace(/\./g, '-');
+							components.push({
+								config: config?.[dashedApp]?.[componentName],
+								descriptor,
+								path,
+								type
+							});
+						} else if (type === COMPONENT_TYPE.TEXT) {
+							const { text: { value: text } } = component;
+							components.push({
+								path,
+								text,
+								type,
+							});
+						} else if (type === COMPONENT_TYPE.FRAGMENT) {
+							const { fragment: { id: fragment } } = component;
+							components.push({
+								fragment,
+								path,
+								type,
+							});
+						} else {
+							throw new Error(`type !== fragment, part nor text! type:${type}`);
+						}
+					} // if componentType[...]
 				}
 			} // for components
-		}
+		} // if components
 
 		return content as C;
 	} // nodeToContent

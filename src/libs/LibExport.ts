@@ -1,11 +1,6 @@
-// import type {  } from '@enonic-types/core';
 import type {
-	AccessControlEntry,
 	Node,
-	NodeConfigEntry,
-	NodeIndexConfig,
 	NodePropertiesOnCreate,
-	Permission,
 } from '@enonic-types/lib-node';
 import type {
 	// ExportNodesError,
@@ -21,9 +16,7 @@ import type {
 import type { Server } from '../implementation/Server';
 
 import { isStringLiteral } from '@enonic/js-utils/value/isStringLiteral';
-import { forceArray } from '@enonic/js-utils';
 import AdmZip from 'adm-zip';
-import { XMLParser } from 'fast-xml-parser';
 import { readdirSync, readFileSync, statSync } from 'fs';
 import { homedir } from 'os';
 import {
@@ -37,40 +30,12 @@ import {
 	sep,
 } from 'path';
 import { sortZipEntries } from './export/sortZipEntries';
+import { parseEnonicXml } from './export/parseEnonicXml';
 import { UUID_NIL } from '../constants';
-
-const parser = new XMLParser();
 
 
 const TRACE = false;
 
-
-type EnonicArray<T> = T | T[];
-
-interface NodeXML<DATA extends Record<string, unknown> = Record<string, unknown>> {
-	node: {
-		id: Node['_id'];
-		childOrder: Node['_childOrder'];
-		nodeType: Node['_nodeType'];
-		timestamp: Node['_ts'];
-		inheritPermissions: Node['_inheritsPermissions'];
-		permissions: EnonicArray<{
-			principal: {
-				allow: {
-					value: EnonicArray<Permission>
-				}
-				deny: string;
-			}[]
-		}>;
-		data: DATA;
-		// TODO This is not perfect yet
-		indexConfigs: Omit<NodeIndexConfig, 'default'> & {
-			allTextIndexConfig: string;
-			defaultConfig: NodeConfigEntry;
-			pathIndexConfigs: string;
-		};
-	}
-}
 
 interface Entry {
 	absPath: string;
@@ -123,69 +88,6 @@ function listDirSync(
 }
 
 
-function xmlStringToObj<T>(xmlString: string): T {
-	return parser.parse(xmlString);
-}
-
-
-function xmlFileToObj<T>(absFilePath: string): T {
-	const xmlString = readFileSync(absFilePath, 'utf-8');
-	return xmlStringToObj<T>(xmlString);
-}
-
-
-function nodeXmlToNode<
-	DATA extends Record<string, unknown> = Record<string, unknown>
->(nodeXml: NodeXML<DATA>): Node<DATA> {
-	const { node } = nodeXml;
-	const {
-		id,
-		childOrder,
-		data,
-		indexConfigs,
-		inheritPermissions,
-		nodeType,
-		permissions,
-		timestamp
-	} = node;
-	const { defaultConfig } = indexConfigs;
-	const accessControlEntries: AccessControlEntry[] = forceArray(permissions).map(({
-		principal
-	}) => {
-		const allowArray: Permission[] = [];
-		for (const {allow/*, deny*/} of principal) {
-			const { value } = allow;
-			const values = forceArray(value);
-			for (const permission of values) {
-				if (!allowArray.includes(permission)) {
-					allowArray.push(permission);
-				}
-			}
-		}
-		return {
-			principal: 'role:system.admin',
-			allow: allowArray,
-			deny: []
-		};
-	});
-	return {
-		_id: id,
-		_childOrder: childOrder,
-		_indexConfig: {
-			default: defaultConfig,
-			configs: [], // TODO
-		},
-		_inheritsPermissions: inheritPermissions,
-		_nodeType: nodeType,
-		_permissions: accessControlEntries,
-		_ts: timestamp,
-		data,
-		// _name: undefined, // NOTE: Not in node.xml
-		// _path: undefined, // NOTE: Not in node.xml
-		_state: 'DEFAULT', // TODO, Not in node.xml?
-		// _versionKey: undefined // NOTE: Can't be used anyway
-	} as unknown as Node<DATA>;
-}
 
 export class LibExport {
 	readonly sandboxAbsPath: string;
@@ -195,13 +97,13 @@ export class LibExport {
 	private _importRootNode({
 		importNodesResult,
 		includePermissions,
-		rootXmlObj,
+		rootXmlString,
 	}: {
 		importNodesResult: ImportNodesResult;
 		includePermissions: boolean;
-		rootXmlObj: NodeXML<Record<string, unknown>>;
+		rootXmlString: string;
 	}) {
-		const rootXmlNode = nodeXmlToNode(rootXmlObj);
+		const rootXmlNode = parseEnonicXml(rootXmlString);
 		if (TRACE) this.server.log.debug('rootNode:%s', rootXmlNode);
 
 		if (rootXmlNode._id !== EXPORT_UUID_NIL) {
@@ -231,6 +133,7 @@ export class LibExport {
 					node._inheritsPermissions = rootXmlNode._inheritsPermissions;
 					node._permissions = rootXmlNode._permissions;
 				}
+				// node._state = 'DEFAULT'; // Already there :)
 				node._ts = rootXmlNode._ts;
 				// NOTE: _versionKey is automatically incremented on modify
 				return node;
@@ -255,38 +158,43 @@ export class LibExport {
 		includePermissions,
 		name,
 		parentPath,
-		xmlObj,
+		xmlString,
 	}: {
 		importNodesResult: ImportNodesResult;
 		includeNodeIds: boolean;
 		includePermissions: boolean;
 		name: string;
 		parentPath: string;
-		xmlObj: NodeXML<Record<string, unknown>>;
+		xmlString: string;
 	}): Node | undefined {
-		const xmlNode = nodeXmlToNode(xmlObj);
+		const xmlNode = parseEnonicXml(xmlString);
 		if (TRACE) this.server.log.debug('xmlNode:%s', xmlNode);
 
-		const createNodeParams: NodePropertiesOnCreate & { _id?: string; }= {
-			_childOrder: xmlNode._childOrder,
-			_indexConfig: xmlNode._indexConfig,
-			_manualOrderValue: xmlNode._manualOrderValue,
-			_name: name,
-			_nodeType: xmlNode._nodeType,
-			_parentPath: parentPath,
-			_state: xmlNode._state,
-			_ts: xmlNode._ts,
-			// _versionKey: xmlNode._versionKey, // NOTE: Doesn't work, which is ok.
-		}
+		// if (parentPath === '/' && name === 'content') {
+		// 	this.server.log.debug('contentNode:%s', xmlNode);
+		// }
 
-		if (includeNodeIds) {
+		// if (parentPath === '/content' && name === 'my-site') {
+		// 	this.server.log.debug('siteNode:%s', xmlNode);
+		// }
+
+		const createNodeParams: NodePropertiesOnCreate & {
+			_id?: string;
+			// data?: unknown;
+			// form?: unknown;
+			// ...
+		} = xmlNode;
+		createNodeParams._name = name;
+		createNodeParams._parentPath = parentPath;
+
+		if (!includeNodeIds) {
 			// TODO This works, but uncertain what happens to internal logics...
-			createNodeParams._id = xmlNode._id;
+			delete createNodeParams._id;
 		}
 
-		if (includePermissions) {
-			createNodeParams._inheritsPermissions = xmlNode._inheritsPermissions;
-			createNodeParams._permissions = xmlNode._permissions;
+		if (!includePermissions) {
+			delete createNodeParams._inheritsPermissions;
+			delete createNodeParams._permissions;
 		}
 
 		try {
@@ -339,8 +247,7 @@ export class LibExport {
 			throw new Error(`MockXP importNodes: Only supports "root" exports!`);
 		}
 
-		const rootXmlObj = xmlFileToObj<NodeXML>(join(firstDir.absPath,'node.xml'));
-		if (TRACE) this.server.log.debug('rootXmlObj:%s', rootXmlObj);
+		const rootXmlString = readFileSync(join(firstDir.absPath, 'node.xml'), 'utf-8');
 
 		const importNodesResult: ImportNodesResult = {
 			addedNodes: [],
@@ -356,7 +263,7 @@ export class LibExport {
 		this._importRootNode({
 			importNodesResult,
 			includePermissions,
-			rootXmlObj,
+			rootXmlString,
 		});
 
 		function handleDirectory(this: LibExport, entries: Entry[]) {
@@ -371,8 +278,7 @@ export class LibExport {
 				} of entries
 			) {
 				if (isDirectory) {
-					const xmlObj = xmlFileToObj<NodeXML>(join(absPath,'_/node.xml'));
-					if (TRACE) this.server.log.debug('xmlObj:%s', xmlObj);
+					const xmlString = readFileSync(join(absPath, '_/node.xml'), 'utf-8');
 
 					const createdNode = this._importNode({
 						importNodesResult,
@@ -380,7 +286,7 @@ export class LibExport {
 						includePermissions,
 						name,
 						parentPath: nodeParentPath,
-						xmlObj,
+						xmlString,
 					});
 
 					if (createdNode) { // Count skipped subdirs as importErrors?
@@ -429,9 +335,6 @@ export class LibExport {
 		const rootXmlString = zip.readAsText(rootEntry)
 		if (TRACE) this.server.log.debug('rootXmlString:%s', rootXmlString);
 
-		const rootXmlObj = xmlStringToObj<NodeXML>(rootXmlString);
-		if (TRACE) this.server.log.debug('rootXmlObj:%s',rootXmlObj);
-
 		const importNodesResult: ImportNodesResult = {
 			addedNodes: [],
 			updatedNodes: [],
@@ -446,7 +349,7 @@ export class LibExport {
 		this._importRootNode({
 			importNodesResult,
 			includePermissions,
-			rootXmlObj,
+			rootXmlString,
 		});
 
 		// this.server.log.debug('entries:%s', entries);
@@ -484,9 +387,6 @@ export class LibExport {
 				const xmlString = zip.readAsText(zipEntry)
 				if (TRACE) this.server.log.debug('xmlString:%s', xmlString);
 
-				const xmlObj = xmlStringToObj<NodeXML>(xmlString);
-				if (TRACE) this.server.log.debug('%s %s %s xmlObj:%s', nodePath, nodeParentPath, nodeName, xmlObj);
-
 				// const createdNode =
 				this._importNode({
 					importNodesResult,
@@ -494,7 +394,7 @@ export class LibExport {
 					includePermissions,
 					name: nodeName,
 					parentPath: nodeParentPath,
-					xmlObj,
+					xmlString,
 				});
 			}
 		} // for zipEntries
