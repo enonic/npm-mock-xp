@@ -12,7 +12,6 @@ import type {
 	ConnectParams,
 	CreateNodeParams,
 	ModifyNodeParams,
-	Node,
 } from '@enonic-types/lib-node';
 import type {
 	CreateRepositoryParams,
@@ -257,7 +256,7 @@ export class Server {
 		return this.getRepo(repoId).getBranch(branchId);
 	}
 
-	public getNode<T = Node>({
+	public getNode<NodeData = Record<string, unknown>>({
 		branchId,
 		key,
 		repoId,
@@ -269,7 +268,7 @@ export class Server {
 		return this.connect({
 			branchId,
 			repoId
-		})._getSingle<T>(key);
+		})._getSingle<NodeData>(key);
 	}
 
 	public getProject(projectName: string): Project {

@@ -414,26 +414,26 @@ export class Branch {
 		return this.id;
 	}
 
-	getNode({
+	getNode<NodeData = Record<string, unknown>>({
 		_trace = false,
 		key,
 	}: {
 		_trace?: boolean;
 		key: string;
-	}): RepoNodeWithData | RepoNodeWithData[] {
-		return this.getNodes({
+	}): RepoNodeWithData<NodeData> | RepoNodeWithData<NodeData>[] {
+		return this.getNodes<NodeData>({
 			_trace,
 			keys: [key],
 		});
 	}
 
-	getNodes({
+	getNodes<NodeData = Record<string, unknown>>({
 		_trace = false,
 		keys,
 	}: {
 		_trace?: boolean;
 		keys: string[];
-	}): RepoNodeWithData | RepoNodeWithData[] {
+	}): RepoNodeWithData<NodeData> | RepoNodeWithData<NodeData>[] {
 		// this.log.debug('getNode() keys:%s', keys);
 		if (!keys.length) {
 			return [];
@@ -445,7 +445,7 @@ export class Branch {
 			.map(k => this.existsNode(k) ? k : undefined)
 			.filter(k => k) as string[];
 		// this.log.debug('getNode() existingKeys:%s', existingKeys);
-		const nodes: RepoNodeWithData[] = existingKeys.map(key => {
+		const nodes: RepoNodeWithData<NodeData>[] = existingKeys.map(key => {
 			const id = this.keyToId({
 				_trace,
 				key
@@ -453,11 +453,11 @@ export class Branch {
 			if (!id) {
 				throw new Error(`Can't get id from key:${key}, even though exists???`); // This could happen if node deleted after exists called.
 			}
-			return deref(this.nodes[id] as RepoNodeWithData);
+			return deref(this.nodes[id] as RepoNodeWithData<NodeData>);
 		});// .filter(x => x as RepoNodeWithData);
 		return nodes.length > 1
 			? nodes // as RepoNodeWithData[]
-			: nodes[0] as RepoNodeWithData;
+			: nodes[0] as RepoNodeWithData<NodeData>;
 	}
 
 	getNodeActiveVersion({
