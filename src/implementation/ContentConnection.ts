@@ -404,19 +404,23 @@ export class ContentConnection {
 
 	get<
 		Hit extends Content<unknown> = Content
-	>(params: GetContentParams): Hit | null {
-		// this.log.debug('ContentConnection get(%s)', params);
+	>(params: GetContentParams & { _trace?: boolean; }): Hit | null {
 		let {
+			_trace,
 			key,
 			// versionId
 		} = params;
+		if (_trace) this.log.debug('ContentConnection get key:%s', key);
 		if (key.startsWith('/')) {
 			key = `/content${ key }`;
 		}
-		const node = this.branch.getNode(key) as unknown as ContentToNode<Hit>;
+		if (_trace) this.log.debug('ContentConnection get modified key:%s', key);
+		const node = this.branch.getNode({
+			_trace,
+			key,
+		}) as unknown as ContentToNode<Hit>;
 		if (!node) {
-			// TODO Some setting to show this warning? Maybe TRACE level?
-			// this.log.warning('ContentConnection get: No content for key:%s', key);
+			if (_trace) this.log.warning('ContentConnection get: No content for key:%s', key);
 			return null;
 		}
 		return this.nodeToContent<Hit>({node});
@@ -436,7 +440,7 @@ export class ContentConnection {
 		const {
 			name: paramName
 		} = params;
-		const node = this.branch.getNode(key) as Node<{
+		const node = this.branch.getNode({ key }) as Node<{
 			attachment: {
 				name: string
 				sha512: string
@@ -806,7 +810,7 @@ export class ContentConnection {
 			const existsOnDraft = this.exists({ key: contentKey });
 
 			if (existsOnDraft) {
-				const nodeOnDraft = this.branch.getNode(nodeKey) as RepoNodeWithData;
+				const nodeOnDraft = this.branch.getNode({ key: nodeKey }) as RepoNodeWithData;
 				// this.log.debug('ContentConnection nodeOnDraft(%s)', nodeOnDraft);
 				// this.log.debug('ContentConnection nodeOnDraft(%s)', {
 				// 	_id: nodeOnDraft._id,

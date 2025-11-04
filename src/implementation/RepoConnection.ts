@@ -188,7 +188,7 @@ export class RepoConnection implements RepoConnectionInterface {
 	// }
 	// TODO use types from @enonic-types/lib-node
 	public get(...keys: string[]): RepoNodeWithData | RepoNodeWithData[] {
-		return this.branch.getNode(...keys);
+		return this.branch.getNodes({ keys });
 	}
 
 	public getActiveVersion({
@@ -198,7 +198,7 @@ export class RepoConnection implements RepoConnectionInterface {
 	}
 
 	_getSingle<T = Node>(key: string): T {
-		return this.branch.getNode(key) as T; // Returned nodes are dereffed :)
+		return this.branch.getNode({ key }) as T; // Returned nodes are dereffed :)
 	}
 
 	public getBinary({

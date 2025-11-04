@@ -12,6 +12,7 @@ import type {
 	ConnectParams,
 	CreateNodeParams,
 	ModifyNodeParams,
+	Node,
 } from '@enonic-types/lib-node';
 import type {
 	CreateRepositoryParams,

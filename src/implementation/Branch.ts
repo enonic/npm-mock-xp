@@ -313,31 +313,39 @@ export class Branch {
 		return this._createNodeInternal<NodeData>(params); // already dereffed
 	}
 
-	private keyToId(key: string): string | undefined {
+	private keyToId({
+		_trace,
+		key
+	}: {
+		_trace?: boolean;
+		key: string
+	}): string | undefined {
 		// this.log.debug('keyToId(%s)', key);
-		let maybeId: string|undefined = key;
+		let maybeId: string | undefined = key;
 		if (isPathString(key)) {
-			// this.log.debug('isPathString(%s) === true', key);
+			if (_trace) this.log.debug('keyToId: key:%s isPathString === true', key);
 			const path = (key.length > 1 && key.endsWith('/')) ? key.substring(0, key.length - 1) : key;
-			// this.log.debug('path:%s', path);
+			if (_trace) this.log.debug('keyToId: key:%s path:%s', key, path);
+			if (_trace) this.log.debug('keyToId: pathIndex:%s', this.pathIndex);
 			maybeId = this.pathIndex[path];
-			// this.log.debug('maybeId:%s', maybeId);
+			if (_trace) this.log.debug('keyToId: key:%s path:%s maybeId:%s', key, path, maybeId);
 			if (!maybeId) {
-				// this.log.debug(`Could not find id from path:${path}!`);
+				if (_trace) this.log.debug(`keyToId: Could not find id from path:${path}!`);
 				return undefined;
 			}
 		}
 		if (isUuidV4String(maybeId) || maybeId === UUID_NIL) {
+			if (_trace) this.log.debug('keyToId: key:%s maybeId:%s isUuidV4String:true', key, maybeId);
 			return maybeId;
 		}
-		this.log.debug(`key not an id! key:${key}`);
+		this.log.debug('keyToId: key not an id! key:%s', key);
 		// throw new TypeError(`key not an id nor path! key:${key}`);
 		return undefined;
 	}
 
 	existsNode(key: string): boolean {
 		// this.log.debug('existsNode() keys:%s', keys);
-		const id = this.keyToId(key);
+		const id = this.keyToId({ key });
 		if (!id) {
 			return false;
 		}
@@ -351,7 +359,7 @@ export class Branch {
 		NodeKeys: for (const key of keysArray) {
 			let maybeNode;
 			try {
-				maybeNode = this.getNode(key) as RepoNodeWithData;
+				maybeNode = this.getNode({ key }) as RepoNodeWithData;
 			} catch (e) {
 				// no-op
 			}
@@ -406,7 +414,26 @@ export class Branch {
 		return this.id;
 	}
 
-	getNode(...keys: string[]): RepoNodeWithData | RepoNodeWithData[] {
+	getNode({
+		_trace = false,
+		key,
+	}: {
+		_trace?: boolean;
+		key: string;
+	}): RepoNodeWithData | RepoNodeWithData[] {
+		return this.getNodes({
+			_trace,
+			keys: [key],
+		});
+	}
+
+	getNodes({
+		_trace = false,
+		keys,
+	}: {
+		_trace?: boolean;
+		keys: string[];
+	}): RepoNodeWithData | RepoNodeWithData[] {
 		// this.log.debug('getNode() keys:%s', keys);
 		if (!keys.length) {
 			return [];
@@ -419,7 +446,10 @@ export class Branch {
 			.filter(k => k) as string[];
 		// this.log.debug('getNode() existingKeys:%s', existingKeys);
 		const nodes: RepoNodeWithData[] = existingKeys.map(key => {
-			const id = this.keyToId(key);
+			const id = this.keyToId({
+				_trace,
+				key
+			});
 			if (!id) {
 				throw new Error(`Can't get id from key:${key}, even though exists???`); // This could happen if node deleted after exists called.
 			}
@@ -433,7 +463,7 @@ export class Branch {
 	getNodeActiveVersion({
 		key
 	}: GetActiveVersionParamObject): GetActiveVersionResponse {
-		const node: RepoNodeWithData | undefined = this.getNode(key) as (RepoNodeWithData | undefined);
+		const node: RepoNodeWithData | undefined = this.getNode({ key }) as (RepoNodeWithData | undefined);
 		if (node) {
 			return {
 				versionId: node._versionKey,
@@ -454,7 +484,7 @@ export class Branch {
 		key,
 		editor
 	}: NodeModifyParams): RepoNodeWithData {
-		const node: RepoNodeWithData = this.getNode(key) as RepoNodeWithData;
+		const node: RepoNodeWithData = this.getNode({ key }) as RepoNodeWithData;
 		if (!node) {
 			throw new Error(`modify: Node with key:${key} not found!`);
 		}
@@ -510,7 +540,7 @@ export class Branch {
 		// means the new desired path or name for the node.
 		target
 	}: MoveNodeParams): RepoNodeWithData | null {
-		const node: RepoNodeWithData = this.getNode(source) as RepoNodeWithData; // This derefs
+		const node: RepoNodeWithData = this.getNode({ key: source }) as RepoNodeWithData; // This derefs
 		if (!node) {
 			this.log.error('move: Node with source:%s not found!', source);
 			throw new Error(`move: Node with source:${source} not found!`); // TODO throw same Error as XP?
