@@ -104,7 +104,12 @@ export class LibExport {
 		includePermissions: boolean;
 		rootXmlString: string;
 	}) {
-		const rootXmlNode = parseEnonicXml(rootXmlString);
+		const rootXmlNode = parseEnonicXml({
+			// _debug,
+			_trace,
+			log: this.server.log,
+			xmlString: rootXmlString,
+		});
 		if (_trace) this.server.log.debug('rootXmlNode:%s', rootXmlNode);
 
 		if (rootXmlNode._id !== EXPORT_UUID_NIL) {
@@ -177,7 +182,12 @@ export class LibExport {
 		parentPath: string;
 		xmlString: string;
 	}): Node | undefined {
-		const xmlNode = parseEnonicXml(xmlString);
+		const xmlNode = parseEnonicXml({
+			// _debug,
+			_trace,
+			log: this.server.log,
+			xmlString,
+		});
 		if (_trace) this.server.log.debug('xmlNode:%s', xmlNode);
 
 		// if (parentPath === '/' && name === 'content') {
@@ -359,7 +369,9 @@ export class LibExport {
 		}
 
 		const rootEntry = zipEntries.shift();
-		const rootXmlString = zip.readAsText(rootEntry)
+		if (_trace) this.server.log.debug('rootEntry.entryName:%s', rootEntry.entryName);
+
+		const rootXmlString = zip.readAsText(rootEntry);
 		if (_trace) this.server.log.debug('rootXmlString:%s', rootXmlString);
 
 		const importNodesResult: ImportNodesResult = {

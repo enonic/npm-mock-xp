@@ -167,10 +167,12 @@ export class Server {
 	// This can't be chainable or there is no way to get the created node,
 	// since we need to know the createdNode._id to get it later.
 	public createNode<NodeData = unknown>({
+		_trace = false,
 		branchId,
 		repoId,
 		node
 	}: {
+		_trace?: boolean;
 		branchId: string
 		node: CreateNodeParams<NodeData>
 		repoId: string
@@ -178,7 +180,10 @@ export class Server {
 		return this.connect({
 			branchId,
 			repoId
-		}).create<NodeData>(node);
+		}).create<NodeData>({
+			_trace,
+			...node
+		});
 	}
 
 	public createRepo({

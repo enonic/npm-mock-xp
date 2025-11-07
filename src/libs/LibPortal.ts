@@ -1,5 +1,6 @@
 import type {
 	AssetUrlParams,
+	Component,
 	Content,
 	ImageUrlParams,
 	Site,
@@ -36,6 +37,7 @@ export class LibPortal {
 	readonly log: Log;
 	readonly server: Server;
 
+	public component: Component;
 	public request: Request;
 
 	constructor({
@@ -136,6 +138,15 @@ export class LibPortal {
 			branch
 		});
 		return contentConnection;
+	}
+
+	public getComponent<_Component extends Component = Component>(): _Component | null {
+		if(!this.component) {
+			// throw new Error('mock-xp: Portal.getComponent(): There is no component set on the Portal object instance!');
+			this.log.error('mock-xp: Portal.getComponent(): There is no component set on the Portal object instance!');
+			return null;
+		}
+		return this.component as _Component;
 	}
 
 	public getContent<Hit extends Content<unknown> = Content>({

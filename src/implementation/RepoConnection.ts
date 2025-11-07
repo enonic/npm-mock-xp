@@ -54,7 +54,7 @@ export class RepoConnection implements RepoConnectionInterface {
 
 	// TODO: public commit(params: CommitParams): NodeCommit {}
 
-	public create<NodeData = unknown>(param: CreateNodeParams<NodeData>): Node<NodeData> {
+	public create<NodeData = unknown>(param: CreateNodeParams<NodeData> & { _trace?: boolean; }): Node<NodeData> {
 		return this.branch.createNode<NodeData>(param);
 	}
 

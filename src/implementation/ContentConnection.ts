@@ -1,4 +1,5 @@
 import type {
+	AggregationsToAggregationResults,
 	Attachment,
 	ComponentDescriptor,
 	Content,
@@ -8,9 +9,11 @@ import type {
 	UserKey,
 } from '@enonic-types/core';
 import type {
+	Aggregations,
 	AccessControlEntry,
 	ByteSource,
 	ContentExistsParams,
+	ContentsResult,
 	CreateContentParams,
 	CreateMediaParams,
 	DeleteContentParams,
@@ -21,6 +24,7 @@ import type {
 	MoveContentParams,
 	PublishContentParams,
 	PublishContentResult,
+	QueryContentParams,
 } from '@enonic-types/lib-content';
 import type {
 	CommonNodeProperties,
@@ -267,14 +271,21 @@ export class ContentConnection {
 	create<
 		Data = Record<string, unknown>,
 		Type extends string = string
-	>(params: CreateContentParams<Data, Type>): Content<Data, Type> {
+	>(params: CreateContentParams<Data, Type> & { _trace?: boolean; }): Content<Data, Type> {
+		const {
+			_trace = false,
+			...content
+		} = params;
 		// this.log.debug('ContentConnection create(%s)', params);
 		const createNodeParams = this.contentToNode<Data, Type>({
-			content: params,
+			content,
 			mode: 'create'
-		});
+		}) as CreateNodeParams<ContentProperties<Data, Type>>;
 		// this.log.debug('ContentConnection createNodeParams(%s)', createNodeParams);
-		const createdNode = this.branch.createNode<ContentProperties<Data, Type>>(createNodeParams as CreateNodeParams<ContentProperties<Data, Type>>);
+		const createdNode = this.branch.createNode<ContentProperties<Data, Type>>({
+			_trace,
+			...createNodeParams
+		});
 		// this.log.debug('ContentConnection createdNode(%s)', createdNode);
 		// TODO: Modify node to apply displayName if missing
 
@@ -867,7 +878,82 @@ export class ContentConnection {
 		return res;
 	}
 
-	// TODO query()
+	public query<
+		Hit extends Content<unknown> = Content,
+		AggregationInput extends Aggregations = never
+	>(params: QueryContentParams<AggregationInput> & {
+		_debug?: boolean;
+		_trace?: boolean;
+	}): ContentsResult<
+		Hit,
+		AggregationsToAggregationResults<AggregationInput>
+	> {
+		const {
+			_debug = false,
+			_trace = false,
+			start,
+			// aggregations,
+			contentTypes,
+			count,
+			// highlight,
+			query,
+			// sort,
+		} = params;
+		let {
+			filters,
+		} = params;
+
+		if (_trace) {
+			this.log.debug('ContentConnection: query() params:%s', params);
+		} else if (_debug) {
+			this.log.debug('ContentConnection: query() contentTypes:%s', contentTypes);
+			this.log.debug('ContentConnection: query() filters:%s', filters);
+			// this.log.debug('ContentConnection: query() query:%s', query);
+		}
+
+		if (contentTypes?.length) {
+			if (!filters) {
+				filters = [];
+			} else if (!Array.isArray(filters)) {
+				filters = [filters];
+			}
+			filters.push({
+				hasValue: {
+					field: 'type',
+					values: contentTypes
+				}
+			});
+		}
+		if (_trace) this.log.debug('ContentConnection: query() filters:%s', filters);
+
+		const nodeQueryRes = this.branch.query({
+			// _debug,
+			_trace,
+			// aggregations,
+			count,
+			// explain,
+			filters,
+			// highlight,
+			query,
+			// sort,
+			start
+		});
+
+		const {
+			// aggregations,
+			count: nodeQueryResCount,
+			hits,
+			total,
+		} = nodeQueryRes;
+		if (_trace) this.log.debug('ContentConnection: query() node hits:%s', hits);
+
+		return {
+			aggregations: {} as AggregationsToAggregationResults<AggregationInput>, // TODO
+			count: nodeQueryResCount,
+			hits: hits.map(({id}) => this.get({ key: id })),
+			total,
+		}
+	}
 
 	// TODO removeAttachment()
 
