@@ -23,7 +23,7 @@ export interface IndexConfigEntry {
 
 export type IndexConfigTemplates = "none" | "byType" | "fulltext" | "path" | "minimal";
 
-export interface IndexConfig {
+export interface IndexConfig { // Sorta matches lib-node/NodeIndexConfig
 	default: IndexConfigEntry | IndexConfigTemplates;
 	configs?: ReadonlyArray<{
 		path: string;

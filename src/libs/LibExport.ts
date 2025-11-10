@@ -34,9 +34,6 @@ import { parseEnonicXml } from './export/parseEnonicXml';
 import { UUID_NIL } from '../constants';
 
 
-const TRACE = false;
-
-
 interface Entry {
 	absPath: string;
 	isDirectory: boolean;
@@ -95,24 +92,33 @@ export class LibExport {
 
 
 	private _importRootNode({
+		_debug,
+		_trace,
 		importNodesResult,
 		includePermissions,
 		rootXmlString,
 	}: {
+		_debug: boolean;
+		_trace: boolean;
 		importNodesResult: ImportNodesResult;
 		includePermissions: boolean;
 		rootXmlString: string;
 	}) {
-		const rootXmlNode = parseEnonicXml(rootXmlString);
-		if (TRACE) this.server.log.debug('rootNode:%s', rootXmlNode);
+		const rootXmlNode = parseEnonicXml({
+			// _debug,
+			_trace,
+			log: this.server.log,
+			xmlString: rootXmlString,
+		});
+		if (_trace) this.server.log.debug('rootXmlNode:%s', rootXmlNode);
 
 		if (rootXmlNode._id !== EXPORT_UUID_NIL) {
 			throw new Error(`MockXP importNodes: Only supports "root" exports!`);
 		}
 
-		rootXmlNode._path = '/'
+		rootXmlNode._path = '/';
 
-		if (TRACE) {
+		if (_trace) {
 			const rootNode = this.server.getNode({
 				branchId: this.server.context.branch,
 				key: UUID_NIL,
@@ -141,18 +147,25 @@ export class LibExport {
 		});
 		importNodesResult.updatedNodes.push(UUID_NIL);
 
-		if (TRACE) {
+		if (_debug || _trace) {
 			const modifiedRootNode = this.server.getNode({
 				branchId: this.server.context.branch,
 				key: UUID_NIL,
 				repoId: this.server.context.repository,
 			});
-			this.server.log.debug('modifiedRootNode:%s', modifiedRootNode);
+			if (_trace) {
+				this.server.log.debug('modifiedRootNode:%s', modifiedRootNode);
+			} else if (_debug) {
+				const { _path } = modifiedRootNode;
+				this.server.log.debug('updated node with _path:%s ', _path);
+			}
 		}
 	} // _importRootNode
 
 
 	private _importNode({
+		_debug,
+		_trace,
 		importNodesResult,
 		includeNodeIds,
 		includePermissions,
@@ -160,6 +173,8 @@ export class LibExport {
 		parentPath,
 		xmlString,
 	}: {
+		_debug: boolean;
+		_trace: boolean;
 		importNodesResult: ImportNodesResult;
 		includeNodeIds: boolean;
 		includePermissions: boolean;
@@ -167,8 +182,13 @@ export class LibExport {
 		parentPath: string;
 		xmlString: string;
 	}): Node | undefined {
-		const xmlNode = parseEnonicXml(xmlString);
-		if (TRACE) this.server.log.debug('xmlNode:%s', xmlNode);
+		const xmlNode = parseEnonicXml({
+			// _debug,
+			_trace,
+			log: this.server.log,
+			xmlString,
+		});
+		if (_trace) this.server.log.debug('xmlNode:%s', xmlNode);
 
 		// if (parentPath === '/' && name === 'content') {
 		// 	this.server.log.debug('contentNode:%s', xmlNode);
@@ -203,7 +223,12 @@ export class LibExport {
 				repoId: this.server.context.repository,
 				node: createNodeParams
 			});
-			if (TRACE) this.server.log.debug('createdNode:%s', createdNode);
+			if (_trace) {
+				this.server.log.debug('createdNode:%s', createdNode);
+			} else if (_debug) {
+				const { _path } = createdNode;
+				this.server.log.debug('created node with _path:%s', _path);
+			}
 			importNodesResult.addedNodes.push(createdNode._id);
 			return createdNode;
 		} catch (error) {
@@ -226,10 +251,14 @@ export class LibExport {
 
 
 	private _importFromExportFolder({
+		_debug,
+		_trace,
 		includeNodeIds,
 		includePermissions,
 		source,
 	}: {
+		_debug: boolean;
+		_trace: boolean;
 		includeNodeIds: boolean;
 		includePermissions: boolean;
 		source: string;
@@ -240,7 +269,7 @@ export class LibExport {
 		}
 
 		const entries = listDirSync(exportAbsPath, '/');
-		if (TRACE) this.server.log.debug('entries:%s', entries);
+		if (_trace) this.server.log.debug('entries:%s', entries);
 
 		const firstDir = entries.shift();
 		if (firstDir.name !== '_') {
@@ -261,6 +290,8 @@ export class LibExport {
 		}
 
 		this._importRootNode({
+			_debug,
+			_trace,
 			importNodesResult,
 			includePermissions,
 			rootXmlString,
@@ -281,6 +312,8 @@ export class LibExport {
 					const xmlString = readFileSync(join(absPath, '_/node.xml'), 'utf-8');
 
 					const createdNode = this._importNode({
+						_debug,
+						_trace,
 						importNodesResult,
 						includeNodeIds,
 						includePermissions,
@@ -291,7 +324,7 @@ export class LibExport {
 
 					if (createdNode) { // Count skipped subdirs as importErrors?
 						const subDir = listDirSync(join(absPath), createdNode._path);
-						if (TRACE) this.server.log.debug('subDir:%s', subDir);
+						if (_trace) this.server.log.debug('subDir:%s', subDir);
 						subDir.shift(); // Remove '_'
 						subDirs.push(subDir)
 					}
@@ -305,15 +338,19 @@ export class LibExport {
 
 		handleDirectory.call(this, entries);
 
-		if (TRACE) this.server.log.debug('importNodesResult:%s', importNodesResult);
+		if (_trace) this.server.log.debug('importNodesResult:%s', importNodesResult);
 		return importNodesResult;
-	}
+	} // _importFromExportFolder
 
 	private _importFromZipFile({
+		_debug,
+		_trace,
 		includeNodeIds,
 		includePermissions,
 		zipFilePath,
 	}: {
+		_debug: boolean;
+		_trace: boolean;
 		includeNodeIds: boolean;
 		includePermissions: boolean;
 		zipFilePath: string
@@ -325,15 +362,17 @@ export class LibExport {
 			zipEntries = sortZipEntries(zip.getEntries(), {
 				prioritizeShorter: true
 			});
-			if (TRACE) this.server.log.debug(`${zipFilePath} is a valid ZIP file.`);
+			if (_trace) this.server.log.debug(`${zipFilePath} is a valid ZIP file.`);
 		} catch (error) {
 			// this.server.log.error('%s is not a valid ZIP file:%s', source, error.message);
 			throw new Error(`${zipFilePath} is not a valid ZIP file!`);
 		}
 
 		const rootEntry = zipEntries.shift();
-		const rootXmlString = zip.readAsText(rootEntry)
-		if (TRACE) this.server.log.debug('rootXmlString:%s', rootXmlString);
+		if (_trace) this.server.log.debug('rootEntry.entryName:%s', rootEntry.entryName);
+
+		const rootXmlString = zip.readAsText(rootEntry);
+		if (_trace) this.server.log.debug('rootXmlString:%s', rootXmlString);
 
 		const importNodesResult: ImportNodesResult = {
 			addedNodes: [],
@@ -347,6 +386,8 @@ export class LibExport {
 		}
 
 		this._importRootNode({
+			_debug,
+			_trace,
 			importNodesResult,
 			includePermissions,
 			rootXmlString,
@@ -365,12 +406,12 @@ export class LibExport {
 
 			const pathComponents = normalize(nodePath).split(sep);
 			if (pathComponents.length < 2) {
-				if (TRACE) this.server.log.debug('pathComponents:%s', pathComponents);
+				if (_trace) this.server.log.debug('pathComponents:%s', pathComponents);
 				continue; // Skip "top" folder with same name as zip file.
 			}
 
 			nodePath = `/${pathComponents.length > 1 ? pathComponents.slice(1,-1).join(sep): nodePath}`;
-			if (TRACE) this.server.log.debug('nodePath:%s', nodePath);
+			if (_trace) this.server.log.debug('nodePath:%s', nodePath);
 
 			const nodeParentPath = dirname(nodePath);
 			const nodeName = basename(nodePath);
@@ -385,10 +426,12 @@ export class LibExport {
 
 			if (!isDirectory && fileName === 'node.xml') {
 				const xmlString = zip.readAsText(zipEntry)
-				if (TRACE) this.server.log.debug('xmlString:%s', xmlString);
+				if (_trace) this.server.log.debug('xmlString:%s', xmlString);
 
 				// const createdNode =
 				this._importNode({
+					_debug,
+					_trace,
 					importNodesResult,
 					includeNodeIds,
 					includePermissions,
@@ -420,6 +463,8 @@ export class LibExport {
 
 
 	public importNodes({
+		_debug = false,
+		_trace = false,
 		source, // Either name of nodes-export located in exports directory or application resource key
 		targetNodePath, // TODO: Target path for imported nodes
 		xslt, // XSLT file name in exports directory or application resource key. Used for XSLT transformation
@@ -428,7 +473,11 @@ export class LibExport {
 		includePermissions = false, // TODO: Set to true to use Node permissions from the import, false to use target node permissions
 		nodeImported, // A function to be called during import with number of nodes imported since last call
 		nodeResolved, // A function to be called during import with number of nodes imported since last call
-	}: Omit<ImportNodesParams, 'targetNodePath'> & { targetNodePath?: string }): ImportNodesResult {
+	}: Omit<ImportNodesParams, 'targetNodePath'> & {
+		_debug?: boolean;
+		_trace?: boolean;
+		targetNodePath?: string
+	}): ImportNodesResult {
 		if (targetNodePath) {
 			this.server.log.warning('MockXP importNodes: targetNodePath not supported yet, using "/".');
 		}
@@ -455,6 +504,8 @@ export class LibExport {
 
 		if (isFile(source)) {
 			return this._importFromZipFile({
+				_debug,
+				_trace,
 				includeNodeIds,
 				includePermissions,
 				zipFilePath: source
@@ -462,6 +513,8 @@ export class LibExport {
 		}
 
 		return this._importFromExportFolder({
+			_debug,
+			_trace,
 			includeNodeIds,
 			includePermissions,
 			source,

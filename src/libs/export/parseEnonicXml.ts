@@ -1,6 +1,6 @@
 import type { Node } from '@enonic-types/lib-node';
 import type { NodeXML } from './NodeXML.d';
-
+import type { Log } from '../../types';
 import { XMLParser } from 'fast-xml-parser';
 import { forceArray } from '@enonic/js-utils/array/forceArray';
 import { sortKeys } from '@enonic/js-utils/object/sortKeys';
@@ -109,7 +109,19 @@ function transform(obj: ParsedObject, tag?: string): any {
 }
 
 
-export function parseEnonicXml<DATA extends Record<string, unknown> = Record<string, unknown>>(xmlString: string): Node<DATA> {
+export function parseEnonicXml<
+	DATA extends Record<string, unknown> = Record<string, unknown>
+>({
+	// _debug = false,
+	_trace = false,
+	log,
+	xmlString
+}: {
+	// _debug?: boolean;
+	_trace?: boolean;
+	log: Log;
+	xmlString: string;
+}): Node<DATA> {
 	const options = {
 		ignoreAttributes: false,
 		attributeNamePrefix: '@',
@@ -123,9 +135,11 @@ export function parseEnonicXml<DATA extends Record<string, unknown> = Record<str
 
 	const parser = new XMLParser(options);
 	const parsed = parser.parse(xmlString);
+	if (_trace) log.debug('parseEnonicXml parsed:%s', parsed);
 
 	// Assuming the root is <node>, transform its content
 	const obj = transform(parsed.node) as NodeXML['node'];
+	if (_trace) log.debug('parseEnonicXml obj:%s', obj);
 
 	const { data, indexConfigs, permissions, timestamp } = obj;
 	delete obj.data;

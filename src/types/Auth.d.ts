@@ -40,9 +40,9 @@ export declare type Permission =
 	| "WRITE_PERMISSIONS"
 
 export declare interface PermissionsParams {
-	principal: PrincipalKey
-	allow: Array<Permission>
-	deny: Array<Permission>
+	principal: PrincipalKey; // in AccessControlEntry
+	allow: Array<Permission>; // TODO optional in AccessControlEntry
+	deny: Array<Permission>; // TODO optional in AccessControlEntry
 }
 
 export declare interface RoleNodeData {

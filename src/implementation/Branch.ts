@@ -23,11 +23,16 @@ import type {
 import type { Repo } from './Repo';
 
 import {
+	hasOwnProperty,
 	isBoolean,
 	isBooleanFilter,
 	isFilter,
 	isHasValueFilter,
+	isInDslExpression,
 	isQueryDsl,
+	isRangeDslExpression,
+	isTermDslExpression,
+	toStr,
 } from '@enonic/js-utils';
 import {flatten} from '@enonic/js-utils/array/flatten';
 import {forceArray} from '@enonic/js-utils/array/forceArray';
@@ -176,11 +181,106 @@ export class Branch {
 		this.id = branchId;
 		this.repo = repo;
 		this.log = this.repo.log;
-		// this.log.debug('in Branch constructor');
+	}
+
+	private _queryDateRange({
+		field,
+		lt,
+		lte,
+		gt,
+		gte,
+	}: {
+		field: string;
+		lt?: string;
+		lte?: string;
+		gt?: string;
+		gte?: string;
+	}): string[] {
+		// this.log.debug('Branch.queryDateRange field:%s lt:%s lte:%s gt:%s gte:%s', field, lt, lte, gt, gte);
+
+		// Ensure the field exists in the searchIndex
+		if (!this.searchIndex[field]) {
+			return [];
+		}
+
+		const resultIds: string[] = [];
+
+		// Get the date-time strings for the given field
+		const dateTimeStrings = Object.keys(this.searchIndex[field]);
+		// this.log.debug('Branch.queryDateRange field:%s dateTimeStrings:%s', field, dateTimeStrings);
+
+		for (const dateTimeString of dateTimeStrings) {
+			const date = new Date(dateTimeString); // Can this throw?
+
+			// Skip invalid dates
+			if (isNaN(date.getTime())) {
+				continue;
+			}
+
+			let satisfiesQuery = true;
+
+			// Check 'le' (less than)
+			if (lt) {
+				const ltDate = new Date(lt);
+				if (
+					isNaN(ltDate.getTime())
+					|| date >= ltDate // opposite of lt is gte, means doesn't match
+				) {
+					satisfiesQuery = false;
+				}
+			}
+
+			// Check 'lte' (less than or equal to)
+			if (lte) {
+				const lteDate = new Date(lte);
+				if (
+					isNaN(lteDate.getTime())
+					|| date > lteDate  // opposite of lte is gt, means doesn't match
+				) {
+					satisfiesQuery = false;
+				}
+			}
+
+			// Check 'gt' (greater than)
+			if (gt) {
+				const gtDate = new Date(gt);
+				if (
+					isNaN(gtDate.getTime())
+					|| date <= gtDate // opposite of gt is lts, means doesn't match
+				) {
+					satisfiesQuery = false;
+				}
+			}
+
+			// Check 'gte' (greater than or equal to)
+			if (gte) {
+				const gteDate = new Date(gte);
+				if (
+					isNaN(gteDate.getTime())
+					|| date < gteDate // opposite of gte is lt, means doesn't match
+				) {
+					satisfiesQuery = false;
+				}
+			}
+
+			// If all conditions are satisfied, add the ID to the result
+			if (satisfiesQuery) {
+				const matchIds = this.searchIndex[field][dateTimeString];
+				for (const matchId of matchIds) {
+					if (!resultIds.includes(matchId)) {
+						resultIds.push(matchId);
+					}
+				}
+			}
+		}
+
+		// this.log.debug('Branch.queryDateRange field:%s lt:%s lte:%s gt:%s gte:%s resultIds:%s', field, lt, lte, gt, gte, resultIds);
+		return resultIds;
 	}
 
 	// TODO: I can't store binaryReferences directly on the Node, so I need another "store" for it.
 	_createNodeInternal<NodeData = unknown>({
+		_trace = false,
 		// _childOrder,
 		_id = this.repo.generateId(),
 		_indexConfig = DEFAULT_INDEX_CONFIG,
@@ -193,7 +293,8 @@ export class Branch {
 		_versionKey = this.repo.generateId(),
 		...rest // contains _nodeType
 	}: CreateNodeParams<NodeData> & {
-		_id?: string
+		_id?: string;
+		_trace?: boolean;
 	}): Node<NodeData> {
 		for (const k of IGNORED_ON_CREATE) {
 			if (rest.hasOwnProperty(k)) { delete rest[k]; }
@@ -275,69 +376,108 @@ export class Branch {
 		const restKeys = Object.keys(cleanedData).filter(k => !SEARCH_INDEX_BLACKLIST.includes(k));
 		// this.log.debug('_createNodeInternal restKeys:%s', restKeys);
 
+		// Recursive function to traverse and collect key-value pairs from nested objects
+		function collectNestedKeyValues(obj, prefix = '', result = []) {
+			for (const key in obj) {
+				if (Object.prototype.hasOwnProperty.call(obj, key)) {
+				const value = obj[key];
+				const fullKey = prefix ? `${prefix}.${key}` : key; // Build dot-notation path for nested keys
+
+				if (supportedValueType(value)) {
+					// If the value is a supported type (boolean or string), add it to the result
+					result.push({ key: fullKey, value });
+				} else if (Array.isArray(value) && value.every(k => supportedValueType(k))) {
+					// If the value is an array of supported types, add it to the result
+					result.push({ key: fullKey, value });
+				} else if (typeof value === 'object' && value !== null) {
+					// If the value is a nested object, recurse deeper
+					collectNestedKeyValues(value, fullKey, result);
+				}
+				// Unsupported types (non-string/boolean primitives, etc.) are skipped
+				}
+			}
+			return result;
+		}
+
 		RestKeys: for (const rootProp of restKeys) {
 			const rootPropValue = cleanedData[rootProp];
-			if (!(
-				supportedValueType(rootPropValue)
-				|| (
-					Array.isArray(rootPropValue)
-					&& rootPropValue.every(k => supportedValueType(k))
-				)
-			)) {
-				if (this.repo.server.indexWarnings) {
-					this.log.warning('mock-xp is only able to (index for quering) boolean and string properties, skipping rootProp:%s with value:%s', rootProp, rootPropValue);
+
+			// Collect all key-value pairs for the current rootProp, including nested ones
+			const keyValuePairs = collectNestedKeyValues({ [rootProp]: rootPropValue });
+			// this.log.debug('_createNodeInternal: keyValuePairs:%s', keyValuePairs);
+
+			for (const { key, value } of keyValuePairs) {
+				// Skip if the value is not a supported type or an array of supported types
+				if (!(supportedValueType(value) || (Array.isArray(value) && value.every(k => supportedValueType(k))))) {
+					if (this.repo.server.indexWarnings) {
+						this.log.warning(
+							'mock-xp is only able to (index for querying) boolean and string properties, skipping key:%s with value:%s',
+							key,
+							value
+						);
+					}
+					continue;
 				}
-				continue RestKeys;
+
+				// Index the values in the searchIndex
+				const valueArr = forceArray(value) as (boolean | string)[];
+				for (const valueArrItem of valueArr) {
+					if (!this.searchIndex[key]) {
+						this.searchIndex[key] = {};
+					}
+					// @ts-expect-error Type boolean cannot be used as an index type.ts(2538)
+					if (this.searchIndex[key][valueArrItem]) {
+						// @ts-expect-error Type boolean cannot be used as an index type.ts(2538)
+						this.searchIndex[key][valueArrItem].push(_id);
+					} else {
+						// @ts-expect-error Type boolean cannot be used as an index type.ts(2538)
+						this.searchIndex[key][valueArrItem] = [_id];
+					}
+				}
 			}
-			const valueArr = forceArray(rootPropValue) as (boolean|string)[];
-			for (const valueArrItem of valueArr) {
-				if (!this.searchIndex[rootProp]) {
-					this.searchIndex[rootProp] = {};
-				}
-				// @ts-ignore Object is possibly 'undefined'.ts(2532)
-				if (this.searchIndex[rootProp][valueArrItem]) {
-					// @ts-ignore Object is possibly 'undefined'.ts(2532)
-					this.searchIndex[rootProp][valueArrItem].push(_id);
-				} else {
-					// @ts-ignore Object is possibly 'undefined'.ts(2532)
-					this.searchIndex[rootProp][valueArrItem] = [_id];
-				}
-			} // for valueArr
 		} // for RestKeys
-		// this.log.error('this._searchIndex:%s', this._searchIndex);
-		// this.log.debug('this._pathIndex:%s', this._pathIndex);
+		if (_trace) this.log.debug('this._searchIndex:%s', this.searchIndex);
+		if (_trace) this.log.debug('this._pathIndex:%s', this.pathIndex);
 		return deref(createdNode);
 	} // _createNodeInternal
 
-	createNode<NodeData = unknown>(params: CreateNodeParams<NodeData>): Node<NodeData> {
+	createNode<NodeData = unknown>(params: CreateNodeParams<NodeData> & { _trace?: boolean }): Node<NodeData> {
 		return this._createNodeInternal<NodeData>(params); // already dereffed
 	}
 
-	private keyToId(key: string): string | undefined {
+	private keyToId({
+		_trace,
+		key
+	}: {
+		_trace?: boolean;
+		key: string
+	}): string | undefined {
 		// this.log.debug('keyToId(%s)', key);
-		let maybeId: string|undefined = key;
+		let maybeId: string | undefined = key;
 		if (isPathString(key)) {
-			// this.log.debug('isPathString(%s) === true', key);
+			if (_trace) this.log.debug('keyToId: key:%s isPathString === true', key);
 			const path = (key.length > 1 && key.endsWith('/')) ? key.substring(0, key.length - 1) : key;
-			// this.log.debug('path:%s', path);
+			if (_trace) this.log.debug('keyToId: key:%s path:%s', key, path);
+			if (_trace) this.log.debug('keyToId: pathIndex:%s', this.pathIndex);
 			maybeId = this.pathIndex[path];
-			// this.log.debug('maybeId:%s', maybeId);
+			if (_trace) this.log.debug('keyToId: key:%s path:%s maybeId:%s', key, path, maybeId);
 			if (!maybeId) {
-				// this.log.debug(`Could not find id from path:${path}!`);
+				if (_trace) this.log.debug(`keyToId: Could not find id from path:${path}!`);
 				return undefined;
 			}
 		}
 		if (isUuidV4String(maybeId) || maybeId === UUID_NIL) {
+			if (_trace) this.log.debug('keyToId: key:%s maybeId:%s isUuidV4String:true', key, maybeId);
 			return maybeId;
 		}
-		this.log.debug(`key not an id! key:${key}`);
+		this.log.debug('keyToId: key not an id! key:%s', key);
 		// throw new TypeError(`key not an id nor path! key:${key}`);
 		return undefined;
 	}
 
 	existsNode(key: string): boolean {
 		// this.log.debug('existsNode() keys:%s', keys);
-		const id = this.keyToId(key);
+		const id = this.keyToId({ key });
 		if (!id) {
 			return false;
 		}
@@ -351,7 +491,7 @@ export class Branch {
 		NodeKeys: for (const key of keysArray) {
 			let maybeNode;
 			try {
-				maybeNode = this.getNode(key) as RepoNodeWithData;
+				maybeNode = this.getNode({ key }) as RepoNodeWithData;
 			} catch (e) {
 				// no-op
 			}
@@ -406,7 +546,26 @@ export class Branch {
 		return this.id;
 	}
 
-	getNode(...keys: string[]): RepoNodeWithData | RepoNodeWithData[] {
+	getNode<NodeData = Record<string, unknown>>({
+		_trace = false,
+		key,
+	}: {
+		_trace?: boolean;
+		key: string;
+	}): RepoNodeWithData<NodeData> | RepoNodeWithData<NodeData>[] {
+		return this.getNodes<NodeData>({
+			_trace,
+			keys: [key],
+		});
+	}
+
+	getNodes<NodeData = Record<string, unknown>>({
+		_trace = false,
+		keys,
+	}: {
+		_trace?: boolean;
+		keys: string[];
+	}): RepoNodeWithData<NodeData> | RepoNodeWithData<NodeData>[] {
 		// this.log.debug('getNode() keys:%s', keys);
 		if (!keys.length) {
 			return [];
@@ -418,22 +577,25 @@ export class Branch {
 			.map(k => this.existsNode(k) ? k : undefined)
 			.filter(k => k) as string[];
 		// this.log.debug('getNode() existingKeys:%s', existingKeys);
-		const nodes: RepoNodeWithData[] = existingKeys.map(key => {
-			const id = this.keyToId(key);
+		const nodes: RepoNodeWithData<NodeData>[] = existingKeys.map(key => {
+			const id = this.keyToId({
+				_trace,
+				key
+			});
 			if (!id) {
 				throw new Error(`Can't get id from key:${key}, even though exists???`); // This could happen if node deleted after exists called.
 			}
-			return deref(this.nodes[id] as RepoNodeWithData);
+			return deref(this.nodes[id] as RepoNodeWithData<NodeData>);
 		});// .filter(x => x as RepoNodeWithData);
 		return nodes.length > 1
 			? nodes // as RepoNodeWithData[]
-			: nodes[0] as RepoNodeWithData;
+			: nodes[0] as RepoNodeWithData<NodeData>;
 	}
 
 	getNodeActiveVersion({
 		key
 	}: GetActiveVersionParamObject): GetActiveVersionResponse {
-		const node: RepoNodeWithData | undefined = this.getNode(key) as (RepoNodeWithData | undefined);
+		const node: RepoNodeWithData | undefined = this.getNode({ key }) as (RepoNodeWithData | undefined);
 		if (node) {
 			return {
 				versionId: node._versionKey,
@@ -454,7 +616,7 @@ export class Branch {
 		key,
 		editor
 	}: NodeModifyParams): RepoNodeWithData {
-		const node: RepoNodeWithData = this.getNode(key) as RepoNodeWithData;
+		const node: RepoNodeWithData = this.getNode({ key }) as RepoNodeWithData;
 		if (!node) {
 			throw new Error(`modify: Node with key:${key} not found!`);
 		}
@@ -510,7 +672,7 @@ export class Branch {
 		// means the new desired path or name for the node.
 		target
 	}: MoveNodeParams): RepoNodeWithData | null {
-		const node: RepoNodeWithData = this.getNode(source) as RepoNodeWithData; // This derefs
+		const node: RepoNodeWithData = this.getNode({ key: source }) as RepoNodeWithData; // This derefs
 		if (!node) {
 			this.log.error('move: Node with source:%s not found!', source);
 			throw new Error(`move: Node with source:${source} not found!`); // TODO throw same Error as XP?
@@ -616,6 +778,7 @@ export class Branch {
 	// Process filters, generate filtersMustIds, filtersMustNotIds, filtersShouldIds
 	// @ts-ignore
 	query({
+		_trace = false,
 		// aggregations,
 		count = 10,
 		// explain,
@@ -624,7 +787,7 @@ export class Branch {
 		query = '', // QueryNodeParams.query is optional
 		// sort,
 		start = 0
-	}: QueryNodeParams): NodeQueryResponse {
+	}: QueryNodeParams & { _trace?: boolean; }): NodeQueryResponse {
 		// this.log.debug('param:%s', {
 		// 	// aggregations,
 		// 	count,
@@ -724,7 +887,7 @@ export class Branch {
 		}
 
 		if (isQueryDsl(query)) {
-			this.log.debug('query:%s Search Index: %s', query, this.searchIndex);
+			if (_trace) this.log.debug('query:%s Search Index: %s', query, this.searchIndex);
 			const mustSets: string[][] = [];
 			const mustNotSets: string[][] = [];
 
@@ -742,17 +905,35 @@ export class Branch {
 				if (must) {
 					forceArray(must).forEach(mustDsl => {
 						const mustIds: string[] = [];
-						const {
-							// @ts-expect-error Property 'in' does not exist on type '{ boolean: BooleanDslExpression; } | { ngram: NgramDslExpression; } | { stemmed: StemmedDslExpression; } | { fulltext: FulltextDslExpression; } | { matchAll: MatchAllDslExpression; } | { pathMatch: PathMatchDslExpression; } | { range: RangeDslExpression; } | { like: LikeDslExpression; } | { in: InDslExpression; } | { term: TermDslExpression; } | { exists: ExistsDslExpression; }'.ts(2339)
-							in: inDslExpression,
-							// @ts-expect-error Property 'term' does not exist on type '{ boolean: BooleanDslExpression; } | { ngram: NgramDslExpression; } | { stemmed: StemmedDslExpression; } | { fulltext: FulltextDslExpression; } | { matchAll: MatchAllDslExpression; } | { pathMatch: PathMatchDslExpression; } | { range: RangeDslExpression; } | { like: LikeDslExpression; } | { in: InDslExpression; } | { term: TermDslExpression; } | { exists: ExistsDslExpression; }'.ts(2339)
-							term
-						} = mustDsl;
-						if (inDslExpression) {
+
+						if (hasOwnProperty(mustDsl, 'term')) {
+							const { term } = mustDsl;
+							if (!isTermDslExpression(term)) throw new Error(`Invalid TermDslExpression:${toStr(term)}`);
+							const {
+								field,
+								value
+							} = term;
+							if (
+								!SEARCH_INDEX_BLACKLIST.includes(field)
+								&& this.searchIndex[field]
+								&& supportedValueType(value)
+								// @ts-ignore Object is possibly 'undefined'.ts(2532)
+								&& this.searchIndex[field][value as string]
+							) {
+								// @ts-ignore Object is possibly 'undefined'.ts(2532)
+								this.searchIndex[field][value as string].forEach(id => {
+									if (!mustIds.includes(id)) {
+										mustIds.push(id);
+									}
+								});
+							}
+						} else if (hasOwnProperty(mustDsl, 'in')) {
+							const { in: inDslExpression } = mustDsl;
+							if (!isInDslExpression(inDslExpression)) throw new Error(`Invalid InDslExpression:${toStr(inDslExpression)}`);
 							const {
 								field,
 								values
-							} = inDslExpression as InDslExpression;
+							} = inDslExpression;
 							if (
 								!SEARCH_INDEX_BLACKLIST.includes(field)
 								&& this.searchIndex[field]
@@ -770,7 +951,44 @@ export class Branch {
 									}
 								});
 							}
-						} else if (term) {
+						} else if (hasOwnProperty(mustDsl, 'range')) {
+							const { range } = mustDsl;
+							if (isRangeDslExpression(range)) {
+								const {
+									// boost,
+									field, lt, lte, gt, gte,
+									// type
+								} = range;
+								// this.log.debug('Branch.query field:%s lt:%s lte:%s gt:%s gte:%s', field, lt, lte, gt, gte);
+								const ids = this._queryDateRange({
+									field,
+									lt: lt as string,
+									lte: lte as string,
+									gt: gt as string,
+									gte: gte as string,
+								});
+								// this.log.debug('Branch.query(): ids:%s', ids);
+								for (const id of ids) {
+									if (!mustIds.includes(id)) {
+										mustIds.push(id);
+									}
+									// this.log.debug('Branch.query(): range mustIds:%s', mustIds);
+								}
+							} else {
+								this.log.error('Branch.query(): invalid range query:%s', mustDsl);
+							}
+						} else {
+							log.error(`Unsupported DslExpression:${toStr(mustDsl)}!`);
+						}
+						mustSets.push(mustIds);
+					}); // forEach
+				} // must
+				if (mustNot) {
+					forceArray(mustNot).forEach(mustNotDsl => {
+						const mustNotIds: string[] = [];
+						if (hasOwnProperty(mustNotDsl, 'term')) {
+							const { term } = mustNotDsl;
+							if (!isTermDslExpression(term)) throw new Error(`Invalid TermDslExpression:${toStr(term)}`);
 							const {
 								field,
 								value
@@ -784,25 +1002,14 @@ export class Branch {
 							) {
 								// @ts-ignore Object is possibly 'undefined'.ts(2532)
 								this.searchIndex[field][value as string].forEach(id => {
-									if (!mustIds.includes(id)) {
-										mustIds.push(id);
+									if (!mustNotIds.includes(id)) {
+										mustNotIds.push(id);
 									}
 								});
 							}
-						}
-						mustSets.push(mustIds);
-					}); // forEach
-				} // must
-				if (mustNot) {
-					forceArray(mustNot).forEach(mustNotDsl => {
-						const mustNotIds: string[] = [];
-						const {
-							// @ts-expect-error Property 'in' does not exist on type '{ boolean: BooleanDslExpression; } | { ngram: NgramDslExpression; } | { stemmed: StemmedDslExpression; } | { fulltext: FulltextDslExpression; } | { matchAll: MatchAllDslExpression; } | { pathMatch: PathMatchDslExpression; } | { range: RangeDslExpression; } | { like: LikeDslExpression; } | { in: InDslExpression; } | { term: TermDslExpression; } | { exists: ExistsDslExpression; }'.ts(2339)
-							in: inDslExpression,
-							// @ts-expect-error Property 'term' does not exist on type '{ boolean: BooleanDslExpression; } | { ngram: NgramDslExpression; } | { stemmed: StemmedDslExpression; } | { fulltext: FulltextDslExpression; } | { matchAll: MatchAllDslExpression; } | { pathMatch: PathMatchDslExpression; } | { range: RangeDslExpression; } | { like: LikeDslExpression; } | { in: InDslExpression; } | { term: TermDslExpression; } | { exists: ExistsDslExpression; }'.ts(2339)
-							term,
-						} = mustNotDsl;
-						if (inDslExpression) {
+						} else if (hasOwnProperty(mustNotDsl, 'in')) {
+							const { in: inDslExpression } = mustNotDsl;
+							if (!isInDslExpression(inDslExpression)) throw new Error(`Invalid InDslExpression:${toStr(inDslExpression)}`);
 							const {
 								field,
 								values
@@ -824,25 +1031,34 @@ export class Branch {
 									}
 								});
 							}
-						} else if (term) {
-							const {
-								field,
-								value
-							} = term as TermDslExpression;
-							if (
-								!SEARCH_INDEX_BLACKLIST.includes(field)
-								&& this.searchIndex[field]
-								&& supportedValueType(value)
-								// @ts-ignore Object is possibly 'undefined'.ts(2532)
-								&& this.searchIndex[field][value as string]
-							) {
-								// @ts-ignore Object is possibly 'undefined'.ts(2532)
-								this.searchIndex[field][value as string].forEach(id => {
+						} else if (hasOwnProperty(mustNotDsl, 'range')) {
+							const { range } = mustNotDsl;
+							if (isRangeDslExpression(range)) {
+								const {
+									// boost,
+									field, lt, lte, gt, gte,
+									// type
+								} = range;
+								// this.log.debug('Branch.query field:%s lt:%s lte:%s gt:%s gte:%s', field, lt, lte, gt, gte);
+								const ids = this._queryDateRange({
+									field,
+									lt: lt as string,
+									lte: lte as string,
+									gt: gt as string,
+									gte: gte as string,
+								});
+								// this.log.debug('Branch.query(): ids:%s', ids);
+								for (const id of ids) {
 									if (!mustNotIds.includes(id)) {
 										mustNotIds.push(id);
 									}
-								});
+									// this.log.debug('Branch.query(): range mustNotIds:%s', mustNotIds);
+								}
+							} else {
+								this.log.error('Branch.query(): invalid range query:%s', mustNotDsl);
 							}
+						} else {
+							log.error(`Unsupported DslExpression:${toStr(mustNotDsl)}!`);
 						}
 						mustNotSets.push(mustNotIds);
 					}); // forEach

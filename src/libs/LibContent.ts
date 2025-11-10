@@ -1,7 +1,10 @@
+import type { AggregationsToAggregationResults } from '@enonic-types/core';
 import type {
+	Aggregations,
 	ByteSource,
 	Content,
 	ContentExistsParams,
+	ContentsResult,
 	CreateContentParams,
 	CreateMediaParams,
 	DeleteContentParams,
@@ -10,7 +13,8 @@ import type {
 	ModifyContentParams,
 	MoveContentParams,
 	PublishContentParams,
-	PublishContentResult
+	PublishContentResult,
+	QueryContentParams,
 } from '@enonic-types/lib-content';
 import type {Server} from '../implementation/Server';
 
@@ -90,6 +94,16 @@ export class LibContent {
 
 	public publish(params: PublishContentParams): PublishContentResult {
 		return this._connect().publish(params);
+	}
+
+	public query<
+		Hit extends Content<unknown> = Content,
+		AggregationInput extends Aggregations = never
+	>(params: QueryContentParams<AggregationInput> & {
+		_debug?: boolean;
+		_trace?: boolean;
+	}): ContentsResult<Hit, AggregationsToAggregationResults<AggregationInput>> {
+		return this._connect().query(params);
 	}
 
 } // class LibContent
