@@ -54,7 +54,7 @@ export class RepoConnection implements RepoConnectionInterface {
 
 	// TODO: public commit(params: CommitParams): NodeCommit {}
 
-	public create<NodeData = unknown>(param: CreateNodeParams<NodeData>): Node<NodeData> {
+	public create<NodeData = unknown>(param: CreateNodeParams<NodeData> & { _trace?: boolean; }): Node<NodeData> {
 		return this.branch.createNode<NodeData>(param);
 	}
 
@@ -186,9 +186,8 @@ export class RepoConnection implements RepoConnectionInterface {
 	// get(keys: string[]): RepoNodeWithData | RepoNodeWithData[] {
 	// 	return this._branch.getNode(keys);
 	// }
-	// TODO use types from @enonic-types/lib-node
-	public get(...keys: string[]): RepoNodeWithData | RepoNodeWithData[] {
-		return this.branch.getNode(...keys);
+	public get<NodeData = Record<string, unknown>>(...keys: string[]): Node<NodeData> | Node<NodeData>[] | null {
+		return this.branch.getNodes<NodeData>({ keys }) as Node<NodeData> | Node<NodeData>[] | null;
 	}
 
 	public getActiveVersion({
@@ -197,8 +196,9 @@ export class RepoConnection implements RepoConnectionInterface {
 		return this.branch.getNodeActiveVersion({key});
 	}
 
-	_getSingle<T = Node>(key: string): T {
-		return this.branch.getNode(key) as T; // Returned nodes are dereffed :)
+	_getSingle<NodeData = Record<string, unknown>>(key: string): Node<NodeData> | null {
+		// Returned nodes are dereffed :)
+		return this.branch.getNode<NodeData>({ key }) as Node<NodeData> | null;
 	}
 
 	public getBinary({

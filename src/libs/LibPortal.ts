@@ -1,5 +1,6 @@
 import type {
 	AssetUrlParams,
+	Component,
 	Content,
 	ImageUrlParams,
 	Site,
@@ -36,6 +37,7 @@ export class LibPortal {
 	readonly log: Log;
 	readonly server: Server;
 
+	public component: Component;
 	public request: Request;
 
 	constructor({
@@ -138,14 +140,30 @@ export class LibPortal {
 		return contentConnection;
 	}
 
-	public getContent<Hit extends Content<unknown> = Content>(): Hit | null {
+	public getComponent<_Component extends Component = Component>(): _Component | null {
+		if(!this.component) {
+			// throw new Error('mock-xp: Portal.getComponent(): There is no component set on the Portal object instance!');
+			this.log.error('mock-xp: Portal.getComponent(): There is no component set on the Portal object instance!');
+			return null;
+		}
+		return this.component as _Component;
+	}
+
+	public getContent<Hit extends Content<unknown> = Content>({
+		_trace = false,
+	}: {
+		_trace?: boolean;
+	} = {}): Hit | null {
 		if(!this.request) {
 			throw new Error('mock-xp: Portal.getContent(): Unable to determine current contentId as there is no request set on the Portal object instance!');
 		}
-		// this.log.debug('getContent: request', this.request);
-		const contentPath = this.request.contentPath();
-		// this.log.debug('getContent: contentPath', contentPath);
-		return this.connect().get({key: contentPath});
+		if (_trace) this.log.debug('getContent: request', this.request);
+		const contentPath = this.request.contentPath({ _trace });
+		if (_trace) this.log.debug('getContent: contentPath', contentPath);
+		return this.connect().get({
+			_trace,
+			key: contentPath
+		});
 	}
 
 	public getSite<Config = Record<string, unknown>>(): Site<Config> | null {

@@ -6,7 +6,7 @@ const SCHEME_DEFAULT = 'http';
 const HOST_DEFAULT = 'localhost';
 const PORT_DEFAULT = 80;
 const PATH_DEFAULT = '';
-
+const ADMIN_PATH_REG_EXP = /^\/admin\/site\/(?:preview|inline|edit)\/[^/]+\/(?:draft|master)/;
 
 export declare type Params = Record<string, string|string[]>
 
@@ -122,14 +122,14 @@ export class Request implements DefaultRequest {
 	// "rawPath": "/admin/site/preview/intro/draft/persons/lea-seydoux",
 	// "contextPath": "/admin/site/preview/draft/", 7.14.0
 	// "contextPath": "/admin/site/preview/intro/draft/", 7.14.1
-	contentPath(): string {
-		// console.debug('contentPath() this.project():', this.project());
-		return this.path
-			.replace(/^\/admin/, '')
-			.replace(/^\/site/, '')
-			.replace(new RegExp(`^/${this.mode}`), '')
-			.replace(new RegExp(`^/${this.project()}`), '')
-			.replace(new RegExp(`^/${this.branch}`), '');
+	contentPath({
+		_trace = false,
+	}: {
+		_trace?: boolean;
+	} = {}): string {
+		if (_trace) console.debug('contentPath() this.path:', this.path);
+
+		return this.path.replace(ADMIN_PATH_REG_EXP, '');
 	}
 
 	query() {

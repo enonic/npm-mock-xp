@@ -1,4 +1,5 @@
 import type {
+	AggregationsToAggregationResults,
 	Attachment,
 	ComponentDescriptor,
 	Content,
@@ -8,9 +9,11 @@ import type {
 	UserKey,
 } from '@enonic-types/core';
 import type {
+	Aggregations,
 	AccessControlEntry,
 	ByteSource,
 	ContentExistsParams,
+	ContentsResult,
 	CreateContentParams,
 	CreateMediaParams,
 	DeleteContentParams,
@@ -21,6 +24,7 @@ import type {
 	MoveContentParams,
 	PublishContentParams,
 	PublishContentResult,
+	QueryContentParams,
 } from '@enonic-types/lib-content';
 import type {
 	CommonNodeProperties,
@@ -267,14 +271,21 @@ export class ContentConnection {
 	create<
 		Data = Record<string, unknown>,
 		Type extends string = string
-	>(params: CreateContentParams<Data, Type>): Content<Data, Type> {
+	>(params: CreateContentParams<Data, Type> & { _trace?: boolean; }): Content<Data, Type> {
+		const {
+			_trace = false,
+			...content
+		} = params;
 		// this.log.debug('ContentConnection create(%s)', params);
 		const createNodeParams = this.contentToNode<Data, Type>({
-			content: params,
+			content,
 			mode: 'create'
-		});
+		}) as CreateNodeParams<ContentProperties<Data, Type>>;
 		// this.log.debug('ContentConnection createNodeParams(%s)', createNodeParams);
-		const createdNode = this.branch.createNode<ContentProperties<Data, Type>>(createNodeParams as CreateNodeParams<ContentProperties<Data, Type>>);
+		const createdNode = this.branch.createNode<ContentProperties<Data, Type>>({
+			_trace,
+			...createNodeParams
+		});
 		// this.log.debug('ContentConnection createdNode(%s)', createdNode);
 		// TODO: Modify node to apply displayName if missing
 
@@ -404,19 +415,23 @@ export class ContentConnection {
 
 	get<
 		Hit extends Content<unknown> = Content
-	>(params: GetContentParams): Hit | null {
-		// this.log.debug('ContentConnection get(%s)', params);
+	>(params: GetContentParams & { _trace?: boolean; }): Hit | null {
 		let {
+			_trace,
 			key,
 			// versionId
 		} = params;
+		if (_trace) this.log.debug('ContentConnection get key:%s', key);
 		if (key.startsWith('/')) {
 			key = `/content${ key }`;
 		}
-		const node = this.branch.getNode(key) as unknown as ContentToNode<Hit>;
+		if (_trace) this.log.debug('ContentConnection get modified key:%s', key);
+		const node = this.branch.getNode({
+			_trace,
+			key,
+		}) as unknown as ContentToNode<Hit>;
 		if (!node) {
-			// TODO Some setting to show this warning? Maybe TRACE level?
-			// this.log.warning('ContentConnection get: No content for key:%s', key);
+			if (_trace) this.log.warning('ContentConnection get: No content for key:%s', key);
 			return null;
 		}
 		return this.nodeToContent<Hit>({node});
@@ -436,7 +451,7 @@ export class ContentConnection {
 		const {
 			name: paramName
 		} = params;
-		const node = this.branch.getNode(key) as Node<{
+		const node = this.branch.getNode({ key }) as Node<{
 			attachment: {
 				name: string
 				sha512: string
@@ -806,7 +821,7 @@ export class ContentConnection {
 			const existsOnDraft = this.exists({ key: contentKey });
 
 			if (existsOnDraft) {
-				const nodeOnDraft = this.branch.getNode(nodeKey) as RepoNodeWithData;
+				const nodeOnDraft = this.branch.getNode({ key: nodeKey }) as RepoNodeWithData;
 				// this.log.debug('ContentConnection nodeOnDraft(%s)', nodeOnDraft);
 				// this.log.debug('ContentConnection nodeOnDraft(%s)', {
 				// 	_id: nodeOnDraft._id,
@@ -863,7 +878,82 @@ export class ContentConnection {
 		return res;
 	}
 
-	// TODO query()
+	public query<
+		Hit extends Content<unknown> = Content,
+		AggregationInput extends Aggregations = never
+	>(params: QueryContentParams<AggregationInput> & {
+		_debug?: boolean;
+		_trace?: boolean;
+	}): ContentsResult<
+		Hit,
+		AggregationsToAggregationResults<AggregationInput>
+	> {
+		const {
+			_debug = false,
+			_trace = false,
+			start,
+			// aggregations,
+			contentTypes,
+			count,
+			// highlight,
+			query,
+			// sort,
+		} = params;
+		let {
+			filters,
+		} = params;
+
+		if (_trace) {
+			this.log.debug('ContentConnection: query() params:%s', params);
+		} else if (_debug) {
+			this.log.debug('ContentConnection: query() contentTypes:%s', contentTypes);
+			this.log.debug('ContentConnection: query() filters:%s', filters);
+			// this.log.debug('ContentConnection: query() query:%s', query);
+		}
+
+		if (contentTypes?.length) {
+			if (!filters) {
+				filters = [];
+			} else if (!Array.isArray(filters)) {
+				filters = [filters];
+			}
+			filters.push({
+				hasValue: {
+					field: 'type',
+					values: contentTypes
+				}
+			});
+		}
+		if (_trace) this.log.debug('ContentConnection: query() filters:%s', filters);
+
+		const nodeQueryRes = this.branch.query({
+			// _debug,
+			_trace,
+			// aggregations,
+			count,
+			// explain,
+			filters,
+			// highlight,
+			query,
+			// sort,
+			start
+		});
+
+		const {
+			// aggregations,
+			count: nodeQueryResCount,
+			hits,
+			total,
+		} = nodeQueryRes;
+		if (_trace) this.log.debug('ContentConnection: query() node hits:%s', hits);
+
+		return {
+			aggregations: {} as AggregationsToAggregationResults<AggregationInput>, // TODO
+			count: nodeQueryResCount,
+			hits: hits.map(({id}) => this.get({ key: id })),
+			total,
+		}
+	}
 
 	// TODO removeAttachment()
 

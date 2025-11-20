@@ -32,6 +32,13 @@ const BINARY_NAME = 'binaryName';
 const JEFF_DATA: ByteSource = readFileSync(join(__dirname, '../..', 'Jeffrey-Wright-hp.jpg')) as unknown as ByteSource;
 const LEA_DATA: ByteSource = readFileSync(join(__dirname, '../..', 'Lea-Seydoux.jpg')) as unknown as ByteSource;
 
+type NodeDataWithNested = {
+	nested: {
+		propertyName: BinaryAttachment;
+	}
+}
+type NodeWithNested = Node<NodeDataWithNested>;
+
 
 let server: Server;
 let libIo: LibIo;
@@ -79,11 +86,7 @@ describe('Branch', () => {
 				key: createdNode._id,
 			});
 			expect(libIo.getSize(emptyByteSource)).toBe(0);
-			server.modifyNode<{
-				nested: {
-					propertyName: BinaryAttachment
-				}
-			}>({
+			server.modifyNode<NodeDataWithNested>({
 				branchId: BRANCH_ID,
 				editor: (node) => {
 					node.nested = {
@@ -94,7 +97,7 @@ describe('Branch', () => {
 				key: createdNode._id,
 				repoId: REPO_ID,
 			});
-			const modifiedNode = server.getNode({
+			const modifiedNode = server.getNode<NodeDataWithNested>({
 				branchId: BRANCH_ID,
 				key: createdNode._id,
 				repoId: REPO_ID,
@@ -113,11 +116,7 @@ describe('Branch', () => {
 				key: createdNode._id,
 			});
 			expect(libIo.getSize(byteSourceBefore)).toBe(LEA_JPG_BYTE_SIZE);
-			server.modifyNode<{
-				nested: {
-					propertyName: BinaryAttachment
-				}
-			}>({
+			server.modifyNode<NodeDataWithNested>({
 				branchId: BRANCH_ID,
 				editor: (node) => {
 					node.nested = {
@@ -128,7 +127,7 @@ describe('Branch', () => {
 				key: createdNode._id,
 				repoId: REPO_ID,
 			});
-			const modifiedNode = server.getNode({
+			const modifiedNode = server.getNode<NodeDataWithNested>({
 				branchId: BRANCH_ID,
 				key: createdNode._id,
 				repoId: REPO_ID,
@@ -147,11 +146,7 @@ describe('Branch', () => {
 				key: createdNode._id,
 			});
 			expect(libIo.getSize(byteSourceBefore)).toBe(LEA_JPG_BYTE_SIZE);
-			server.modifyNode<{
-				nested: {
-					propertyName: BinaryAttachment
-				}
-			}>({
+			server.modifyNode<NodeDataWithNested>({
 				branchId: BRANCH_ID,
 				editor: (node) => {
 					node.nested = {
@@ -162,7 +157,7 @@ describe('Branch', () => {
 				key: createdNode._id,
 				repoId: REPO_ID,
 			});
-			const modifiedNode = server.getNode({
+			const modifiedNode = server.getNode<NodeDataWithNested>({
 				branchId: BRANCH_ID,
 				key: createdNode._id,
 				repoId: REPO_ID,
@@ -181,11 +176,7 @@ describe('Branch', () => {
 				key: createdNode._id,
 			});
 			expect(libIo.getSize(byteSourceBefore)).toBe(JEFF_JPG_BYTE_SIZE);
-			server.modifyNode<{
-				nested: {
-					propertyName: BinaryAttachment
-				}
-			}>({
+			server.modifyNode<NodeDataWithNested>({
 				branchId: BRANCH_ID,
 				editor: (node) => {
 					delete node.nested;
