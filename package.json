@@ -29,6 +29,7 @@
     "@enonic-types/lib-portal": "^7.15.0",
     "@enonic-types/lib-repo": "^7.15.0",
     "@enonic-types/lib-value": "^7.15.0",
+    "@enonic-types/lib-vhost": "^7.15.0",
     "@enonic/test-data": "^1.2.0",
     "@types/adm-zip": "^0.5.7",
     "@types/bun": "^1.0.12",
@@ -39,6 +40,7 @@
     "@types/probe-image-size": "^7.2.0",
     "slm": "^2.0.0",
     "ts-jest": "^29.1.0",
+    "ts-node": "^10.9.2",
     "typescript": "^5"
   },
   "description": "Mock Enonic XP API JavaScript Library",

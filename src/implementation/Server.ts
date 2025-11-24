@@ -46,6 +46,7 @@ import {RepoConnection} from './RepoConnection';
 import {RepositoryNotFoundException} from './repo/RepositoryNotFoundException';
 import {setupSystemRepo} from './server/setupSystemRepo';
 import {Version} from './Version';
+import {VirtualHostModule} from './vhost/VirtualHostModule';
 
 
 export class Server {
@@ -58,6 +59,7 @@ export class Server {
 	readonly systemRepoConnection: RepoConnection;
 	readonly version: string = '7.14.0';
 	readonly vol = vol;
+	readonly vhost: VirtualHostModule;
 
 	// At some point these should live somewhere else, but this simplification
 	// is fine for now:
@@ -107,6 +109,7 @@ export class Server {
 				ROLE_SYSTEM_EVERYONE
 			],
 		});
+		this.vhost = new VirtualHostModule({ server: this });
 	} // constructor
 
 	public connect({
