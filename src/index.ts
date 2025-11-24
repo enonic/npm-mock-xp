@@ -61,6 +61,7 @@ export {RepoConnection} from './implementation/RepoConnection';
 export {Request} from './implementation/Request';
 export {Server} from './implementation/Server';
 export {Version} from './implementation/Version';
+export {VirtualHost} from './implementation/vhost/VirtualHost';
 
 export {GeoPoint} from './implementation/util/GeoPoint';
 export {Instant} from './java/time/Instant';
@@ -79,3 +80,4 @@ export {LibNode} from './libs/LibNode';
 export {LibPortal} from './libs/LibPortal';
 export {LibRepo} from './libs/LibRepo';
 export {LibValue} from './libs/LibValue';
+export {LibVhost} from './libs/LibVhost';
