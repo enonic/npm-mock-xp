@@ -16,11 +16,12 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v6
         with:
-          node-version: '20.x'
+          node-version: '22.x'
           registry-url: 'https://registry.npmjs.org'
 
       - name: Build & test
         run: |
+          npm install -g npm@latest
           npm ci
-          npm run build
+          npm test
           npm run cov

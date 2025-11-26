@@ -45,7 +45,7 @@
   },
   "description": "Mock Enonic XP API JavaScript Library",
   "engines": {
-    "node": ">=20.11.1"
+    "node": ">=22.21.1"
   },
   "files": [
     "/dist",
