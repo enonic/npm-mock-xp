@@ -9,7 +9,7 @@ concurrency: release
 
 permissions:
   id-token: write  # Required for OIDC
-  contents: read
+  contents: write
 
 jobs:
   release:
@@ -46,3 +46,4 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
             name: Mock XP API ${{ github.ref_name }}
+
