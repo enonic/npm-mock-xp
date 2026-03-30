@@ -41,7 +41,7 @@
     "slm": "^2.0.0",
     "ts-jest": "^29.1.0",
     "ts-node": "^10.9.2",
-    "typescript": "^5"
+    "typescript": "^6"
   },
   "description": "Mock Enonic XP API JavaScript Library",
   "engines": {
