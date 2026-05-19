@@ -83,7 +83,7 @@
     "cov": "jest --coverage --no-cache",
     "prebuild": "npm run copy",
     "precopy": "npm run clean",
-    "prepublishOnly": "node setversion.cjs",
+    "prepublishOnly": "node setversion.cjs && npm run build",
     "test": "jest --no-cache"
   },
   "version": "0.0.0"
