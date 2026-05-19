@@ -1,4 +1,4 @@
-name: Coverage
+name: Build
 
 on: [ push ]
 
@@ -21,7 +21,6 @@ jobs:
 
       - name: Build & test
         run: |
-          npm install -g npm@latest
           npm ci
           npm test
           npm run cov
