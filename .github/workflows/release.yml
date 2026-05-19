@@ -42,7 +42,7 @@ jobs:
           npm publish --tag $NPM_TAG
 
       - name: Create Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
             name: Mock XP API ${{ github.ref_name }}
 
