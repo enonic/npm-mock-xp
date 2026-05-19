@@ -115,7 +115,7 @@ declare interface ContentProperties<Data, Type> {
 	data: Data
 	owner: UserKey
 	type: Type
-	x?: XpXData
+	x?: XpMixin
 }
 
 // Whether a property is required or optional depends on create vs get, etc...
@@ -140,7 +140,7 @@ export declare interface AllContentProperties {
 	publish: PublishInfo
 	type: string
 	valid: boolean
-	x: XpXData
+	x: XpMixin
 }
 
 declare type ContentToNode<
@@ -303,18 +303,14 @@ export class ContentConnection {
 			focalX = 0.5,
 			focalY = 0.5,
 			// idGenerator, // TODO undocumented?
-			mimeType,
 			name,
 			parentPath = '/',
 		} = params;
-		// this.log.debug('ContentConnection createMedia(%s)', {
-		// 	focalX, focalY, mimeType, name, parentPath
-		// });
 		const probeRes = probeSync((fileBuffer as unknown as Buffer));
 		// this.log.debug('ContentConnection createMedia probeRes:%s', probeRes);
 		const {
 			height = 0,
-			// mime,
+			mime: mimeType = 'application/octet-stream',
 			width = 0,
 		} = probeRes || {};
 		// this.log.debug('ContentConnection createMedia width:%s height:%s', width, height);
@@ -382,6 +378,7 @@ export class ContentConnection {
 		});
 		// this.log.debug('ContentConnection createMedia createdNode:%s', createdNode);
 
+		// @ts-expect-error Typing too complex to waste time on making perfect!
 		const createdContent = this.nodeToContent({node: createdNode});
 		// this.log.debug('ContentConnection createMedia createdContent:%s', createdContent);
 
@@ -810,7 +807,6 @@ export class ContentConnection {
 			branch: masterBranch
 		});
 		const res: PublishContentResult = {
-			deletedContents: [],
 			failedContents: [],
 			pushedContents: [],
 		};
@@ -863,7 +859,7 @@ export class ContentConnection {
 			if (existsOnMaster) {
 				if (contentMasterConnection.delete({ key: contentKey })) {
 					this.log.debug("ContentConnection publish: Deleted content with key %s from the master branch!", contentKey);
-					res.deletedContents.push(contentKey);
+					res.pushedContents.push(contentKey);
 					continue contentKeysLoop;
 				} else {
 					// Not certain how to trigger this via testing, not even sure it can happen?

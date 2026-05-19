@@ -34,7 +34,6 @@ describe('mock', () => {
 							data: fileBuffer as unknown as ByteSource,
 							focalX: 0.5,
 							focalY: 0.5,
-							mimeType: 'text/plain',
 							name: filename,
 							parentPath: '/',
 						});
@@ -70,7 +69,7 @@ describe('mock', () => {
 								media: {
 									imageInfo: {
 										byteSize: THUR_BYTE_SIZE,
-										contentType: 'text/plain',
+										contentType: 'image/webp',
 										imageHeight: 600,
 										imageWidth: 480,
 										pixelSize: 288000

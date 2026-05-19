@@ -46,7 +46,6 @@ const createdMediaContent = libContext.run({
 		data: DATA,
 		name: 'Lea-Seydoux.jpg',
 		parentPath: '/',
-		mimeType: 'image/jpeg',
 		focalX: 0.5,
 		focalY: 0.5,
 	});

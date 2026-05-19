@@ -19,25 +19,6 @@ import {
 import {LEA_JPG_BYTE_SIZE} from '../constants';
 
 
-declare global {
-	interface XpLayoutMap {
-		'com.enonic.app.myapp:mylayout': {
-			layoutProp: string
-		}
-	}
-	interface XpPageMap {
-		'com.enonic.app.myapp:mypage': {
-			pageProp: string
-		}
-	}
-	interface XpPartMap {
-		'com.enonic.app.myapp:mypart': {
-			partProp: string
-		}
-	}
-}
-
-
 const PROJECT_NAME = 'myproject';
 const REPO_ID = `com.enonic.cms.${PROJECT_NAME}`;
 const FILENAME = 'Lea-Seydoux.jpg'
@@ -167,7 +148,6 @@ describe('ContentConnection', () => {
 			keys: [content._id]
 		});
 		expect(publishRes).toStrictEqual({
-			deletedContents: [],
 			failedContents: [],
 			pushedContents: [
 				content._id,
@@ -189,7 +169,6 @@ describe('ContentConnection', () => {
 			data: DATA,
 					name: FILENAME,
 					parentPath: '/',
-					mimeType: 'image/jpeg',
 					focalX: 0.5,
 					focalY: 0.5,
 		});

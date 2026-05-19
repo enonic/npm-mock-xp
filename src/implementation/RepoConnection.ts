@@ -1,4 +1,5 @@
 import type {
+	AccessControlEntry,
 	ByteSource,
 	CreateNodeParams,
 	DuplicateParams,
@@ -13,9 +14,17 @@ import type {
 	PushNodeParams,
 	PushNodesResult,
 	RefreshMode,
-	SetChildOrderParams,
-	SetRootPermissionsParams,
 } from '@enonic-types/lib-node';
+
+interface SetChildOrderParams {
+	childOrder: string;
+	key: string;
+}
+
+interface SetRootPermissionsParams {
+	_permissions: AccessControlEntry[];
+	_inheritsPermissions: boolean;
+}
 import type {
 	GetActiveVersionParamObject,
 	// GetActiveVersionResponse,
@@ -254,7 +263,7 @@ export class RepoConnection implements RepoConnectionInterface {
 		return this.branch.modifyNode({
 			key,
 			editor: (editor as unknown as NodeModifyParams['editor'])
-		}) as Node<NodeData>;
+		}) as unknown as Node<NodeData>;
 	}
 
 	public move({
@@ -394,7 +403,7 @@ export class RepoConnection implements RepoConnectionInterface {
 		return this.modify<NodeData>({
 			key: '/',
 			editor: (node) => {
-				node._inheritsPermissions = _inheritsPermissions;
+				(node as Record<string, unknown>)['_inheritsPermissions'] = _inheritsPermissions;
 				node._permissions = _permissions;
 				return node;
 			}

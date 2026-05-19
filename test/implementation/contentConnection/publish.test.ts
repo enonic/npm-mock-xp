@@ -57,7 +57,6 @@ describe('mock', () => {
 								createdOnDraftOnlyContent._id
 							],
 						})).toStrictEqual({
-							deletedContents: [],
 							failedContents: [],
 							pushedContents: [
 								createdOnDraftOnlyContent._id
@@ -101,7 +100,6 @@ describe('mock', () => {
 								content._id
 							],
 						})).toStrictEqual({
-							deletedContents: [],
 							failedContents: [],
 							pushedContents: [
 								content._id
@@ -150,7 +148,6 @@ describe('mock', () => {
 								content._id
 							],
 						})).toStrictEqual({
-							deletedContents: [],
 							failedContents: [],
 							pushedContents: [
 								content._id
@@ -173,7 +170,6 @@ describe('mock', () => {
 								'non-existant'
 							],
 						})).toStrictEqual({
-							deletedContents: [],
 							failedContents: [
 								'non-existant'
 							],
@@ -195,11 +191,10 @@ describe('mock', () => {
 								createdOnMasterOnlyContent._id
 							],
 						})).toStrictEqual({
-							deletedContents: [
+							failedContents: [],
+							pushedContents: [
 								createdOnMasterOnlyContent._id
 							],
-							failedContents: [],
-							pushedContents: [],
 						});
 					});
 				});

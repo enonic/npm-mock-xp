@@ -136,7 +136,7 @@ export class LibExport {
 				node._indexConfig = rootXmlNode._indexConfig;
 				// NOTE: ASFAIK Root node can't have _manualOrderValue
 				if (includePermissions) {
-					node._inheritsPermissions = rootXmlNode._inheritsPermissions;
+					(node as Record<string, unknown>)['_inheritsPermissions'] = (rootXmlNode as Record<string, unknown>)['_inheritsPermissions'];
 					node._permissions = rootXmlNode._permissions;
 				}
 				// node._state = 'DEFAULT'; // Already there :)
@@ -230,7 +230,7 @@ export class LibExport {
 				this.server.log.debug('created node with _path:%s', _path);
 			}
 			importNodesResult.addedNodes.push(createdNode._id);
-			return createdNode;
+			return createdNode as unknown as Node;
 		} catch (error) {
 			if (error instanceof Error) {
 				importNodesResult.importErrors.push({

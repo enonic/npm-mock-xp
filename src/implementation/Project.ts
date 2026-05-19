@@ -1,4 +1,3 @@
-import type {RepositorySettings} from '@enonic-types/lib-repo';
 import type {Repo} from './Repo';
 import type {Server} from './Server';
 
@@ -20,17 +19,14 @@ export class Project {
 	constructor({
 		projectName,
 		server,
-		settings = {}
 	}: {
 		projectName: string
 		server: Server
-		settings?: RepositorySettings
 	}) {
 		this.server = server;
 		const repoId = Project.repoIdFromProjectName(projectName);
 		server.createRepo({
 			id: repoId,
-			settings
 		});
 		this.repo = server.getRepo(repoId);
 		// this.repo.getBranch('master');

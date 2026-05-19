@@ -35,7 +35,6 @@ describe('mock', () => {
 							data: fileBuffer as unknown as ByteSource,
 							focalX: 0.5,
 							focalY: 0.5,
-							mimeType: 'text/plain',
 							name: filename,
 							parentPath: '/',
 						});

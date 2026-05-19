@@ -107,7 +107,6 @@ describe('LibContent', () => {
 					createdContent._path
 					]
 				})).toStrictEqual({
-					deletedContents: [],
 					failedContents: [],
 					pushedContents: [
 						// createdContent._id,
@@ -159,7 +158,6 @@ describe('LibContent', () => {
 				// modifiedContent._id
 				modifiedContent._path
 			]})).toStrictEqual({
-				deletedContents: [],
 				failedContents: [],
 				pushedContents: [
 					// modifiedContent._id
@@ -209,7 +207,6 @@ describe('LibContent', () => {
 				// movedContent._id
 				movedContent._path
 			]})).toStrictEqual({
-				deletedContents: [],
 				failedContents: [],
 				pushedContents: [
 					// movedContent._id
@@ -255,12 +252,11 @@ describe('LibContent', () => {
 				// movedContent._id
 				movedContent._path
 			]})).toStrictEqual({
-				deletedContents: [
+				failedContents: [],
+				pushedContents: [
 					// movedContent._id
 					movedContent._path
 				],
-				failedContents: [],
-				pushedContents: [],
 			});
 
 			libContext.run({
@@ -281,7 +277,6 @@ describe('LibContent', () => {
 			const createdMedia = libContent.createMedia({
 				data: readFileSync(join(__dirname, '..', FILENAME)) as unknown as ByteSource,
 				name: 'Lea-Seydoux.jpg',
-				mimeType: 'image/jpeg',
 				focalX: 0.5,
 				focalY: 0.5,
 			});
@@ -361,7 +356,6 @@ describe('LibContent', () => {
 				// createdMedia._id
 				createdMedia._path
 			]})).toStrictEqual({
-				deletedContents: [],
 				failedContents: [],
 				pushedContents: [
 					// createdMedia._id
@@ -428,12 +422,11 @@ describe('LibContent', () => {
 				// createdMedia._id
 				createdMedia._path
 			]})).toStrictEqual({
-				deletedContents: [
+				failedContents: [],
+				pushedContents: [
 					// createdMedia._id
 					createdMedia._path
 				],
-				failedContents: [],
-				pushedContents: [],
 			});
 
 			libContext.run({

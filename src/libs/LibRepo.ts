@@ -29,13 +29,13 @@ export class LibRepo {
 		id,
 		// rootChildOrder,
 		// rootPermissions,
-		settings,
+		transient,
 	}: CreateRepositoryParams): Repository {
 		this.server.createRepo({
 			id,
 			// rootChildOrder,
 			// rootPermissions,
-			settings
+			transient,
 		})
 		return this.server.getRepo(id).get();
 	}

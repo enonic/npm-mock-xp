@@ -1,11 +1,5 @@
-import type {
-	Repository,
-	RepositorySettings
-} from '@enonic-types/lib-repo';
-import type {
-	Log,
-	// RepositorySettings
-} from '../types'
+import type {Repository} from '@enonic-types/lib-repo';
+import type {Log} from '../types'
 import type {Server} from './Server';
 
 
@@ -29,26 +23,22 @@ export class Repo {
 	readonly branches: Branches;
 	readonly id: string;
 	readonly server: Server;
-	// rootChildOrder
-	// rootPermissions
-	readonly settings: RepositorySettings;
+	readonly transient: boolean;
 	readonly log: Log;
 
 	constructor({
 		id,
 		server,
-		settings = {}
+		transient = false,
 	}: {
 		id: string
 		server: Server
-		settings?: RepositorySettings
+		transient?: boolean
 	}) {
-		// console.debug('javaBridge.constructor.name',javaBridge.constructor.name);
 		this.id = id;
 		this.server = server;
 		this.log = this.server.log;
-		// this.log.debug('in Repo constructor');
-		this.settings = settings;
+		this.transient = transient;
 		this.branches = {
 			'master': new Branch({
 				branchId: 'master',
@@ -91,8 +81,7 @@ export class Repo {
 		return {
 			id: this.id,
 			branches: Object.keys(this.branches),
-			settings: this.settings,
-			transient: false
+			transient: this.transient,
 		};
 	}
 

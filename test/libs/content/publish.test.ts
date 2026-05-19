@@ -63,7 +63,6 @@ describe('content', () => {
 				});
 			}
 			expect(fn()).toEqual({
-				"deletedContents": [],
 				"failedContents": [],
 				"pushedContents": [
 					folderContent._id,

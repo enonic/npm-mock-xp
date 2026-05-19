@@ -39,10 +39,7 @@ export {
 export {
 	BranchConfig,
 	CreateBranchParams,
-	CreateRepoParams,
 	RepoLib,
-	RepositoryConfig,
-	RepositorySettings
 } from './Repo.d';
 export {Request} from './Request.d';
 export {ValueLib} from './Value.d';

@@ -346,7 +346,7 @@ export class Branch {
 		} as unknown as Node<NodeData>;
 		// this.log.debug('createdNode: %s', createdNode);
 
-		this.nodes[_id] = createdNode as RepoNodeWithData;
+		this.nodes[_id] = createdNode as unknown as RepoNodeWithData;
 		this.pathIndex[_path] = _id;
 
 		if (this.searchIndex['_name'][_name]) {

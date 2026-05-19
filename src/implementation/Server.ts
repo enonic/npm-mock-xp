@@ -15,13 +15,11 @@ import type {
 } from '@enonic-types/lib-node';
 import type {
 	CreateRepositoryParams,
-	RepositorySettings,
 } from '@enonic-types/lib-repo';
 import type {
 	LogLevel
 } from './Log';
 import type {
-	// CreateRepoParams,
 	Log as LogType,
 } from '../types';
 import type {App} from './App';
@@ -193,13 +191,13 @@ export class Server {
 		id,
 		// rootChildOrder,
 		// rootPermissions,
-		settings
+		transient = false,
 	}: CreateRepositoryParams): Server {
 		const repo = new Repo({
 			id,
 			server: this,
 			// rootPermissions,
-			settings
+			transient,
 		});
 		this.repos[id] = repo;
 		// return repo;
@@ -208,10 +206,8 @@ export class Server {
 
 	public createProject({
 		projectName,
-		settings = {}
 	}: {
 		projectName: string
-		settings?: RepositorySettings
 	}): Server {
 		if (!projectName) {
 			throw new Error('Server: createProject: No projectName provided!');
@@ -226,7 +222,6 @@ export class Server {
 		this.projects[projectName] = new Project({
 			projectName,
 			server: this,
-			settings
 		});
 
 		return this; // Chainable

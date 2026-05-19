@@ -1,4 +1,4 @@
-import type {PermissionsParams} from './Auth'
+import type {CreateRepositoryParams, Repository} from '@enonic-types/lib-repo';
 import type {AggregationsResponse} from './node/query/aggregation.d';
 
 
@@ -86,29 +86,6 @@ export interface IndexDefinition {
 	settings: ElasticSearchIndexSettings;
 	mapping: any;
 }
-export interface RepositorySettings {
-	definitions? :{
-		search? :IndexDefinition;
-		version? :IndexDefinition;
-		branch? :IndexDefinition;
-	};
-}
-
-export interface CreateRepoParams {
-	id :string
-	// rootChildOrder? :string
-	rootPermissions? :Array<PermissionsParams>
-	settings? :RepositorySettings
-}
-
-export type EmptyObject = Record<string, never>;
-
-export interface RepositoryConfig<Data = EmptyObject> {
-	id: string;
-	branches: string[];
-	settings: RepositorySettings;
-	data?: Data;
-}
 
 export interface NodeQueryHit {
 	id: string;
@@ -134,10 +111,10 @@ export interface BranchConfig {
 }
 
 export interface RepoLib {
-	create(param :CreateRepoParams) :RepositoryConfig
+	create(param :CreateRepositoryParams) :Repository
 	createBranch(params: CreateBranchParams): BranchConfig;
-	get(repoId :string) :RepositoryConfig
-	list() :RepositoryConfig[]
+	get(repoId :string) :Repository
+	list() :Repository[]
 	// query<AggregationKeys extends string = never>(
 	// 	params: NodeQueryParams<AggregationKeys>
 	// ): NodeQueryResponse<AggregationKeys>;

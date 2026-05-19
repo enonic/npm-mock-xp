@@ -34,6 +34,7 @@ export class Request implements DefaultRequest {
 	readonly repositoryId?: string = '';
 	readonly remoteAddress: string;
 	readonly webSocket: boolean = false;
+	readonly locales: string[] = [];
 
 	static queryToParams(query: string): Params {
 		const queryParams: Params = {};

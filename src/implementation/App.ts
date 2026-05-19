@@ -16,7 +16,7 @@ export declare type Config = Record<string, string | undefined>
 
 export declare interface AppConstructorParams {
 	config?: Config
-	displayName?: Application['displayName']
+	title?: string | null
 	key: Application['key']
 	maxSystemVersion?: Application['maxSystemVersion']
 	minSystemVersion?: Application['minSystemVersion']
@@ -25,7 +25,7 @@ export declare interface AppConstructorParams {
 
 
 export class App {
-	readonly displayName: Application['displayName'];
+	readonly title: string | null;
 	readonly key: Application['key'];
 	readonly maxSystemVersion: Application['maxSystemVersion'];
 	readonly minSystemVersion: Application['minSystemVersion'];
@@ -36,14 +36,14 @@ export class App {
 
 	constructor({
 		config = {},
-		displayName = null,
+		title = null,
 		maxSystemVersion = null,
 		minSystemVersion = null,
 		key,
 		version = '1.0.0',
 	}: AppConstructorParams) {
 		this.config = config;
-		this.displayName = displayName;
+		this.title = title;
 		this.maxSystemVersion = maxSystemVersion;
 		this.minSystemVersion = minSystemVersion;
 		this.key = key;

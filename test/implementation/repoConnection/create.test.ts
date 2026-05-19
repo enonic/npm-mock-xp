@@ -138,7 +138,7 @@ describe('mock', () => {
 					it("sets _state to 'DEFAULT' (regardless of passed in)", () => {
 						deepStrictEqual(
 							'DEFAULT',
-							createRes._state
+							(createRes as unknown as Record<string, unknown>)['_state']
 						);
 					}); // it
 					const node = connection.get(createRes._id) as RepoNodeWithData;

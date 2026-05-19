@@ -68,7 +68,7 @@ beforeAll(done => {
 			_name: NODE_NAME,
 		},
 		repoId: REPO_ID,
-	});
+	}) as unknown as Node;
 
 	connection = server.connect({
 		branchId: BRANCH_ID,

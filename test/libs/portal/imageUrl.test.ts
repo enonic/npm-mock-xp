@@ -80,7 +80,6 @@ const leaSeydouxJpg = libContent.createMedia({
     data: readFileSync(join(__dirname, '../..', 'Lea-Seydoux.jpg')) as unknown as ByteSource,
     name: 'Lea-Seydoux.jpg',
     parentPath: '/',
-    mimeType: 'image/jpeg',
     focalX: 0.5,
     focalY: 0.5,
 });
