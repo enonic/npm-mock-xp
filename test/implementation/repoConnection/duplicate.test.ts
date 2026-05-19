@@ -33,14 +33,14 @@ describe('RepoConnection()', () => {
 		it('should throw an Error if nodeId is UUID_NIL', () => {
 			expect(() => server.systemRepoConnection.duplicate({
 				nodeId: UUID_NIL,
-			})).toThrowError(new OperationNotPermittedException('Not allowed to duplicate root-node'));
+			})).toThrow(new OperationNotPermittedException('Not allowed to duplicate root-node'));
 		}); // it
 
 		it('should throw NodeAlreadyExistAtPathException if name is passed and target exists', () => {
 			expect(() => server.systemRepoConnection.duplicate({
 				nodeId: identityNodeId,
 				name: 'identity'
-			})).toThrowError(new NodeAlreadyExistAtPathException('/identity', 'system-repo', systemRepoMasterBranch));
+			})).toThrow(new NodeAlreadyExistAtPathException('/identity', 'system-repo', systemRepoMasterBranch));
 		}); // it
 
 		it('should make a copy with ending with -copy (if there are no previous copies)', () => {
@@ -81,7 +81,7 @@ describe('RepoConnection()', () => {
 			expect(() => server.systemRepoConnection.duplicate({
 				nodeId: identityNodeId,
 				parent: '/identity',
-			})).toThrowError(new NodeAlreadyExistAtPathException('/identity/identity', 'system-repo', systemRepoMasterBranch));
+			})).toThrow(new NodeAlreadyExistAtPathException('/identity/identity', 'system-repo', systemRepoMasterBranch));
 		}); // it
 
 		it('should throw NodeAlreadyExistAtPathException if parent and name is passed and target exists', () => {
@@ -89,7 +89,7 @@ describe('RepoConnection()', () => {
 				name: 'identity',
 				nodeId: identityNodeId,
 				parent: '/identity',
-			})).toThrowError(new NodeAlreadyExistAtPathException('/identity/identity', 'system-repo', systemRepoMasterBranch));
+			})).toThrow(new NodeAlreadyExistAtPathException('/identity/identity', 'system-repo', systemRepoMasterBranch));
 		}); // it
 
 		it('should make a copy with ending with -copy-3 (if there are two previous copies)', () => {
