@@ -2,7 +2,7 @@
   "author": "Christian Westgaard <cwe@enonic.com>",
   "contributors": [],
   "dependencies": {
-    "@enonic/js-utils": "^2.0.0-beta.1",
+    "@enonic/js-utils": "^2.0.0-rc.1",
     "adm-zip": "^0.5.16",
     "colors": "^1.4.0",
     "fast-uri": "^3.0.0",
@@ -17,20 +17,20 @@
     "uniqs": "^2.0.0"
   },
   "devDependencies": {
-    "@enonic-types/core": "^8.0.0-B4",
-    "@enonic-types/global": "^8.0.0-B4",
-    "@enonic-types/lib-app": "^8.0.0-B4",
-    "@enonic-types/lib-auth": "^8.0.0-B4",
-    "@enonic-types/lib-content": "^8.0.0-B4",
-    "@enonic-types/lib-context": "^8.0.0-B4",
-    "@enonic-types/lib-event": "^8.0.0-B4",
-    "@enonic-types/lib-export": "^8.0.0-B4",
-    "@enonic-types/lib-io": "^8.0.0-B4",
-    "@enonic-types/lib-node": "^8.0.0-B4",
-    "@enonic-types/lib-portal": "^8.0.0-B4",
-    "@enonic-types/lib-repo": "^8.0.0-B4",
-    "@enonic-types/lib-value": "^8.0.0-B4",
-    "@enonic-types/lib-vhost": "^8.0.0-B4",
+    "@enonic-types/core": "^8",
+    "@enonic-types/global": "^8",
+    "@enonic-types/lib-app": "^8",
+    "@enonic-types/lib-auth": "^8",
+    "@enonic-types/lib-content": "^8",
+    "@enonic-types/lib-context": "^8",
+    "@enonic-types/lib-event": "^8",
+    "@enonic-types/lib-export": "^8",
+    "@enonic-types/lib-io": "^8",
+    "@enonic-types/lib-node": "^8",
+    "@enonic-types/lib-portal": "^8",
+    "@enonic-types/lib-repo": "^8",
+    "@enonic-types/lib-value": "^8",
+    "@enonic-types/lib-vhost": "^8",
     "@enonic/test-data": "^1.2.0",
     "@types/adm-zip": "^0.5.7",
     "@types/bun": "^1.0.12",
@@ -46,7 +46,7 @@
   },
   "description": "Mock Enonic XP API JavaScript Library",
   "engines": {
-    "node": ">=24.15.0"
+    "node": ">= 24.15.0"
   },
   "files": [
     "/dist",
