@@ -291,9 +291,6 @@ export class RepoConnection implements RepoConnectionInterface {
 			throw new Error('Target branch cannot be the same as source branch!')
 		}
 		const targetBranch: Branch = this.branch.repo.getBranch(target); // Throws if branch not found
-		const targetBranchRepoConnection = new RepoConnection({
-			branch: targetBranch,
-		});
 		if (key) {
 			keys.push(key);
 		}
@@ -303,53 +300,35 @@ export class RepoConnection implements RepoConnectionInterface {
 		const pushNodesResult: PushNodesResult = {
 			success: [],
 			failed: [],
-			deleted: [],
 		};
 		nodeKeysLoop: for (let i = 0; i < keys.length; i++) {
 			const k = keys[i];
 			const existsOnSource = this.exists(k);
-			// const existsOnTarget = targetBranchRepoConnection.exists(k);
+
+			if (!existsOnSource) {
+				continue nodeKeysLoop;
+			}
+
 			const existsOnTarget = targetBranch.existsNode(k)
 
-			if (existsOnSource) {
-				const nodeOnSource = this._getSingle<RepoNodeWithData>(k);
-				if (existsOnTarget) {
-					// TODO ALREADY_EXIST
-					targetBranch._overwriteNode({ node: nodeOnSource });
-					pushNodesResult.success.push(k); // TODO: Does this always return _id or is _path possible?
-					continue nodeKeysLoop;
-				}
-
-				const createdNode = targetBranch._createNodeInternal(nodeOnSource as unknown);
-				if (createdNode) {
-					pushNodesResult.success.push(k); // TODO: Does this always return _id or is _path possible?
-				} else {
-					// istanbul ignore next // Skip coverage for the next line // TODO
-					pushNodesResult.failed.push({
-						id: k,
-						reason: 'PARENT_NOT_FOUND' // TODO This is currently just a hardcode, there might be other reasons?
-					});
-				}
-				continue nodeKeysLoop;
-			}
-
+			const nodeOnSource = this._getSingle<RepoNodeWithData>(k);
 			if (existsOnTarget) {
-				if (targetBranchRepoConnection.delete(k)) {
-					pushNodesResult.deleted.push(k);
-				} else {
-					// istanbul ignore next // Skip coverage for the next line // TODO
-					pushNodesResult.failed.push({
-						id: k,
-						reason: 'ACCESS_DENIED' // TODO This is currently just a hardcode, there might be other reasons?
-					});
-				}
+				// TODO ALREADY_EXIST
+				targetBranch._overwriteNode({ node: nodeOnSource });
+				pushNodesResult.success.push(k); // TODO: Does this always return _id or is _path possible?
 				continue nodeKeysLoop;
 			}
 
-			pushNodesResult.failed.push({
-				id: k,
-				reason: 'NOT_FOUND_ON_SOURCE_NOR_TARGET' // TODO This doesn't exist com.enonic.xp.repo.impl.node.NodePushResult.Reason
-			});
+			const createdNode = targetBranch._createNodeInternal(nodeOnSource as unknown);
+			if (createdNode) {
+				pushNodesResult.success.push(k); // TODO: Does this always return _id or is _path possible?
+			} else {
+				// istanbul ignore next // Skip coverage for the next line // TODO
+				pushNodesResult.failed.push({
+					id: k,
+					reason: 'PARENT_NOT_FOUND' // TODO This is currently just a hardcode, there might be other reasons?
+				});
+			}
 		} // for
 		return pushNodesResult;
 	} // push

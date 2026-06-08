@@ -66,14 +66,9 @@ describe('RepoConnection', () => {
 					nodeOnBoth._id,
 					nodeJustOnSource._id,
 				],
-				failed: [{
-					id: NODE_ID_NEITHER,
-					reason: 'NOT_FOUND_ON_SOURCE_NOR_TARGET'
-				}],
-				deleted: [
-					nodeJustOnTarget._id,
-				]
+				failed: []
 			});
+			expect(targetBranch.existsNode(nodeJustOnTarget._id)).toBe(true);
 		});
 
 		it('throws if target is the same as source', () => {

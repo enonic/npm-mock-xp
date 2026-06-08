@@ -281,6 +281,7 @@ export class LibExport {
 		const importNodesResult: ImportNodesResult = {
 			addedNodes: [],
 			updatedNodes: [],
+			skippedNodes: [],
 			importedBinaries: [],
 			importErrors: [{
 				exception: '',
@@ -377,6 +378,7 @@ export class LibExport {
 		const importNodesResult: ImportNodesResult = {
 			addedNodes: [],
 			updatedNodes: [],
+			skippedNodes: [],
 			importedBinaries: [],
 			importErrors: [{
 				exception: '',
