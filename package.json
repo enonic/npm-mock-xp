@@ -2,7 +2,7 @@
   "author": "Christian Westgaard <cwe@enonic.com>",
   "contributors": [],
   "dependencies": {
-    "@enonic/js-utils": "^2.0.0-rc.1",
+    "@enonic/js-utils": "^2.0.0",
     "adm-zip": "^0.5.16",
     "colors": "^1.4.0",
     "fast-uri": "^3.0.0",
