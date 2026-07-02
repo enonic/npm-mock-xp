@@ -333,6 +333,7 @@ export class Branch {
 		});
 		// this.log.debug('cleanedData: %s', cleanedData);
 
+		const {_permissions, ...dataToEnonify} = cleanedData as Record<string, unknown>;
 		const createdNode: Node<NodeData> = {
 			_id,
 			_indexConfig,
@@ -342,7 +343,8 @@ export class Branch {
 			_state: 'DEFAULT',
 			_ts,
 			_versionKey,
-			...(enonify(cleanedData) as Object)
+			...(enonify(dataToEnonify) as Object),
+			...(typeof _permissions === 'undefined' ? {} : {_permissions})
 		} as unknown as Node<NodeData>;
 		// this.log.debug('createdNode: %s', createdNode);
 
@@ -652,8 +654,11 @@ export class Branch {
 			});
 		}
 
+		const {_indexConfig, _permissions, ...dataToEnonify} = cleanedData as Record<string, unknown>;
 		const modifiedNode: RepoNodeWithData = sortKeys({
-			...cleanedData,
+			...(enonify(dataToEnonify) as Object),
+			...(typeof _indexConfig === 'undefined' ? {} : {_indexConfig}),
+			...(typeof _permissions === 'undefined' ? {} : {_permissions}),
 			_id, // Not allowed to change _id
 			_name, // Not allowed to rename
 			_path, // Not allowed to move
