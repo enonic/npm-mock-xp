@@ -39,6 +39,7 @@ jobs:
         run: |
           npm ci
           npm test
+          npm run build
           npx -y npm@latest publish --tag $NPM_TAG
 
       - name: Create Release
