@@ -333,6 +333,8 @@ export class Branch {
 		});
 		// this.log.debug('cleanedData: %s', cleanedData);
 
+		const { _permissions, ...dataToEnonify } = cleanedData as Record<string, unknown>;
+
 		const createdNode: Node<NodeData> = {
 			_id,
 			_indexConfig,
@@ -342,7 +344,8 @@ export class Branch {
 			_state: 'DEFAULT',
 			_ts,
 			_versionKey,
-			...(enonify(cleanedData) as Object)
+			...(enonify(dataToEnonify) as Object),
+			...(_permissions === undefined ? {} : { _permissions })
 		} as unknown as Node<NodeData>;
 		// this.log.debug('createdNode: %s', createdNode);
 
