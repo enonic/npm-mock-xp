@@ -808,6 +808,7 @@ export class ContentConnection {
 		});
 		const res: PublishContentResult = {
 			failedContents: [],
+			failed: [],
 			pushedContents: [],
 		};
 		contentKeysLoop: for (let i = 0; i < keys.length; i++) {

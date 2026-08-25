@@ -63,6 +63,7 @@ describe('content', () => {
 				});
 			}
 			expect(fn()).toEqual({
+				"failed": [],
 				"failedContents": [],
 				"pushedContents": [
 					folderContent._id,

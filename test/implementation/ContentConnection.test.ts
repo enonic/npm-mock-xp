@@ -148,6 +148,7 @@ describe('ContentConnection', () => {
 			keys: [content._id]
 		});
 		expect(publishRes).toStrictEqual({
+			failed: [],
 			failedContents: [],
 			pushedContents: [
 				content._id,

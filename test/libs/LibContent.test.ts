@@ -107,6 +107,7 @@ describe('LibContent', () => {
 					createdContent._path
 					]
 				})).toStrictEqual({
+					failed: [],
 					failedContents: [],
 					pushedContents: [
 						// createdContent._id,
@@ -158,6 +159,7 @@ describe('LibContent', () => {
 				// modifiedContent._id
 				modifiedContent._path
 			]})).toStrictEqual({
+				failed: [],
 				failedContents: [],
 				pushedContents: [
 					// modifiedContent._id
@@ -207,6 +209,7 @@ describe('LibContent', () => {
 				// movedContent._id
 				movedContent._path
 			]})).toStrictEqual({
+				failed: [],
 				failedContents: [],
 				pushedContents: [
 					// movedContent._id
@@ -252,6 +255,7 @@ describe('LibContent', () => {
 				// movedContent._id
 				movedContent._path
 			]})).toStrictEqual({
+				failed: [],
 				failedContents: [],
 				pushedContents: [
 					// movedContent._id
@@ -356,6 +360,7 @@ describe('LibContent', () => {
 				// createdMedia._id
 				createdMedia._path
 			]})).toStrictEqual({
+				failed: [],
 				failedContents: [],
 				pushedContents: [
 					// createdMedia._id
@@ -422,6 +427,7 @@ describe('LibContent', () => {
 				// createdMedia._id
 				createdMedia._path
 			]})).toStrictEqual({
+				failed: [],
 				failedContents: [],
 				pushedContents: [
 					// createdMedia._id
