@@ -3,7 +3,7 @@
   "contributors": [],
   "dependencies": {
     "@enonic/js-utils": "^1.10.0",
-    "adm-zip": "^0.5.16",
+    "adm-zip": "^0.6.0",
     "colors": "^1.4.0",
     "fast-uri": "^3.0.0",
     "fast-xml-parser": "^5.2.5",
@@ -32,7 +32,7 @@
     "@enonic-types/lib-value": "^7",
     "@enonic-types/lib-vhost": "^7",
     "@enonic/test-data": "^1.2.0",
-    "@types/adm-zip": "^0.5.7",
+    "@types/adm-zip": "^0.5.8",
     "@types/bun": "^1.0.12",
     "@types/intersect": "^1.0.0",
     "@types/jest": "^30.0.0",
