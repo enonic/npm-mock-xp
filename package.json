@@ -32,7 +32,7 @@
     "@enonic-types/lib-value": "^8",
     "@enonic-types/lib-vhost": "^8",
     "@enonic/test-data": "^1.2.0",
-    "@types/adm-zip": "^0.5.7",
+    "@types/adm-zip": "^0.6.0",
     "@types/bun": "^1.0.12",
     "@types/intersect": "^1.0.0",
     "@types/jest": "^30.0.0",
